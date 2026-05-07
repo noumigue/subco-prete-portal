@@ -28,6 +28,7 @@ export default async function HomePage() {
     getSuccessStories(),
     getFaqs(),
   ]);
+  const heroImage = mediaUrl(homepage?.heroImage) || mediaUrl(chains.find((item) => mediaUrl(item.heroImage))?.heroImage);
 
   return (
     <main className="min-h-screen">
@@ -38,26 +39,24 @@ export default async function HomePage() {
             <div>
               <p className="eyebrow">SUBCO PRETE</p>
               <h1>{homepage?.heroTitle || 'Plateforme de subventions de contrepartie'}</h1>
-              <p>{homepage?.heroSubtitle || 'Information, appels à candidatures, et suivi des opérateurs.'}</p>
+              <p className="hero-vision">
+                {homepage?.heroSubtitle || 'PRETE SUBCO catalyse la transformation productive locale en finançant des investissements structurants au service des chaînes de valeur prioritaires, de l’emploi et de la compétitivité durable.'}
+              </p>
               <div className="actions">
                 <Link href="/candidature" className="btn primary">
                   {homepage?.ctaLabel || 'Déposer une candidature'}
                 </Link>
-                <Link href="/appels" className="btn ghost">Voir les appels</Link>
-              </div>
-              <div className="hero-search">
-                <input placeholder="Rechercher un appel, secteur, zone..." />
-                <button>Chercher</button>
+                <Link href="/chaines-valeur" className="btn ghost">En savoir plus</Link>
               </div>
             </div>
-            <aside className="hero-panel">
-              <h3>Repères rapides</h3>
-              <ul>
-                <li>{calls.length} appel(s) publié(s)</li>
-                <li>{events.length} événement(s) annoncé(s)</li>
-                <li>{news.length} actualité(s) récente(s)</li>
-              </ul>
-              <Link href="/candidature" className="btn primary panel-cta">Soumettre un dossier</Link>
+            <aside className="hero-panel hero-media">
+              {heroImage ? (
+                <img src={heroImage} alt="Illustration des chaînes de valeur PRETE" />
+              ) : (
+                <div className="hero-media-fallback">
+                  <p>Illustration PRETE</p>
+                </div>
+              )}
             </aside>
           </div>
         </div>

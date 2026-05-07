@@ -18,6 +18,7 @@ export type Homepage = {
   heroSubtitle?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  heroImage?: any;
 };
 
 export type ValueChainItem = {
@@ -83,7 +84,7 @@ export type FaqItem = {
 };
 
 export async function getHomepage() {
-  const out = await getJson<StrapiOne<Homepage>>('/api/homepage');
+  const out = await getJson<StrapiOne<Homepage>>('/api/homepage?populate=heroImage');
   return out?.data || null;
 }
 

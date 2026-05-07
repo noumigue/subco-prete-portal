@@ -95,7 +95,7 @@ h3 {
 .hero-template {
   position: relative;
   overflow: hidden;
-  min-height: 76vh;
+  min-height: 62vh;
   background:
     radial-gradient(circle at 9% 8%, rgba(255, 255, 255, 0.24), transparent 40%),
     radial-gradient(circle at 95% 5%, rgba(0, 194, 141, 0.22), transparent 34%),
@@ -119,7 +119,7 @@ h3 {
   display: grid;
   grid-template-columns: 1.4fr 0.9fr;
   gap: 1.3rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .hero-search {
@@ -170,6 +170,12 @@ h3 {
 .hero p {
   max-width: 70ch;
   color: #deedf3;
+}
+
+.hero-vision {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  max-width: 56ch !important;
 }
 
 .actions {
@@ -225,6 +231,49 @@ h3 {
 .panel-cta {
   margin-top: 0.9rem;
   width: 100%;
+}
+
+.hero-media {
+  padding: 0;
+  overflow: hidden;
+  min-height: 440px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  position: relative;
+  display: grid;
+}
+
+.hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 24px;
+  filter: saturate(1.02) contrast(1.02);
+  opacity: 0.98;
+}
+
+.hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, transparent 55%, rgba(20, 70, 86, 0.38) 85%, rgba(20, 70, 86, 0.78) 100%);
+}
+
+.hero-media-fallback {
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.36), transparent 30%),
+    linear-gradient(135deg, #1f5e72 0%, #1b8472 100%);
+  color: #e9fff8;
+  font-weight: 800;
+  letter-spacing: 0.03em;
 }
 
 .input {
