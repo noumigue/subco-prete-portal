@@ -6,6 +6,8 @@ import {
   getHomepage,
   getNews,
   getSuccessStories,
+  getValueChains,
+  mediaUrl,
 } from '@/lib/strapi-public';
 import { blocksToText } from '@/lib/richtext';
 
@@ -17,8 +19,9 @@ function toDateLabel(value?: string) {
 }
 
 export default async function HomePage() {
-  const [homepage, calls, events, news, stories, faqs] = await Promise.all([
+  const [homepage, chains, calls, events, news, stories, faqs] = await Promise.all([
     getHomepage(),
+    getValueChains(),
     getCalls(),
     getEvents(),
     getNews(),
@@ -28,23 +31,68 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <section className="hero">
+      <section className="hero hero-template">
+        <div className="hero-overlay" />
         <div className="container">
-          <p className="eyebrow">SUBCO PRETE</p>
-          <h1>{homepage?.heroTitle || 'Plateforme de subventions de contrepartie'}</h1>
-          <p>{homepage?.heroSubtitle || 'Information, appels à candidatures, et suivi des opérateurs.'}</p>
-          <div className="actions">
-            <Link href="/candidature" className="btn primary">
-              {homepage?.ctaLabel || 'Déposer une candidature'}
-            </Link>
-            <a href="#appels" className="btn ghost">Voir les appels</a>
+          <div className="hero-grid">
+            <div>
+              <p className="eyebrow">SUBCO PRETE</p>
+              <h1>{homepage?.heroTitle || 'Plateforme de subventions de contrepartie'}</h1>
+              <p>{homepage?.heroSubtitle || 'Information, appels à candidatures, et suivi des opérateurs.'}</p>
+              <div className="actions">
+                <Link href="/candidature" className="btn primary">
+                  {homepage?.ctaLabel || 'Déposer une candidature'}
+                </Link>
+                <Link href="/appels" className="btn ghost">Voir les appels</Link>
+              </div>
+              <div className="hero-search">
+                <input placeholder="Rechercher un appel, secteur, zone..." />
+                <button>Chercher</button>
+              </div>
+            </div>
+            <aside className="hero-panel">
+              <h3>Repères rapides</h3>
+              <ul>
+                <li>{calls.length} appel(s) publié(s)</li>
+                <li>{events.length} événement(s) annoncé(s)</li>
+                <li>{news.length} actualité(s) récente(s)</li>
+              </ul>
+              <Link href="/candidature" className="btn primary panel-cta">Soumettre un dossier</Link>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <h2 className="section-title">5 chaînes de valeur prioritaires</h2>
+          <p className="meta"><Link href="/chaines-valeur">Voir le détail des chaînes</Link></p>
+          <div className="grid three">
+            {chains.slice(0, 5).map((item) => (
+              <article key={item.id} className="card">
+                {mediaUrl(item.heroImage) ? (
+                  <img className="chain-thumb" src={mediaUrl(item.heroImage)!} alt={item.name || 'Chaîne de valeur'} />
+                ) : (
+                  <div className="chain-thumb chain-fallback">Photo à ajouter</div>
+                )}
+                <span className="badge open">Chaîne de valeur</span>
+                <h3>{item.name}</h3>
+                <p>{item.shortIntro || 'Présentation en cours de publication.'}</p>
+                {item.slug ? (
+                  <p className="meta">
+                    <Link href={`/chaines-valeur/${item.slug}`}>Découvrir la chaîne</Link>
+                  </p>
+                ) : null}
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
       <section id="appels" className="section">
         <div className="container">
-          <h2>Appels à propositions</h2>
+          <h2 className="section-title">Appels à propositions</h2>
+          <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
           <div className="grid three">
             {calls.slice(0, 3).map((item) => (
               <article key={item.id} className="card">
@@ -63,10 +111,21 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="cta-band">
+        <div className="container cta-band-wrap">
+          <div>
+            <p className="eyebrow">Parcours candidat</p>
+            <h3>Préparez votre dossier et soumettez-le en ligne</h3>
+          </div>
+          <Link href="/candidature" className="btn primary">Commencer la candidature</Link>
+        </div>
+      </section>
+
       <section className="section alt">
         <div className="container two-col">
           <div>
-            <h2>Événements</h2>
+            <h2 className="section-title">Événements</h2>
+            <p className="meta"><Link href="/evenements">Voir tous les événements</Link></p>
             {events.slice(0, 4).map((item) => (
               <div key={item.id} className="list-item">
                 <h3>{item.title}</h3>
@@ -77,7 +136,8 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <h2>Actualités</h2>
+            <h2 className="section-title">Actualités</h2>
+            <p className="meta"><Link href="/actualites">Voir toutes les actualités</Link></p>
             {news.slice(0, 4).map((item) => (
               <div key={item.id} className="list-item">
                 <h3>{item.title}</h3>
@@ -91,7 +151,7 @@ export default async function HomePage() {
 
       <section className="section">
         <div className="container">
-          <h2>Opérateurs financés - expériences à succès</h2>
+          <h2 className="section-title">Opérateurs financés - expériences à succès</h2>
           <div className="grid three">
             {stories.slice(0, 3).map((item) => (
               <article key={item.id} className="card">
@@ -106,7 +166,7 @@ export default async function HomePage() {
 
       <section className="section alt">
         <div className="container">
-          <h2>FAQ</h2>
+          <h2 className="section-title">FAQ</h2>
           <div className="faq-list">
             {faqs.slice(0, 6).map((item) => (
               <details key={item.id} className="faq-item">

@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f4f4ef;
-  --ink: #11131a;
-  --ink-soft: #5a6473;
-  --brand: #006a5b;
-  --brand-deep: #01463c;
+  --bg: #f2f3ec;
+  --ink: #181d26;
+  --ink-soft: #5f6c7a;
+  --brand: #009b77;
+  --brand-deep: #06745b;
   --card: #ffffff;
-  --line: #d8ddd6;
+  --line: #d4ddd6;
 }
 
 * {
@@ -16,7 +16,7 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at 0% 0%, #ffffff, var(--bg) 48%);
+  background: linear-gradient(180deg, #f9faf7 0%, var(--bg) 34%, #eef1e8 100%);
   color: var(--ink);
   font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
 }
@@ -33,13 +33,126 @@ h3 {
   margin: 0 auto;
 }
 
+.site-topbar {
+  background: #121a26;
+  color: #d6deea;
+  font-size: 0.82rem;
+}
+
+.topbar-wrap {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, #ffffff 94%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 26px rgba(10, 20, 34, 0.08);
+}
+
+.nav-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+}
+
+.brand {
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.main-nav .nav-cta {
+  color: #fff;
+}
+
 .hero {
-  padding: 5rem 0 3.5rem;
+  padding: 5.2rem 0 4.4rem;
   border-bottom: 1px solid var(--line);
 }
 
+.hero-template {
+  position: relative;
+  overflow: hidden;
+  min-height: 76vh;
+  background:
+    radial-gradient(circle at 9% 8%, rgba(255, 255, 255, 0.24), transparent 40%),
+    radial-gradient(circle at 95% 5%, rgba(0, 194, 141, 0.22), transparent 34%),
+    linear-gradient(120deg, #0e2b3f 0%, #1f4f6a 52%, #1e7b6f 100%);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 15, 25, 0.18), rgba(8, 15, 25, 0.18)),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 8px, transparent 8px, transparent 16px);
+}
+
+.hero .container {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr;
+  gap: 1.3rem;
+  align-items: start;
+}
+
+.hero-search {
+  margin-top: 1.2rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  padding: 0.55rem;
+  max-width: 680px;
+}
+
+.hero-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+}
+
+.hero-search button {
+  border: 0;
+  background: var(--brand);
+  color: white;
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  font-weight: 700;
+}
+
 .eyebrow {
-  color: var(--brand);
+  color: #9df2df;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.78rem;
@@ -51,11 +164,12 @@ h3 {
   font-size: clamp(2rem, 4vw, 3.3rem);
   line-height: 1.04;
   max-width: 12ch;
+  color: #fff;
 }
 
 .hero p {
   max-width: 70ch;
-  color: var(--ink-soft);
+  color: #deedf3;
 }
 
 .actions {
@@ -85,8 +199,32 @@ h3 {
 }
 
 .btn.ghost {
-  border: 1px solid var(--line);
-  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+.hero-panel {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 14px 30px rgba(8, 19, 30, 0.2);
+  transform: translateY(20px);
+}
+
+.hero-panel h3 {
+  margin: 0 0 0.65rem;
+}
+
+.hero-panel ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink-soft);
+}
+
+.panel-cta {
+  margin-top: 0.9rem;
+  width: 100%;
 }
 
 .input {
@@ -106,6 +244,10 @@ h3 {
   background: #eef2ea;
 }
 
+.section-title {
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+}
+
 .grid.three {
   display: grid;
   gap: 1rem;
@@ -116,7 +258,14 @@ h3 {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 1rem;
+  padding: 1.05rem;
+  box-shadow: 0 8px 20px rgba(12, 20, 32, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgba(10, 18, 30, 0.11);
 }
 
 .card h3 {
@@ -199,9 +348,97 @@ h3 {
   white-space: pre-line;
 }
 
+.chain-thumb {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.7rem;
+}
+
+.chain-fallback {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(120deg, #dbece6, #c8ddd4);
+  color: #2e5348;
+  font-weight: 700;
+}
+
+.chain-hero-image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin: 0.7rem 0 0.9rem;
+  border: 1px solid var(--line);
+}
+
+.cta-band {
+  background: linear-gradient(90deg, #1b5f68 0%, #117b67 100%);
+  color: #eafff9;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.cta-band-wrap {
+  padding: 1.1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cta-band-wrap h3 {
+  margin: 0.2rem 0 0;
+}
+
+.cta-band .eyebrow {
+  margin: 0;
+}
+
+.site-footer {
+  border-top: 1px solid #32414f;
+  background: #162331;
+  margin-top: 2rem;
+}
+
+.footer-wrap {
+  padding: 1.2rem 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: #c9d5e5;
+}
+
 @media (max-width: 900px) {
   .grid.three,
   .two-col {
     grid-template-columns: 1fr;
+  }
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .main-nav {
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .hero-template {
+    min-height: auto;
+  }
+  .hero-panel {
+    transform: none;
+  }
+  .hero-search {
+    grid-template-columns: 1fr;
+  }
+  .cta-band-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .topbar-wrap {
+    flex-direction: column;
+    gap: 0.2rem;
   }
 }

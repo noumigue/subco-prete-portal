@@ -20,6 +20,25 @@ export type Homepage = {
   ctaUrl?: string;
 };
 
+export type ValueChainItem = {
+  id: number;
+  name?: string;
+  slug?: string;
+  photoHint?: string;
+  shortIntro?: string;
+  fullContent?: any;
+  priorityOrder?: number;
+  isFeaturedHome?: boolean;
+  heroImage?: any;
+};
+
+export function mediaUrl(media: any): string | null {
+  const url = media?.url || media?.data?.url || media?.data?.attributes?.url;
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${STRAPI_URL}${url}`;
+}
+
 export type CallItem = {
   id: number;
   title?: string;
@@ -66,6 +85,17 @@ export type FaqItem = {
 export async function getHomepage() {
   const out = await getJson<StrapiOne<Homepage>>('/api/homepage');
   return out?.data || null;
+}
+
+export async function getValueChains() {
+  const out = await getJson<StrapiList<ValueChainItem>>('/api/value-chains?sort=priorityOrder:asc&populate=heroImage');
+  return out?.data || [];
+}
+
+export async function getValueChainBySlug(slug: string) {
+  const q = encodeURIComponent(slug);
+  const out = await getJson<StrapiList<ValueChainItem>>(`/api/value-chains?filters[slug][$eq]=${q}&pagination[limit]=1&populate=heroImage`);
+  return out?.data?.[0] || null;
 }
 
 export async function getCalls() {

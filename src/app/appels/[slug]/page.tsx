@@ -2,8 +2,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCallBySlug } from '@/lib/strapi-public';
 import { blocksToText } from '@/lib/richtext';
+import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const item = await getCallBySlug(slug);
+  if (!item) return { title: 'Appel introuvable | SUBCO PRETE' };
+  return {
+    title: `${item.title || 'Appel'} | SUBCO PRETE`,
+    description: item.summary || 'Détail de l’appel à propositions',
+  };
+}
 
 export default async function CallDetailPage({ params }: Props) {
   const { slug } = await params;
