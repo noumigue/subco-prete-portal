@@ -7,33 +7,13 @@ import {
   getNews,
   getSuccessStories,
 } from '@/lib/strapi-public';
+import { blocksToText } from '@/lib/richtext';
 
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d);
-}
-
-function nodeToText(node: any): string {
-  if (!node) return '';
-  if (typeof node === 'string') return node;
-  if (typeof node?.text === 'string') return node.text;
-  if (Array.isArray(node)) return node.map(nodeToText).join('');
-  if (Array.isArray(node?.children)) return node.children.map(nodeToText).join('');
-  return '';
-}
-
-function blocksToText(value: any): string {
-  if (!value) return '';
-  if (typeof value === 'string') return value;
-  if (!Array.isArray(value)) return nodeToText(value);
-
-  return value
-    .map((block) => nodeToText(block))
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .join('\n');
 }
 
 export default async function HomePage() {
@@ -72,6 +52,11 @@ export default async function HomePage() {
                 <h3>{item.title}</h3>
                 <p>{item.summary || 'Résumé en cours de publication.'}</p>
                 <p className="meta">Clôture: {toDateLabel(item.deadlineDate)}</p>
+                {item.slug ? (
+                  <p className="meta">
+                    <Link href={`/appels/${item.slug}`}>Voir le détail</Link>
+                  </p>
+                ) : null}
               </article>
             ))}
           </div>
@@ -86,6 +71,7 @@ export default async function HomePage() {
               <div key={item.id} className="list-item">
                 <h3>{item.title}</h3>
                 <p>{toDateLabel(item.eventDate)} · {item.location || 'Lieu à confirmer'}</p>
+                {item.slug ? <p className="meta"><Link href={`/evenements/${item.slug}`}>Voir le détail</Link></p> : null}
               </div>
             ))}
           </div>
@@ -96,6 +82,7 @@ export default async function HomePage() {
               <div key={item.id} className="list-item">
                 <h3>{item.title}</h3>
                 <p>{item.excerpt || 'Contenu à venir.'}</p>
+                {item.slug ? <p className="meta"><Link href={`/actualites/${item.slug}`}>Lire l’article</Link></p> : null}
               </div>
             ))}
           </div>

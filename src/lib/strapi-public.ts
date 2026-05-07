@@ -25,6 +25,7 @@ export type CallItem = {
   title?: string;
   slug?: string;
   summary?: string;
+  content?: any;
   callStatus?: 'draft' | 'open' | 'closed';
   openingDate?: string;
   deadlineDate?: string;
@@ -36,6 +37,7 @@ export type EventItem = {
   slug?: string;
   location?: string;
   eventDate?: string;
+  description?: any;
 };
 
 export type NewsItem = {
@@ -44,6 +46,7 @@ export type NewsItem = {
   slug?: string;
   excerpt?: string;
   publishedAtCustom?: string;
+  content?: any;
 };
 
 export type SuccessStory = {
@@ -70,14 +73,32 @@ export async function getCalls() {
   return out?.data || [];
 }
 
+export async function getCallBySlug(slug: string) {
+  const q = encodeURIComponent(slug);
+  const out = await getJson<StrapiList<CallItem>>(`/api/call-for-proposals?filters[slug][$eq]=${q}&pagination[limit]=1`);
+  return out?.data?.[0] || null;
+}
+
 export async function getEvents() {
   const out = await getJson<StrapiList<EventItem>>('/api/events?sort=eventDate:asc');
   return out?.data || [];
 }
 
+export async function getEventBySlug(slug: string) {
+  const q = encodeURIComponent(slug);
+  const out = await getJson<StrapiList<EventItem>>(`/api/events?filters[slug][$eq]=${q}&pagination[limit]=1`);
+  return out?.data?.[0] || null;
+}
+
 export async function getNews() {
   const out = await getJson<StrapiList<NewsItem>>('/api/news-items?sort=publishedAtCustom:desc');
   return out?.data || [];
+}
+
+export async function getNewsBySlug(slug: string) {
+  const q = encodeURIComponent(slug);
+  const out = await getJson<StrapiList<NewsItem>>(`/api/news-items?filters[slug][$eq]=${q}&pagination[limit]=1`);
+  return out?.data?.[0] || null;
 }
 
 export async function getSuccessStories() {
