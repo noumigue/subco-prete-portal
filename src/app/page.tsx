@@ -47,7 +47,7 @@ export default async function HomePage() {
           <div className="grid three">
             {calls.slice(0, 3).map((item) => (
               <article key={item.id} className="card">
-                <span className={`badge ${item.status || 'draft'}`}>{item.status || 'draft'}</span>
+                <span className={`badge ${item.callStatus || 'draft'}`}>{item.callStatus || 'draft'}</span>
                 <h3>{item.title}</h3>
                 <p>{item.summary || 'Résumé en cours de publication.'}</p>
                 <p className="meta">Clôture: {toDateLabel(item.deadlineDate)}</p>

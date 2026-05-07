@@ -25,7 +25,7 @@ export type CallItem = {
   title?: string;
   slug?: string;
   summary?: string;
-  status?: 'draft' | 'open' | 'closed';
+  callStatus?: 'draft' | 'open' | 'closed';
   openingDate?: string;
   deadlineDate?: string;
 };
