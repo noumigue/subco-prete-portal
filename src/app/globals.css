@@ -193,6 +193,12 @@ h3 {
   font-weight: 600;
 }
 
+.faq-item p {
+  margin: 0.6rem 0 0;
+  color: var(--ink-soft);
+  white-space: pre-line;
+}
+
 @media (max-width: 900px) {
   .grid.three,
   .two-col {

@@ -15,6 +15,27 @@ function toDateLabel(value?: string) {
   return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d);
 }
 
+function nodeToText(node: any): string {
+  if (!node) return '';
+  if (typeof node === 'string') return node;
+  if (typeof node?.text === 'string') return node.text;
+  if (Array.isArray(node)) return node.map(nodeToText).join('');
+  if (Array.isArray(node?.children)) return node.children.map(nodeToText).join('');
+  return '';
+}
+
+function blocksToText(value: any): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (!Array.isArray(value)) return nodeToText(value);
+
+  return value
+    .map((block) => nodeToText(block))
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
 export default async function HomePage() {
   const [homepage, calls, events, news, stories, faqs] = await Promise.all([
     getHomepage(),
@@ -103,6 +124,7 @@ export default async function HomePage() {
             {faqs.slice(0, 6).map((item) => (
               <details key={item.id} className="faq-item">
                 <summary>{item.question || 'Question'}</summary>
+                <p>{blocksToText(item.answer) || 'Réponse en cours de publication.'}</p>
               </details>
             ))}
           </div>

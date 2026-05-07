@@ -57,6 +57,7 @@ export type SuccessStory = {
 export type FaqItem = {
   id: number;
   question?: string;
+  answer?: any;
 };
 
 export async function getHomepage() {
