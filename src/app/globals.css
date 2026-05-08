@@ -93,20 +93,23 @@ h3 {
 }
 
 .hero-template {
+  --hero-photo: none;
   position: relative;
   overflow: hidden;
   min-height: 62vh;
   background:
-    radial-gradient(circle at 9% 8%, rgba(255, 255, 255, 0.24), transparent 40%),
-    radial-gradient(circle at 95% 5%, rgba(0, 194, 141, 0.22), transparent 34%),
+    radial-gradient(circle at 9% 8%, rgba(255, 255, 255, 0.16), transparent 40%),
+    var(--hero-photo),
     linear-gradient(120deg, #0e2b3f 0%, #1f4f6a 52%, #1e7b6f 100%);
+  background-size: auto, cover, auto;
+  background-position: center, center right, center;
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(8, 15, 25, 0.18), rgba(8, 15, 25, 0.18)),
+    linear-gradient(90deg, rgba(9, 22, 36, 0.68) 0%, rgba(9, 22, 36, 0.42) 46%, rgba(9, 22, 36, 0.24) 100%),
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0, rgba(255, 255, 255, 0.02) 8px, transparent 8px, transparent 16px);
 }
 
@@ -117,9 +120,16 @@ h3 {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.4fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 1.3rem;
-  align-items: stretch;
+  align-items: center;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 3;
+  padding-right: 1.2rem;
+  max-width: 62ch;
 }
 
 .hero-search {
@@ -231,49 +241,6 @@ h3 {
 .panel-cta {
   margin-top: 0.9rem;
   width: 100%;
-}
-
-.hero-media {
-  padding: 0;
-  overflow: hidden;
-  min-height: 440px;
-  border: 0;
-  box-shadow: none;
-  background: transparent;
-  position: relative;
-  display: grid;
-}
-
-.hero-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  border-radius: 24px;
-  filter: saturate(1.02) contrast(1.02);
-  opacity: 0.98;
-}
-
-.hero-media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at center, transparent 55%, rgba(20, 70, 86, 0.38) 85%, rgba(20, 70, 86, 0.78) 100%);
-}
-
-.hero-media-fallback {
-  min-height: 340px;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.36), transparent 30%),
-    linear-gradient(135deg, #1f5e72 0%, #1b8472 100%);
-  color: #e9fff8;
-  font-weight: 800;
-  letter-spacing: 0.03em;
 }
 
 .input {
@@ -467,6 +434,9 @@ h3 {
   }
   .hero-grid {
     grid-template-columns: 1fr;
+  }
+  .hero-copy {
+    padding-right: 0;
   }
   .main-nav {
     gap: 0.7rem;

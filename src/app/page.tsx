@@ -32,11 +32,20 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen">
-      <section className="hero hero-template">
+      <section
+        className="hero hero-template"
+        style={
+          heroImage
+            ? ({
+                ['--hero-photo' as any]: `url(${heroImage})`,
+              } as any)
+            : undefined
+        }
+      >
         <div className="hero-overlay" />
         <div className="container">
           <div className="hero-grid">
-            <div>
+            <div className="hero-copy">
               <p className="eyebrow">SUBCO PRETE</p>
               <h1>{homepage?.heroTitle || 'Plateforme de subventions de contrepartie'}</h1>
               <p className="hero-vision">
@@ -49,15 +58,6 @@ export default async function HomePage() {
                 <Link href="/chaines-valeur" className="btn ghost">En savoir plus</Link>
               </div>
             </div>
-            <aside className="hero-panel hero-media">
-              {heroImage ? (
-                <img src={heroImage} alt="Illustration des chaînes de valeur PRETE" />
-              ) : (
-                <div className="hero-media-fallback">
-                  <p>Illustration PRETE</p>
-                </div>
-              )}
-            </aside>
           </div>
         </div>
       </section>
