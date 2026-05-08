@@ -6,6 +6,7 @@ import {
   getFaqs,
   getHomepage,
   getNews,
+  getPartners,
   getSuccessStories,
   getValueChains,
   mediaUrl,
@@ -24,10 +25,11 @@ function toDateLabel(value?: string) {
 }
 
 export default async function HomePage() {
-  const [homepage, chains, calls, events, news, stories, faqs] = await Promise.all([
+  const [homepage, chains, calls, partners, events, news, stories, faqs] = await Promise.all([
     getHomepage(),
     getValueChains(),
     getCalls(),
+    getPartners(),
     getEvents(),
     getNews(),
     getSuccessStories(),
@@ -109,6 +111,32 @@ export default async function HomePage() {
                 ) : null}
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-band band-partners">
+        <div className="container">
+          <h2 className="section-title">Nos partenaires</h2>
+          <div className="partners-strip" aria-label="Partenaires PRETE SUBCO">
+            {partners.map((item) => {
+              const logo = mediaUrl(item.logo);
+              const content = logo ? (
+                <img src={logo} alt={item.name || 'Partenaire'} />
+              ) : (
+                <span>{item.name || 'Partenaire'}</span>
+              );
+
+              return item.websiteUrl ? (
+                <a key={item.id} className="partner-logo" href={item.websiteUrl} target="_blank" rel="noreferrer">
+                  {content}
+                </a>
+              ) : (
+                <div key={item.id} className="partner-logo">
+                  {content}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

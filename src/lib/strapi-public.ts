@@ -99,6 +99,15 @@ export type FaqItem = {
   answer?: RichTextValue;
 };
 
+export type PartnerItem = {
+  id: number;
+  name?: string;
+  logo?: StrapiMedia;
+  websiteUrl?: string;
+  sortOrder?: number;
+  isVisible?: boolean;
+};
+
 export async function getHomepage() {
   const out = await getJson<StrapiOne<Homepage>>('/api/homepage?populate=heroImage');
   return out?.data || null;
@@ -157,4 +166,9 @@ export async function getSuccessStories() {
 export async function getFaqs() {
   const out = await getJson<StrapiList<FaqItem>>('/api/faqs?sort=sortOrder:asc');
   return out?.data || [];
+}
+
+export async function getPartners() {
+  const out = await getJson<StrapiList<PartnerItem>>('/api/partners?sort=sortOrder:asc&populate=logo');
+  return out?.data?.filter((item) => item.isVisible !== false) || [];
 }
