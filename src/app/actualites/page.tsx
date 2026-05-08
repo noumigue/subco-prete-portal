@@ -1,13 +1,27 @@
 import Link from 'next/link';
-import { getNews } from '@/lib/strapi-public';
+import { getNews, getNewsByCategory, type NewsItem } from '@/lib/strapi-public';
 
-export default async function NewsListPage() {
-  const news = await getNews();
+const categoryLabels: Record<NonNullable<NewsItem['category']>, string> = {
+  actualite: 'Actualités',
+  communique: 'Communiqués',
+  annonce_resultat: 'Annonces / résultats',
+};
+
+export default async function NewsListPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ categorie?: string }>;
+}) {
+  const params = await searchParams;
+  const category = params?.categorie as NewsItem['category'] | undefined;
+  const isKnownCategory = category === 'actualite' || category === 'communique' || category === 'annonce_resultat';
+  const news = isKnownCategory ? await getNewsByCategory(category) : await getNews();
+  const title = isKnownCategory ? categoryLabels[category] : 'Actualités';
 
   return (
     <main className="section">
       <div className="container">
-        <h1>Actualités</h1>
+        <h1>{title}</h1>
         <div className="grid three" style={{ marginTop: 16 }}>
           {news.map((item) => (
             <article key={item.id} className="card">

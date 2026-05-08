@@ -80,6 +80,7 @@ export type NewsItem = {
   id: number;
   title?: string;
   slug?: string;
+  category?: 'actualite' | 'communique' | 'annonce_resultat';
   excerpt?: string;
   publishedAtCustom?: string;
   content?: RichTextValue;
@@ -108,8 +109,48 @@ export type PartnerItem = {
   isVisible?: boolean;
 };
 
+export type PageSection = {
+  title?: string;
+  text?: string;
+};
+
+export type AboutPage = {
+  kicker?: string;
+  title?: string;
+  intro?: string;
+  sections?: PageSection[];
+};
+
+export type CandidatureGuide = {
+  kicker?: string;
+  title?: string;
+  intro?: string;
+  sections?: PageSection[];
+  primaryCtaLabel?: string;
+  primaryCtaUrl?: string;
+};
+
+export type FooterLink = {
+  id: number;
+  label?: string;
+  url?: string;
+  group?: 'assistance' | 'institutional' | 'resources';
+  sortOrder?: number;
+  isVisible?: boolean;
+};
+
 export async function getHomepage() {
   const out = await getJson<StrapiOne<Homepage>>('/api/homepage?populate=heroImage');
+  return out?.data || null;
+}
+
+export async function getAboutPage() {
+  const out = await getJson<StrapiOne<AboutPage>>('/api/about-page');
+  return out?.data || null;
+}
+
+export async function getCandidatureGuide() {
+  const out = await getJson<StrapiOne<CandidatureGuide>>('/api/candidature-guide');
   return out?.data || null;
 }
 
@@ -152,6 +193,12 @@ export async function getNews() {
   return out?.data || [];
 }
 
+export async function getNewsByCategory(category: NonNullable<NewsItem['category']>) {
+  const q = encodeURIComponent(category);
+  const out = await getJson<StrapiList<NewsItem>>(`/api/news-items?filters[category][$eq]=${q}&sort=publishedAtCustom:desc`);
+  return out?.data || [];
+}
+
 export async function getNewsBySlug(slug: string) {
   const q = encodeURIComponent(slug);
   const out = await getJson<StrapiList<NewsItem>>(`/api/news-items?filters[slug][$eq]=${q}&pagination[limit]=1`);
@@ -170,5 +217,10 @@ export async function getFaqs() {
 
 export async function getPartners() {
   const out = await getJson<StrapiList<PartnerItem>>('/api/partners?sort=sortOrder:asc&populate=logo');
+  return out?.data?.filter((item) => item.isVisible !== false) || [];
+}
+
+export async function getFooterLinks() {
+  const out = await getJson<StrapiList<FooterLink>>('/api/footer-links?sort[0]=group:asc&sort[1]=sortOrder:asc');
   return out?.data?.filter((item) => item.isVisible !== false) || [];
 }
