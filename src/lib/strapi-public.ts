@@ -63,6 +63,10 @@ export type CallItem = {
   deadlineDate?: string;
 };
 
+function isPublicCall(item: CallItem) {
+  return item.callStatus === 'open' || item.callStatus === 'closed';
+}
+
 export type EventItem = {
   id: number;
   title?: string;
@@ -113,13 +117,14 @@ export async function getValueChainBySlug(slug: string) {
 
 export async function getCalls() {
   const out = await getJson<StrapiList<CallItem>>('/api/call-for-proposals?sort=deadlineDate:asc');
-  return out?.data || [];
+  return out?.data?.filter(isPublicCall) || [];
 }
 
 export async function getCallBySlug(slug: string) {
   const q = encodeURIComponent(slug);
   const out = await getJson<StrapiList<CallItem>>(`/api/call-for-proposals?filters[slug][$eq]=${q}&pagination[limit]=1`);
-  return out?.data?.[0] || null;
+  const item = out?.data?.[0] || null;
+  return item && isPublicCall(item) ? item : null;
 }
 
 export async function getEvents() {
