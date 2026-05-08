@@ -7,7 +7,6 @@ import {
   getHomepage,
   getNews,
   getPartners,
-  getSuccessStories,
   getValueChains,
   mediaUrl,
 } from '@/lib/strapi-public';
@@ -17,6 +16,21 @@ type HeroStyle = CSSProperties & {
   '--hero-photo'?: string;
 };
 
+const expectedResults = [
+  {
+    title: 'Infrastructures productives renforcées',
+    text: 'Appuyer les équipements, services et capacités qui structurent les chaînes de valeur prioritaires.',
+  },
+  {
+    title: 'MPME mieux connectées aux marchés',
+    text: 'Faciliter l’accès à des débouchés plus fiables grâce à la qualité, la traçabilité et la logistique.',
+  },
+  {
+    title: 'Emplois et inclusion',
+    text: 'Encourager des projets capables de créer des opportunités pour les jeunes, les femmes et les acteurs locaux.',
+  },
+];
+
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
   const d = new Date(value);
@@ -25,14 +39,13 @@ function toDateLabel(value?: string) {
 }
 
 export default async function HomePage() {
-  const [homepage, chains, calls, partners, events, news, stories, faqs] = await Promise.all([
+  const [homepage, chains, calls, partners, events, news, faqs] = await Promise.all([
     getHomepage(),
     getValueChains(),
     getCalls(),
     getPartners(),
     getEvents(),
     getNews(),
-    getSuccessStories(),
     getFaqs(),
   ]);
   const heroImage = mediaUrl(homepage?.heroImage) || mediaUrl(chains.find((item) => mediaUrl(item.heroImage))?.heroImage);
@@ -99,13 +112,18 @@ export default async function HomePage() {
           <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
           <div className="grid three">
             {calls.slice(0, 3).map((item) => (
-              <article key={item.id} className="card">
-                <span className={`badge ${item.callStatus || 'draft'}`}>{item.callStatus || 'draft'}</span>
+              <article key={item.id} className="card call-card">
+                <div className="call-card-top">
+                  <span className={`badge ${item.callStatus || 'draft'}`}>{item.callStatus || 'draft'}</span>
+                </div>
                 <h3>{item.title}</h3>
-                <p>{item.summary || 'Résumé en cours de publication.'}</p>
-                <p className="meta">Clôture: {toDateLabel(item.deadlineDate)}</p>
+                <p className="call-summary">{item.summary || 'Résumé en cours de publication.'}</p>
+                <div className="call-deadline">
+                  <span>Clôture</span>
+                  <strong>{toDateLabel(item.deadlineDate)}</strong>
+                </div>
                 {item.slug ? (
-                  <p className="meta">
+                  <p className="call-action">
                     <Link href={`/appels/${item.slug}`}>Voir le détail</Link>
                   </p>
                 ) : null}
@@ -181,13 +199,12 @@ export default async function HomePage() {
 
       <section className="section section-band band-stories">
         <div className="container">
-          <h2 className="section-title">Opérateurs financés - expériences à succès</h2>
+          <h2 className="section-title">Résultats attendus</h2>
           <div className="grid three">
-            {stories.slice(0, 3).map((item) => (
-              <article key={item.id} className="card">
+            {expectedResults.map((item) => (
+              <article key={item.title} className="card result-card">
                 <h3>{item.title}</h3>
-                <p className="meta">{item.operatorName || 'Opérateur PRETE'}</p>
-                <p>{item.summary || 'Fiche en cours de rédaction.'}</p>
+                <p>{item.text}</p>
               </article>
             ))}
           </div>
