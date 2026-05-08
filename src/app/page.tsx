@@ -62,7 +62,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section section-band band-chains">
         <div className="container">
           <h2 className="section-title">5 chaînes de valeur prioritaires</h2>
           <p className="meta"><Link href="/chaines-valeur">Voir le détail des chaînes</Link></p>
@@ -87,7 +87,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="appels" className="section">
+      <section id="appels" className="section section-band band-calls">
         <div className="container">
           <h2 className="section-title">Appels à propositions</h2>
           <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
@@ -119,7 +119,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section alt">
+      <section className="section section-band band-events-news">
         <div className="container two-col">
           <div>
             <h2 className="section-title">Événements</h2>
@@ -147,7 +147,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section section-band band-stories">
         <div className="container">
           <h2 className="section-title">Opérateurs financés - expériences à succès</h2>
           <div className="grid three">
@@ -162,7 +162,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section alt">
+      <section className="section section-band band-faq">
         <div className="container">
           <h2 className="section-title">FAQ</h2>
           <div className="faq-list">

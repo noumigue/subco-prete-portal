@@ -267,7 +267,9 @@ h3 {
 }
 
 .band-chains {
-  background: #f6faf3;
+  background-color: #ffffff;
+  background-image: none;
+  box-shadow: none;
 }
 
 .band-calls {
@@ -275,7 +277,9 @@ h3 {
 }
 
 .band-events-news {
-  background: #ffffff;
+  background-color: #ffffff;
+  background-image: none;
+  box-shadow: none;
 }
 
 .band-stories {
@@ -283,7 +287,9 @@ h3 {
 }
 
 .band-faq {
-  background: #f5f9f2;
+  background-color: #ffffff;
+  background-image: none;
+  box-shadow: none;
 }
 
 .section-title {
