@@ -74,8 +74,7 @@ export default async function HomePage() {
                 ) : (
                   <div className="chain-thumb chain-fallback">Photo à ajouter</div>
                 )}
-                <span className="badge open">Chaîne de valeur</span>
-                <h3>{item.name}</h3>
+                <span className="badge open chain-badge">{item.name || 'Chaîne de valeur'}</span>
                 <p>{item.shortIntro || 'Présentation en cours de publication.'}</p>
                 {item.slug ? (
                   <p className="meta">
