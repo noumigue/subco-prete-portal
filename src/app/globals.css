@@ -281,6 +281,15 @@ h3 {
   box-shadow: none;
 }
 
+.band-events-news .two-col {
+  gap: 2.4rem;
+}
+
+.band-events-news .two-col > div + div {
+  border-left: 1px solid rgba(95, 108, 122, 0.32);
+  padding-left: 2.4rem;
+}
+
 .band-stories {
   background: #dde9df;
 }
@@ -495,6 +504,12 @@ h3 {
   .cta-band-wrap {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .band-events-news .two-col > div + div {
+    border-left: 0;
+    border-top: 1px solid rgba(188, 200, 191, 0.28);
+    padding-left: 0;
+    padding-top: 1.5rem;
   }
   .topbar-wrap {
     flex-direction: column;
