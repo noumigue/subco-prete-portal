@@ -37,7 +37,7 @@ export default function RootLayout({
         <footer className="site-footer">
           <div className="container footer-wrap">
             <p>© {new Date().getFullYear()} SUBCO PRETE</p>
-            <p>Plateforme d'information et de soumission</p>
+            <p>Plateforme d&apos;information et de soumission</p>
           </div>
         </footer>
       </body>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import {
   getCalls,
   getEvents,
@@ -10,6 +11,10 @@ import {
   mediaUrl,
 } from '@/lib/strapi-public';
 import { blocksToText } from '@/lib/richtext';
+
+type HeroStyle = CSSProperties & {
+  '--hero-photo'?: string;
+};
 
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
@@ -29,18 +34,17 @@ export default async function HomePage() {
     getFaqs(),
   ]);
   const heroImage = mediaUrl(homepage?.heroImage) || mediaUrl(chains.find((item) => mediaUrl(item.heroImage))?.heroImage);
+  const heroStyle: HeroStyle | undefined = heroImage
+    ? {
+        '--hero-photo': `url(${heroImage})`,
+      }
+    : undefined;
 
   return (
     <main className="min-h-screen">
       <section
         className="hero hero-template"
-        style={
-          heroImage
-            ? ({
-                ['--hero-photo' as any]: `url(${heroImage})`,
-              } as any)
-            : undefined
-        }
+        style={heroStyle}
       >
         <div className="hero-overlay" />
         <div className="container">

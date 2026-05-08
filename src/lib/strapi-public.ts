@@ -1,3 +1,5 @@
+import type { RichTextValue } from './richtext';
+
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
 
 async function getJson<T>(path: string): Promise<T | null> {
@@ -13,12 +15,22 @@ async function getJson<T>(path: string): Promise<T | null> {
 type StrapiList<T> = { data: T[] };
 type StrapiOne<T> = { data: T };
 
+type StrapiMedia = {
+  url?: string;
+  data?: {
+    url?: string;
+    attributes?: {
+      url?: string;
+    };
+  };
+};
+
 export type Homepage = {
   heroTitle?: string;
   heroSubtitle?: string;
   ctaLabel?: string;
   ctaUrl?: string;
-  heroImage?: any;
+  heroImage?: StrapiMedia;
 };
 
 export type ValueChainItem = {
@@ -27,13 +39,13 @@ export type ValueChainItem = {
   slug?: string;
   photoHint?: string;
   shortIntro?: string;
-  fullContent?: any;
+  fullContent?: RichTextValue;
   priorityOrder?: number;
   isFeaturedHome?: boolean;
-  heroImage?: any;
+  heroImage?: StrapiMedia;
 };
 
-export function mediaUrl(media: any): string | null {
+export function mediaUrl(media: StrapiMedia | null | undefined): string | null {
   const url = media?.url || media?.data?.url || media?.data?.attributes?.url;
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -45,7 +57,7 @@ export type CallItem = {
   title?: string;
   slug?: string;
   summary?: string;
-  content?: any;
+  content?: RichTextValue;
   callStatus?: 'draft' | 'open' | 'closed';
   openingDate?: string;
   deadlineDate?: string;
@@ -57,7 +69,7 @@ export type EventItem = {
   slug?: string;
   location?: string;
   eventDate?: string;
-  description?: any;
+  description?: RichTextValue;
 };
 
 export type NewsItem = {
@@ -66,7 +78,7 @@ export type NewsItem = {
   slug?: string;
   excerpt?: string;
   publishedAtCustom?: string;
-  content?: any;
+  content?: RichTextValue;
 };
 
 export type SuccessStory = {
@@ -80,7 +92,7 @@ export type SuccessStory = {
 export type FaqItem = {
   id: number;
   question?: string;
-  answer?: any;
+  answer?: RichTextValue;
 };
 
 export async function getHomepage() {

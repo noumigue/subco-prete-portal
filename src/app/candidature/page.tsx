@@ -43,8 +43,9 @@ export default function CandidaturePage() {
       const ref = out?.data?.reference || out?.data?.id;
       setMessage(`Candidature soumise avec succès. Référence: ${ref}`);
       form.reset();
-    } catch (err: any) {
-      setMessage(`Erreur de soumission: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setMessage(`Erreur de soumission: ${message}`);
     } finally {
       setLoading(false);
     }
