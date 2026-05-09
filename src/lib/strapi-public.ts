@@ -4,7 +4,7 @@ const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338'
 
 async function getJson<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${STRAPI_URL}${path}`, { next: { revalidate: 30 } });
+    const res = await fetch(`${STRAPI_URL}${path}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
