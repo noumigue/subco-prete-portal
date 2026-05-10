@@ -114,11 +114,19 @@ export type PageSection = {
   text?: string;
 };
 
+export type AboutListItem = {
+  label?: string;
+  text?: string;
+};
+
 export type AboutPage = {
   kicker?: string;
   title?: string;
   intro?: string;
   sections?: PageSection[];
+  briefItems?: AboutListItem[];
+  platformItems?: AboutListItem[];
+  institutionalItems?: AboutListItem[];
 };
 
 export type CandidatureGuide = {
