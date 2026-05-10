@@ -58,6 +58,8 @@ export default async function RootLayout({
               <Link href="/">Accueil</Link>
               <Link href="/a-propos">À propos</Link>
               <Link href="/chaines-valeur">Chaînes de valeur</Link>
+              <Link href="/appels">Appels</Link>
+              <Link href="/ressources">Ressources</Link>
               <Link href="/candidature">Candidature</Link>
               <div className="nav-dropdown">
                 <Link href="/actualites" className="nav-dropdown-trigger">Actualités</Link>

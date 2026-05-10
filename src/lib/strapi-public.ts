@@ -147,6 +147,14 @@ export type FooterLink = {
   isVisible?: boolean;
 };
 
+export type ResourceDocument = {
+  id: number;
+  title?: string;
+  category?: 'appel' | 'tdr' | 'formulaire' | 'modele' | 'guide' | 'grille' | 'manuel' | 'note' | 'rapport' | 'autre';
+  description?: string;
+  file?: StrapiMedia;
+};
+
 export async function getHomepage() {
   const out = await getJson<StrapiOne<Homepage>>('/api/homepage?populate=heroImage');
   return out?.data || null;
@@ -183,6 +191,11 @@ export async function getCallBySlug(slug: string) {
   const out = await getJson<StrapiList<CallItem>>(`/api/call-for-proposals?filters[slug][$eq]=${q}&pagination[limit]=1`);
   const item = out?.data?.[0] || null;
   return item && isPublicCall(item) ? item : null;
+}
+
+export async function getResourceDocuments() {
+  const out = await getJson<StrapiList<ResourceDocument>>('/api/resource-documents?sort=title:asc&populate=file');
+  return out?.data || [];
 }
 
 export async function getEvents() {
