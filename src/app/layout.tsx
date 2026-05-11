@@ -6,6 +6,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'SUBCO PRETE',
   description: 'Portail de subventions de contrepartie PRETE',
+  icons: {
+    icon: '/subco-prete-icon.png',
+    shortcut: '/subco-prete-icon.png',
+    apple: '/subco-prete-icon.png',
+  },
 };
 
 const footerGroups = [
