@@ -134,6 +134,12 @@ export type CandidatureGuide = {
   title?: string;
   intro?: string;
   sections?: PageSection[];
+  preStartItems?: AboutListItem[];
+  formStepItems?: AboutListItem[];
+  eligibilityItems?: AboutListItem[];
+  projectProofItems?: AboutListItem[];
+  documentItems?: AboutListItem[];
+  riskItems?: AboutListItem[];
   primaryCtaLabel?: string;
   primaryCtaUrl?: string;
 };

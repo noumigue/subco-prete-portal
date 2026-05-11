@@ -381,7 +381,7 @@ export default function CandidaturePage() {
                   years={operatingYears}
                   rows={[
                     ['volumeVente', 'Volume de vente par produit'],
-                    ['chiffreAffaires', "Chiffre d'affaires moyen en FCFA"],
+                    ['chiffreAffaires', "Chiffre d'affaires moyen en BIF"],
                     ['employesPermanents', "Nombre total d'employés permanents"],
                     ['employesFemmes', "Nombre d'employés permanents femmes"],
                     ['employesJeunes', "Nombre d'employés permanents jeunes"],
@@ -413,8 +413,8 @@ export default function CandidaturePage() {
                 <TextArea name="expectationsAndNeeds" label="Attentes vis-à-vis du PRETE et estimation des besoins" rows={4} defaultValue={draftValues.expectationsAndNeeds || ''} />
                 <TextArea name="investmentPlan12Months" label="Plan des investissements sur 12 mois" rows={5} defaultValue={draftValues.investmentPlan12Months || ''} />
                 <div className="form-grid two">
-                  <Field name="requestedSupportEstimate" label="Estimation de l'appui demandé en FCFA" type="number" min="0" defaultValue={draftValues.requestedSupportEstimate || ''} />
-                  <Field name="ownContributionEstimate" label="Apport personnel estimé en FCFA" type="number" min="0" defaultValue={draftValues.ownContributionEstimate || ''} />
+                  <Field name="requestedSupportEstimate" label="Estimation de l'appui demandé en BIF" type="number" min="0" defaultValue={draftValues.requestedSupportEstimate || ''} />
+                  <Field name="ownContributionEstimate" label="Apport personnel estimé en BIF" type="number" min="0" defaultValue={draftValues.ownContributionEstimate || ''} />
                 </div>
                 <h3 className="subsection-title">Objectifs cibles</h3>
                 <DataTable
@@ -422,7 +422,7 @@ export default function CandidaturePage() {
                   years={targetYears}
                   rows={[
                     ['volumeVente', 'Volume de vente par produit'],
-                    ['chiffreAffaires', "Chiffre d'affaires annuel total FCFA"],
+                    ['chiffreAffaires', "Chiffre d'affaires annuel total BIF"],
                     ['emploisPermanentsCrees', 'Emplois permanents créés'],
                     ['emploisTemporairesCrees', 'Emplois temporaires créés'],
                   ]}

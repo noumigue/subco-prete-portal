@@ -753,6 +753,12 @@ h3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.grid.four {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .grid.two {
   display: grid;
   gap: 1rem;
@@ -862,6 +868,74 @@ h3 {
   border-radius: 50%;
   background: var(--brand);
   box-shadow: 0 0 0 5px rgba(52, 126, 82, 0.12);
+}
+
+.candidature-precheck-section,
+.candidature-docs-section {
+  background: #f5f8f4;
+}
+
+.candidature-steps-section,
+.candidature-proof-section,
+.candidature-risk-section {
+  background: #ffffff;
+}
+
+.candidature-criteria-section {
+  background: #edf4ee;
+}
+
+.process-timeline {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.process-step {
+  position: relative;
+  border: 1px solid rgba(188, 200, 191, 0.62);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.95rem;
+  min-height: 190px;
+}
+
+.process-step span {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.process-step h3,
+.caution-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.process-step p,
+.caution-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.caution-card {
+  border: 1px solid rgba(176, 87, 56, 0.28);
+  border-radius: 8px;
+  background: #fff9f5;
+  padding: 1rem;
+}
+
+.caution-card h3 {
+  color: #853f28;
 }
 
 .about-partners-section {
@@ -1169,11 +1243,13 @@ h3 {
 
 @media (max-width: 900px) {
   .grid.three,
+  .grid.four,
   .grid.two,
   .two-col,
   .summary-grid,
   .platform-grid,
-  .institutional-grid {
+  .institutional-grid,
+  .process-timeline {
     grid-template-columns: 1fr;
   }
   .candidature-heading,
