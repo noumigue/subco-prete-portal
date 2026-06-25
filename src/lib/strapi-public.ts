@@ -45,6 +45,16 @@ export type ValueChainItem = {
   heroImage?: StrapiMedia;
 };
 
+function orderValueChains(items: ValueChainItem[]) {
+  return [...items].sort((a, b) => {
+    const aIsTransversal = a.slug === 'projet-transversal';
+    const bIsTransversal = b.slug === 'projet-transversal';
+    if (aIsTransversal && !bIsTransversal) return 1;
+    if (!aIsTransversal && bIsTransversal) return -1;
+    return (a.priorityOrder || 0) - (b.priorityOrder || 0);
+  });
+}
+
 export function mediaUrl(media: StrapiMedia | null | undefined): string | null {
   const url = media?.url || media?.data?.url || media?.data?.attributes?.url;
   if (!url) return null;
@@ -178,7 +188,7 @@ export async function getCandidatureGuide() {
 
 export async function getValueChains() {
   const out = await getJson<StrapiList<ValueChainItem>>('/api/value-chains?sort=priorityOrder:asc&populate=heroImage');
-  return out?.data || [];
+  return orderValueChains(out?.data || []);
 }
 
 export async function getValueChainBySlug(slug: string) {

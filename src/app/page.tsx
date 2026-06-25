@@ -48,6 +48,11 @@ export default async function HomePage() {
     getNews(),
     getFaqs(),
   ]);
+  const transversalChain = chains.find((item) => item.slug === 'projet-transversal');
+  const homepageChains = [
+    ...chains.filter((item) => item.slug !== 'projet-transversal').slice(0, 5),
+    ...(transversalChain ? [transversalChain] : []),
+  ];
   const heroImage = mediaUrl(homepage?.heroImage) || mediaUrl(chains.find((item) => mediaUrl(item.heroImage))?.heroImage);
   const heroStyle: HeroStyle | undefined = heroImage
     ? {
@@ -83,21 +88,26 @@ export default async function HomePage() {
 
       <section className="section section-band band-chains">
         <div className="container">
-          <h2 className="section-title">5 chaînes de valeur prioritaires</h2>
+          <h2 className="section-title">5 chaînes de valeur prioritaires + 1 possibilité transversale</h2>
           <p className="meta"><Link href="/chaines-valeur">Voir le détail des chaînes</Link></p>
           <div className="grid three">
-            {chains.slice(0, 5).map((item) => (
+            {homepageChains.map((item) => (
               <article key={item.id} className="card">
                 {mediaUrl(item.heroImage) ? (
-                  <img className="chain-thumb" src={mediaUrl(item.heroImage)!} alt={item.name || 'Chaîne de valeur'} />
+                  <img
+                    className={item.slug === 'projet-transversal' ? 'chain-thumb chain-thumb-diagram' : 'chain-thumb'}
+                    src={mediaUrl(item.heroImage)!}
+                    alt={item.name || 'Chaîne de valeur'}
+                  />
                 ) : (
                   <div className="chain-thumb chain-fallback">Photo à ajouter</div>
                 )}
-                <span className="badge open chain-badge">{item.name || 'Chaîne de valeur'}</span>
+                <span className="badge open chain-badge">{item.slug === 'projet-transversal' ? 'Multi-chaînes' : item.name || 'Chaîne de valeur'}</span>
+                <h3>{item.name}</h3>
                 <p>{item.shortIntro || 'Présentation en cours de publication.'}</p>
                 {item.slug ? (
                   <p className="meta">
-                    <Link href={`/chaines-valeur/${item.slug}`}>Découvrir la chaîne</Link>
+                    <Link href={`/chaines-valeur/${item.slug}`}>{item.slug === 'projet-transversal' ? 'Comprendre la possibilité' : 'Découvrir la chaîne'}</Link>
                   </p>
                 ) : null}
               </article>

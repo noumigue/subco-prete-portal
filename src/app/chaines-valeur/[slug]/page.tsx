@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getValueChainBySlug, mediaUrl } from '@/lib/strapi-public';
-import { blocksToText } from '@/lib/richtext';
+import { RichText } from '@/components/rich-text';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -34,7 +34,7 @@ export default async function ValueChainDetailPage({ params }: Props) {
           <p className="meta">Photo suggérée: {item.photoHint}</p>
         ) : null}
         <article className="card" style={{ marginTop: 16 }}>
-          <p style={{ whiteSpace: 'pre-line' }}>{blocksToText(item.fullContent) || 'Contenu détaillé à compléter.'}</p>
+          <RichText value={item.fullContent} />
         </article>
         <div className="actions" style={{ marginTop: 16 }}>
           <Link href="/appels" className="btn ghost">Voir les appels liés</Link>
