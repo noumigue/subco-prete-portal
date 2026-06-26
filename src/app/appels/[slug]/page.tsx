@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getCallBySlug } from '@/lib/strapi-public';
-import { blocksToText } from '@/lib/richtext';
+import { RichText } from '@/components/rich-text';
 import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -30,7 +30,7 @@ export default async function CallDetailPage({ params }: Props) {
         <p className="meta">Ouverture: {item.openingDate || 'N/A'} · Clôture: {item.deadlineDate || 'N/A'}</p>
         <p>{item.summary || ''}</p>
         <article className="card" style={{ marginTop: 16 }}>
-          <p style={{ whiteSpace: 'pre-line' }}>{blocksToText(item.content) || 'Contenu en cours de publication.'}</p>
+          <RichText value={item.content} />
         </article>
       </div>
     </main>
