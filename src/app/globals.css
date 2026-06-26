@@ -1232,6 +1232,22 @@ h3 {
   list-style-type: decimal;
 }
 
+.rich-text-content ol.list-style-decimal {
+  list-style-type: decimal;
+}
+
+.rich-text-content ol.list-style-lower-roman {
+  list-style-type: lower-roman;
+}
+
+.rich-text-content ol.list-style-lower-alpha {
+  list-style-type: lower-alpha;
+}
+
+.rich-text-content ul.list-style-disc {
+  list-style-type: disc;
+}
+
 .rich-text-content li {
   display: list-item;
   padding-left: 0.15rem;

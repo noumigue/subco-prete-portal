@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getFooterLinks } from '@/lib/strapi-public';
+import { cookies } from 'next/headers';
+import { getFooterLinks, getSiteNavigation, type NavigationLinkItem, type SiteLanguage } from '@/lib/strapi-public';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,64 +19,78 @@ const footerGroups = [
   { key: 'institutional', title: 'Liens institutionnels' },
   { key: 'resources', title: 'Ressources' },
 ] as const;
+function normalizeNavItems(items: NavigationLinkItem[] | undefined) {
+  return (items || [])
+    .filter((item) => item.isVisible !== false && item.url)
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+}
 
-const fallbackFooterLinks = [
-  { label: 'FAQ', url: '/candidature', group: 'assistance', sortOrder: 1 },
-  { label: 'Poser une question', url: '/candidature', group: 'assistance', sortOrder: 2 },
-  { label: 'Réclamations et recours', url: '/candidature', group: 'assistance', sortOrder: 3 },
-  { label: 'Contact', url: '/candidature', group: 'assistance', sortOrder: 4 },
-  { label: 'Support plateforme', url: '/candidature', group: 'assistance', sortOrder: 5 },
-  { label: 'PRETE / NYUNGANIRA', url: '/a-propos', group: 'institutional', sortOrder: 1 },
-  { label: 'Partenaires', url: '/a-propos', group: 'institutional', sortOrder: 2 },
-  { label: 'Mentions légales', url: '/a-propos', group: 'institutional', sortOrder: 3 },
-  { label: "Avis d'appel à projets", url: '/appels', group: 'resources', sortOrder: 1 },
-  { label: 'Formulaires et guides', url: '/candidature', group: 'resources', sortOrder: 2 },
-] as const;
+function localizedLabel(item: NavigationLinkItem | { labelFr?: string; labelRn?: string }, language: SiteLanguage) {
+  return language === 'rn' ? item.labelRn || '' : item.labelFr || '';
+}
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cmsFooterLinks = await getFooterLinks();
-  const footerLinks = cmsFooterLinks.length > 0 ? cmsFooterLinks : fallbackFooterLinks;
+  const cookieStore = await cookies();
+  const language = cookieStore.get('subco-lang')?.value === 'rn' ? 'rn' : 'fr';
+  const [cmsFooterLinks, siteNavigation] = await Promise.all([getFooterLinks(), getSiteNavigation()]);
+  const footerLinks = cmsFooterLinks;
+  const primaryNav = normalizeNavItems(siteNavigation?.primaryItems);
+  const newsNav = normalizeNavItems(siteNavigation?.newsItems);
+  const supportLabel = language === 'rn'
+    ? siteNavigation?.supportLabelRn || ''
+    : siteNavigation?.supportLabelFr || '';
+  const supportUrl = siteNavigation?.supportUrl || '';
+  const newsLabel = language === 'rn'
+    ? siteNavigation?.newsLabelRn || ''
+    : siteNavigation?.newsLabelFr || '';
+  const ctaLabel = language === 'rn'
+    ? siteNavigation?.ctaLabelRn || ''
+    : siteNavigation?.ctaLabelFr || '';
+  const ctaUrl = siteNavigation?.ctaUrl || '';
+  const brandLabel = siteNavigation?.brandLabel || 'SUBCO PRETE';
 
   return (
-    <html lang="fr">
+    <html lang={language}>
       <body suppressHydrationWarning>
         <div className="site-topbar">
           <div className="container topbar-wrap">
             <span>Programme PRETE · Subventions de contrepartie</span>
             <div className="topbar-links">
-              <Link href="/candidature">Support / Contact</Link>
+              {supportLabel && supportUrl ? <Link href={supportUrl}>{supportLabel}</Link> : null}
               <span className="language-switch" aria-label="Choix de langue">
-                <a hrefLang="fr" aria-current="true">FR</a>
+                <Link href="/lang/fr" hrefLang="fr" aria-current={language === 'fr' ? 'true' : undefined}>FR</Link>
                 <span aria-hidden="true">|</span>
-                <a hrefLang="rn">KI</a>
+                <Link href="/lang/rn" hrefLang="rn" aria-current={language === 'rn' ? 'true' : undefined}>KI</Link>
               </span>
             </div>
           </div>
         </div>
         <header className="site-header">
           <div className="container nav-wrap">
-            <Link href="/" className="brand">SUBCO PRETE</Link>
+            <Link href="/" className="brand">{brandLabel}</Link>
             <nav className="main-nav">
-              <Link href="/">Accueil</Link>
-              <Link href="/a-propos">À propos</Link>
-              <Link href="/chaines-valeur">Chaînes de valeur</Link>
-              <Link href="/appels">Appels</Link>
-              <Link href="/ressources">Ressources</Link>
-              <Link href="/candidature">Candidature</Link>
-              <div className="nav-dropdown">
-                <Link href="/actualites" className="nav-dropdown-trigger">Actualités</Link>
-                <div className="nav-dropdown-menu">
-                  <Link href="/actualites">Actualités</Link>
-                  <Link href="/evenements">Événements</Link>
-                  <Link href="/actualites?categorie=communiques">Communiqués</Link>
-                  <Link href="/actualites?categorie=annonces-resultats">Annonces / résultats</Link>
+              {primaryNav.map((item) => (
+                <Link key={`${item.url}-${item.sortOrder || 0}`} href={item.url || '/'}>
+                  {localizedLabel(item, language)}
+                </Link>
+              ))}
+              {newsLabel && newsNav.length > 0 ? (
+                <div className="nav-dropdown">
+                  <Link href={newsNav[0]?.url || '/actualites'} className="nav-dropdown-trigger">{newsLabel}</Link>
+                  <div className="nav-dropdown-menu">
+                    {newsNav.map((item) => (
+                      <Link key={`${item.url}-${item.sortOrder || 0}`} href={item.url || '/'}>
+                        {localizedLabel(item, language)}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <Link href="/candidature/deposer" className="btn primary nav-cta">Candidater</Link>
+              ) : null}
+              {ctaLabel && ctaUrl ? <Link href={ctaUrl} className="btn primary nav-cta">{ctaLabel}</Link> : null}
             </nav>
           </div>
         </header>

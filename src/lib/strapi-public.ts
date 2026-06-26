@@ -163,6 +163,30 @@ export type FooterLink = {
   isVisible?: boolean;
 };
 
+export type SiteLanguage = 'fr' | 'rn';
+
+export type NavigationLinkItem = {
+  labelFr?: string;
+  labelRn?: string;
+  url?: string;
+  sortOrder?: number;
+  isVisible?: boolean;
+};
+
+export type SiteNavigation = {
+  brandLabel?: string;
+  supportLabelFr?: string;
+  supportLabelRn?: string;
+  supportUrl?: string;
+  primaryItems?: NavigationLinkItem[];
+  newsLabelFr?: string;
+  newsLabelRn?: string;
+  newsItems?: NavigationLinkItem[];
+  ctaLabelFr?: string;
+  ctaLabelRn?: string;
+  ctaUrl?: string;
+};
+
 export type ResourceDocument = {
   id: number;
   title?: string;
@@ -260,4 +284,9 @@ export async function getPartners() {
 export async function getFooterLinks() {
   const out = await getJson<StrapiList<FooterLink>>('/api/footer-links?sort[0]=group:asc&sort[1]=sortOrder:asc');
   return out?.data?.filter((item) => item.isVisible !== false) || [];
+}
+
+export async function getSiteNavigation() {
+  const out = await getJson<StrapiOne<SiteNavigation>>('/api/site-navigation?populate[primaryItems]=*&populate[newsItems]=*');
+  return out?.data || null;
 }

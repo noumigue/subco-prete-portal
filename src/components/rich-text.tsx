@@ -14,9 +14,20 @@ type RichTextTextNode = {
 type RichTextBlockNode = {
   type?: string;
   format?: 'ordered' | 'unordered';
+  listStyle?: 'disc' | 'decimal' | 'lower-roman' | 'lower-alpha';
   level?: number;
   children?: Array<RichTextBlockNode | RichTextTextNode>;
 };
+
+type ParagraphListMarker = {
+  format: 'ordered' | 'unordered';
+  listStyle: 'disc' | 'decimal' | 'lower-roman' | 'lower-alpha';
+  pattern: RegExp;
+};
+
+function normalizeWhitespace(text: string): string {
+  return text.replace(/[\t\r\n ]+/g, ' ').trim();
+}
 
 function isTextNode(node: RichTextBlockNode | RichTextTextNode): node is RichTextTextNode {
   return 'text' in node;
@@ -24,7 +35,7 @@ function isTextNode(node: RichTextBlockNode | RichTextTextNode): node is RichTex
 
 function renderInlineNode(node: RichTextBlockNode | RichTextTextNode, key: string): ReactNode {
   if (isTextNode(node)) {
-    const text = node.text || '';
+    const text = node.code ? node.text || '' : normalizeWhitespace(node.text || '');
     let out: ReactNode = text;
     if (node.code) out = <code key={`${key}-code`}>{out}</code>;
     if (node.underline) out = <u key={`${key}-underline`}>{out}</u>;
@@ -44,10 +55,10 @@ function renderInlineNode(node: RichTextBlockNode | RichTextTextNode, key: strin
 function getInlineText(children: Array<RichTextBlockNode | RichTextTextNode> | undefined): string {
   return (children || [])
     .map((child) => {
-      if (isTextNode(child)) return child.text || '';
+      if (isTextNode(child)) return normalizeWhitespace(child.text || '');
       return getInlineText(child.children);
     })
-    .join('')
+    .join(' ')
     .trim();
 }
 
@@ -58,11 +69,57 @@ function isSectionHeading(block: RichTextBlockNode): boolean {
   return Boolean(child.bold && (child.text || '').trim());
 }
 
-function isBulletLikeParagraph(block: RichTextBlockNode): boolean {
-  if (block.type !== 'paragraph' || isSectionHeading(block)) return false;
+function detectParagraphListMarker(block: RichTextBlockNode): ParagraphListMarker | null {
+  if (block.type !== 'paragraph' || isSectionHeading(block)) return null;
   const text = getInlineText(block.children);
-  if (!text || text.length > 180) return false;
-  return /[;.]$/.test(text);
+  if (!text || text.length > 260) return null;
+
+  const markers: ParagraphListMarker[] = [
+    { format: 'unordered', listStyle: 'disc', pattern: /^[-*•]\s+/u },
+    { format: 'ordered', listStyle: 'decimal', pattern: /^\d+[.)]\s+/u },
+    { format: 'ordered', listStyle: 'lower-roman', pattern: /^(?=[ivxlcdm]+[.)]\s+)[ivxlcdm]+[.)]\s+/iu },
+    { format: 'ordered', listStyle: 'lower-alpha', pattern: /^[a-z][.)]\s+/u },
+  ];
+
+  for (const marker of markers) {
+    if (marker.pattern.test(text)) return marker;
+  }
+
+  if (/[;.]$/.test(text)) {
+    return { format: 'unordered', listStyle: 'disc', pattern: /^/u };
+  }
+
+  return null;
+}
+
+function stripMarkerFromChildren(
+  children: Array<RichTextBlockNode | RichTextTextNode> | undefined,
+  pattern: RegExp,
+): Array<RichTextBlockNode | RichTextTextNode> {
+  let stripped = false;
+
+  return (children || []).map((child) => {
+    if (isTextNode(child)) {
+      const originalText = child.text || '';
+      if (!stripped) {
+        const nextText = originalText.replace(pattern, '');
+        if (nextText !== originalText) {
+          stripped = true;
+          return { ...child, text: nextText };
+        }
+      }
+      return { ...child, text: normalizeWhitespace(originalText) };
+    }
+
+    return {
+      ...child,
+      children: stripMarkerFromChildren(child.children, pattern),
+    };
+  });
+}
+
+function isMeaningfulSpacer(block: RichTextBlockNode): boolean {
+  return block.type === 'paragraph' && !getInlineText(block.children);
 }
 
 function normalizeBlocks(value: RichTextValue | null | undefined): RichTextBlockNode[] {
@@ -89,22 +146,35 @@ function normalizeBlocks(value: RichTextValue | null | undefined): RichTextBlock
   const normalized: RichTextBlockNode[] = [];
   for (let index = 0; index < merged.length; index += 1) {
     const block = merged[index];
+    const marker = detectParagraphListMarker(block);
 
-    if (isBulletLikeParagraph(block)) {
+    if (marker) {
       const run: RichTextBlockNode[] = [block];
       let cursor = index + 1;
-      while (cursor < merged.length && isBulletLikeParagraph(merged[cursor])) {
-        run.push(merged[cursor]);
+      while (cursor < merged.length) {
+        const nextBlock = merged[cursor];
+        if (isMeaningfulSpacer(nextBlock)) {
+          cursor += 1;
+          continue;
+        }
+
+        const nextMarker = detectParagraphListMarker(nextBlock);
+        if (!nextMarker || nextMarker.format !== marker.format || nextMarker.listStyle !== marker.listStyle) {
+          break;
+        }
+
+        run.push(nextBlock);
         cursor += 1;
       }
 
       if (run.length >= 2) {
         normalized.push({
           type: 'list',
-          format: 'unordered',
+          format: marker.format,
+          listStyle: marker.listStyle,
           children: run.map((item) => ({
             type: 'list-item',
-            children: [...(item.children || [])],
+            children: stripMarkerFromChildren(item.children, marker.pattern),
           })),
         });
         index = cursor - 1;
@@ -150,7 +220,7 @@ export function RichText({ value }: { value: RichTextValue | null | undefined })
         if (block.type === 'list') {
           const Tag = block.format === 'ordered' ? 'ol' : 'ul';
           return (
-            <Tag key={key}>
+            <Tag key={key} className={block.listStyle ? `list-style-${block.listStyle}` : undefined}>
               {children.map((child, childIndex) => {
                 const itemChildren = !isTextNode(child) ? child.children || [] : [child];
                 return (
