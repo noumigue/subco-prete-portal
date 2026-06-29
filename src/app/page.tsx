@@ -76,10 +76,10 @@ export default async function HomePage() {
                 {homepage?.heroSubtitle || 'PRETE SUBCO catalyse la transformation productive locale en finançant des investissements structurants au service des chaînes de valeur prioritaires, de l’emploi et de la compétitivité durable.'}
               </p>
               <div className="actions">
+                <Link href="/eligibilite" className="btn ghost">Vérifier mon éligibilité</Link>
                 <Link href="/candidature/deposer" className="btn primary">
                   {homepage?.ctaLabel || 'Déposer une candidature'}
                 </Link>
-                <Link href="/chaines-valeur" className="btn ghost">En savoir plus</Link>
               </div>
             </div>
           </div>
