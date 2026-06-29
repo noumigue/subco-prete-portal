@@ -516,7 +516,7 @@ export default function EligibilityPage() {
                     <button className="btn secondary" onClick={reset}>
                       Refaire le test
                     </button>
-                    <Link href="/candidature/guide-eligibilite" className="btn">
+                    <Link href="/candidature" className="btn">
                       Voir les critères complets
                     </Link>
                   </>
