@@ -299,20 +299,20 @@ export default async function HomePage() {
 
       <section id="home-call-band" className="section section-band band-calls home-call-band" style={callBandSectionStyle}>
         <div className="container">
-          <div className="call-band home-call-band-inner" style={callBandContainerStyle}>
-            <div className="call-band-eyebrow home-call-band-eyebrow">Appels à propositions</div>
+          <div className="home-call-band-inner" style={callBandContainerStyle}>
+            <div className="home-call-band-eyebrow">Appels à propositions</div>
             {featuredCall ? (
-              <article className="call-band-featured home-call-band-featured" style={callBandFeaturedStyle}>
-                <div className="call-band-featured-left home-call-band-featured-left">
-                  <span className="call-band-status home-call-band-status" style={callBandStatusStyle}>
+              <article className="home-call-band-featured" style={callBandFeaturedStyle}>
+                <div className="home-call-band-featured-left">
+                  <span className="home-call-band-status" style={callBandStatusStyle}>
                     <span aria-hidden>●</span>
                     {toCallStateLabel(featuredCall.callStatus, featuredCall.deadlineDate)} {featuredCallMeta.isOpen ? '• Appel actif' : '• Appel clôturé'}
                   </span>
-                  <h3 className="call-band-featured-title home-call-band-title">{featuredCall.title || 'Appel à propositions'}</h3>
-                  <p className="call-band-meta home-call-band-meta">Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
+                  <h3 className="home-call-band-title">{featuredCall.title || 'Appel à propositions'}</h3>
+                  <p className="home-call-band-meta">Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
                 </div>
-                <div className="call-band-featured-right home-call-band-featured-right">
-                  {featuredCallCountdown ? <span className="call-band-countdown">{featuredCallCountdown}</span> : null}
+                <div className="home-call-band-featured-right">
+                  {featuredCallCountdown ? <span className="home-call-band-countdown">{featuredCallCountdown}</span> : null}
                   {featuredCall.slug ? (
                     <Link href={`/appels/${featuredCall.slug}`} className="btn secondary home-call-band-link">
                       Voir le détail
@@ -321,27 +321,27 @@ export default async function HomePage() {
                 </div>
               </article>
             ) : (
-              <div className="call-band-empty home-call-band-empty">
+              <div className="home-call-band-empty">
                 <p>Aucun appel à propositions en cours</p>
                 <span>Consultez les appels précédents ci-dessous ou revenez prochainement.</span>
               </div>
             )}
 
             {pastCalls.length > 0 ? (
-              <div className="call-band-history home-call-band-history">
-                <h4 className="call-band-history-title home-call-band-history-title">
+              <div className="home-call-band-history">
+                <h4 className="home-call-band-history-title">
                   Appels précédents ({pastCalls.length})
                 </h4>
-                <div className="call-band-history-list home-call-band-history-list">
+                <div className="home-call-band-history-list">
                   {pastCalls.map((item) => (
-                    <article key={item.id} className="call-band-history-row home-call-band-history-row">
+                    <article key={item.id} className="home-call-band-history-row">
                       <div>
-                        <h4 className="call-band-history-item-title home-call-band-item-title">{item.title || 'Appel clôturé'}</h4>
-                        <p className="call-band-meta home-call-band-meta">Clôture {toDateLabel(item.deadlineDate)}</p>
+                        <h4 className="home-call-band-item-title">{item.title || 'Appel clôturé'}</h4>
+                        <p className="home-call-band-meta">Clôture {toDateLabel(item.deadlineDate)}</p>
                       </div>
-                      <div className="call-band-history-right home-call-band-history-right">
-                        <span className={`call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)} home-call-band-pill`}>{toCallStateLabel(item.callStatus, item.deadlineDate)}</span>
-                        {item.slug ? <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link> : <span className="call-band-closed">Clôturé</span>}
+                  <div className="home-call-band-history-right">
+                        <span className={`home-call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)}`}>{toCallStateLabel(item.callStatus, item.deadlineDate)}</span>
+                        {item.slug ? <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link> : <span className="home-call-band-closed">Clôturé</span>}
                       </div>
                     </article>
                   ))}
