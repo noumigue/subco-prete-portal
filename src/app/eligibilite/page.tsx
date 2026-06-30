@@ -433,7 +433,7 @@ export default function EligibilityPage() {
       </section>
 
       <div className="container eligibility-progress-wrap">
-        <p className="section-title" style={{ marginBottom: '0.5rem' }}>
+        <p className="section-title" style={{ marginBottom: '0.5rem', color: 'var(--brand-deep)', fontWeight: 700 }}>
           Progression de votre saisie
         </p>
         <div className="progress-track">
