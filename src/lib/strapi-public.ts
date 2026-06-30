@@ -68,13 +68,14 @@ export type CallItem = {
   slug?: string;
   summary?: string;
   content?: RichTextValue;
-  callStatus?: 'draft' | 'open' | 'closed';
+  callStatus?: string;
   openingDate?: string;
   deadlineDate?: string;
 };
 
 function isPublicCall(item: CallItem) {
-  return item.callStatus === 'open' || item.callStatus === 'closed';
+  const status = (item.callStatus || '').toLowerCase();
+  return status !== 'draft' && status !== 'hidden' && status !== 'private';
 }
 
 export type EventItem = {

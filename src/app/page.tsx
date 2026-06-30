@@ -83,11 +83,130 @@ const infrastructureHighlights = [
   },
 ];
 
+const infraSectionStyle: CSSProperties = {
+  backgroundColor: '#f2f7ef',
+};
+
+const infraWrapStyle: CSSProperties = {
+  display: 'grid',
+  gap: '1rem',
+};
+
+const infraListStyle: CSSProperties = {
+  margin: 0,
+  padding: 0,
+  listStyle: 'none',
+  display: 'grid',
+  gap: '0.72rem',
+  gridTemplateColumns: 'repeat(2, minmax(250px, 1fr))',
+};
+
+const infraItemStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '36px 1fr',
+  gap: '0.7rem',
+  alignItems: 'start',
+  border: '1px solid rgba(95, 108, 122, 0.22)',
+  borderRadius: '10px',
+  backgroundColor: '#fff',
+  padding: '0.85rem',
+  minWidth: 0,
+  boxShadow: '0 6px 20px rgba(20, 43, 33, 0.04)',
+};
+
+const infraOpenItemStyle: CSSProperties = {
+  borderColor: '#aad8c4',
+  backgroundColor: '#ecf8f2',
+};
+
+const infraIconStyle: CSSProperties = {
+  width: '32px',
+  height: '32px',
+  borderRadius: '999px',
+  display: 'grid',
+  placeItems: 'center',
+  background: '#e8f3ea',
+  border: '1px solid #c4dfd1',
+  fontSize: '0.85rem',
+  lineHeight: 1,
+  flex: '0 0 32px',
+};
+
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
   return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(d);
+}
+
+type NormalizedCallStatus = 'open' | 'closed' | 'upcoming';
+
+function toDaysRemaining(value?: string) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diff = d.getTime() - now.getTime();
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  return days >= 0 ? `J-${days}` : 'Clôturé';
+}
+
+function normalizeCallStatus(value?: string): NormalizedCallStatus {
+  const normalized = (value || '').toLowerCase();
+  if (normalized === 'open') return 'open';
+  if (normalized === 'closed') return 'closed';
+  if (normalized === 'upcoming' || normalized === 'a_venir' || normalized === 'à venir') return 'upcoming';
+  return 'open';
+}
+
+function resolveCallStatus(value?: string, deadlineDate?: string) {
+  const status = normalizeCallStatus(value);
+  if (isPastDeadline(deadlineDate)) return 'closed';
+  return status;
+}
+
+function isPastDeadline(value?: string, now = new Date()) {
+  if (!value) return false;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return false;
+  return d.getTime() < now.getTime();
+}
+
+function toCallStateLabel(value?: string, deadlineDate?: string) {
+  const status = resolveCallStatus(value, deadlineDate);
+  if (status === 'open') return 'Ouvert';
+  if (status === 'closed') return 'Clôturé';
+  return 'À venir';
+}
+
+function sortHomeCalls(a: { id: number; callStatus?: string; deadlineDate?: string }, b: { id: number; callStatus?: string; deadlineDate?: string }) {
+  const statusOrder = (status?: string) => {
+    const resolved = resolveCallStatus(status);
+    if (resolved === 'open') return 0;
+    if (resolved === 'upcoming') return 1;
+    return 2;
+  };
+
+  const statusDiff = statusOrder(a.callStatus) - statusOrder(b.callStatus);
+  if (statusDiff !== 0) return statusDiff;
+
+  const deadlineA = a.deadlineDate ? new Date(a.deadlineDate).getTime() : Number.POSITIVE_INFINITY;
+  const deadlineB = b.deadlineDate ? new Date(b.deadlineDate).getTime() : Number.POSITIVE_INFINITY;
+  if (deadlineA !== deadlineB) return deadlineA - deadlineB;
+
+  return String(b.id).localeCompare(String(a.id), 'en');
+}
+
+function isDisplayableCall(call: { callStatus?: string }) {
+  return ['open', 'closed', 'upcoming'].includes(resolveCallStatus(call.callStatus));
+}
+
+function buildCallMetadata(call?: { callStatus?: string; deadlineDate?: string }) {
+  if (!call) {
+    return { statusLabel: 'À venir', isOpen: false };
+  }
+  const status = resolveCallStatus(call.callStatus, call.deadlineDate);
+  return { statusLabel: toCallStateLabel(call.callStatus, call.deadlineDate), isOpen: status === 'open' };
 }
 
 export default async function HomePage() {
@@ -111,6 +230,12 @@ export default async function HomePage() {
         '--hero-photo': `url(${heroImage})`,
       }
     : undefined;
+  const displayableCalls = calls.filter(isDisplayableCall);
+  const orderedCalls = [...displayableCalls].sort(sortHomeCalls);
+  const featuredCall = orderedCalls[0];
+  const featuredCallMeta = buildCallMetadata(featuredCall);
+  const featuredCallCountdown = toDaysRemaining(featuredCall?.deadlineDate);
+  const pastCalls = orderedCalls.filter((item) => item.id !== featuredCall?.id).slice(0, 8);
 
   return (
     <main className="min-h-screen">
@@ -135,6 +260,62 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="appels" className="section section-band band-calls">
+        <div className="container">
+          <div className="call-band">
+            <div className="call-band-eyebrow">Appels à propositions</div>
+            {featuredCall ? (
+              <article className="call-band-featured">
+                <div className="call-band-featured-left">
+                  <span className="call-band-status">
+                    <span aria-hidden>●</span>
+                    {toCallStateLabel(featuredCall.callStatus, featuredCall.deadlineDate)} {featuredCallMeta.isOpen ? '• Appel actif' : '• Appel clôturé'}
+                  </span>
+                  <h3 className="call-band-featured-title">{featuredCall.title || 'Appel à propositions'}</h3>
+                  <p className="call-band-meta">Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
+                </div>
+                <div className="call-band-featured-right">
+                  {featuredCallCountdown ? <span className="call-band-countdown">{featuredCallCountdown}</span> : null}
+                  {featuredCall.slug ? (
+                    <Link href={`/appels/${featuredCall.slug}`} className="btn secondary">
+                      Voir le détail
+                    </Link>
+                  ) : null}
+                </div>
+              </article>
+            ) : (
+              <div className="call-band-empty">
+                <p>Aucun appel à propositions en cours</p>
+                <span>Consultez les appels précédents ci-dessous ou revenez prochainement.</span>
+              </div>
+            )}
+
+            {pastCalls.length > 0 ? (
+              <div className="call-band-history">
+                <h4 className="call-band-history-title">
+                  Appels précédents ({pastCalls.length})
+                </h4>
+                <div className="call-band-history-list">
+                  {pastCalls.map((item) => (
+                    <article key={item.id} className="call-band-history-row">
+                      <div>
+                        <h4 className="call-band-history-item-title">{item.title || 'Appel clôturé'}</h4>
+                        <p className="call-band-meta">Clôture {toDateLabel(item.deadlineDate)}</p>
+                      </div>
+                  <div className="call-band-history-right">
+                        <span className={`call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)}`}>{toCallStateLabel(item.callStatus, item.deadlineDate)}</span>
+                        {item.slug ? <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link> : <span className="call-band-closed">Clôturé</span>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+          <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
         </div>
       </section>
 
@@ -167,8 +348,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section infrastructure-band">
-        <div className="container infrastructure-wrap">
+      <section id="home-infrastructure-band" className="section infrastructure-band home-infra-band" style={infraSectionStyle}>
+        <div className="container infrastructure-wrap home-infra-wrap" style={infraWrapStyle}>
           <div className="infrastructure-copy">
             <h2 className="section-title">Exemples d&apos;infrastructures éligibles</h2>
             <p className="hero-vision infrastructure-lead">
@@ -176,44 +357,23 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <ul className="infrastructure-list">
+          <ul className="infrastructure-list home-infra-list" style={infraListStyle}>
             {infrastructureHighlights.map((item) => (
-              <li key={item.title} className={`infrastructure-item ${item.open ? 'is-open' : ''}`}>
-                <span className={`infrastructure-icon ${item.icon}`} aria-hidden="true">{item.glyph}</span>
-                <div className="infrastructure-content">
+              <li
+                key={item.title}
+                className={`infrastructure-item home-infra-item ${item.open ? 'is-open' : ''}`}
+                style={item.open ? { ...infraItemStyle, ...infraOpenItemStyle } : infraItemStyle}
+              >
+                <span className={`infrastructure-icon home-infra-icon ${item.icon}`} aria-hidden="true" style={infraIconStyle}>
+                  {item.glyph}
+                </span>
+                <div className="infrastructure-content home-infra-content">
                   <h3>{item.title}</h3>
                   <p>{item.text}</p>
                 </div>
               </li>
             ))}
           </ul>
-        </div>
-      </section>
-
-      <section id="appels" className="section section-band band-calls">
-        <div className="container">
-          <h2 className="section-title">Appels à propositions</h2>
-          <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
-          <div className="grid three">
-            {calls.slice(0, 3).map((item) => (
-              <article key={item.id} className="card call-card">
-                <div className="call-card-top">
-                  <span className={`badge ${item.callStatus || 'draft'}`}>{item.callStatus || 'draft'}</span>
-                </div>
-                <h3>{item.title}</h3>
-                <p className="call-summary">{item.summary || 'Résumé en cours de publication.'}</p>
-                <div className="call-deadline">
-                  <span>Clôture</span>
-                  <strong>{toDateLabel(item.deadlineDate)}</strong>
-                </div>
-                {item.slug ? (
-                  <p className="call-action">
-                    <Link href={`/appels/${item.slug}`}>Voir le détail</Link>
-                  </p>
-                ) : null}
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
