@@ -658,8 +658,14 @@ h3 {
   box-shadow: none;
 }
 
+.infrastructure-band {
+  background-color: #f2f7ef;
+  background-image: none;
+  box-shadow: none;
+}
+
 .band-calls {
-  background: #e9f2ea;
+  background: #edf4fb;
 }
 
 .band-events-news {

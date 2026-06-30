@@ -31,6 +31,58 @@ const expectedResults = [
   },
 ];
 
+const infrastructureHighlights = [
+  {
+    title: 'Production et transformation',
+    text: 'Unités de production, transformation agroalimentaire ou minière, ateliers mutualisés.',
+    icon: 'factory',
+    glyph: '🏭',
+  },
+  {
+    title: 'Stockage et conservation',
+    text: 'Entrepôts, chambres froides, silos, centres de collecte et solutions de conservation partagée.',
+    icon: 'warehouse',
+    glyph: '🏬',
+  },
+  {
+    title: 'Logistique et commercialisation',
+    text: 'Plateformes logistiques, marchés, transport adapté, agrégation et mise en marché.',
+    icon: 'truck',
+    glyph: '🚚',
+  },
+  {
+    title: 'Qualité et certification',
+    text: 'Laboratoires, contrôle qualité, inspection, traçabilité et mise en conformité.',
+    icon: 'badge',
+    glyph: '✅',
+  },
+  {
+    title: 'Numérique et e-commerce',
+    text: 'Plateformes digitales, systèmes de gestion et e-commerce au service des MPME.',
+    icon: 'cloud',
+    glyph: '💻',
+  },
+  {
+    title: 'Formation et conseil',
+    text: 'Formation, mentorat, assistance technique et accompagnement liés au projet.',
+    icon: 'training',
+    glyph: '🎓',
+  },
+  {
+    title: 'Infrastructure immatérielle',
+    text: 'Eligible si l’usage est collectif et utile aux MPME, sous validation du programme.',
+    icon: 'connect',
+    glyph: '🗂️',
+  },
+  {
+    title: 'Et bien d’autres...',
+    text: 'Toute infrastructure à usage collectif ou partagé, sous validation du programme.',
+    open: true,
+    icon: 'more',
+    glyph: '➕',
+  },
+];
+
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
   const d = new Date(value);
@@ -89,7 +141,7 @@ export default async function HomePage() {
       <section className="section section-band band-chains">
         <div className="container">
           <h2 className="section-title">5 chaînes de valeur prioritaires + 1 possibilité transversale</h2>
-          <p className="meta"><Link href="/chaines-valeur">Voir le détail des chaînes</Link></p>
+          <p className="meta">Les cinq chaînes ciblées par le mécanisme de subventions de contrepartie, plus une possibilité de projet transversal utile à plusieurs chaînes.</p>
           <div className="grid three">
             {homepageChains.map((item) => (
               <article key={item.id} className="card">
@@ -103,8 +155,7 @@ export default async function HomePage() {
                   <div className="chain-thumb chain-fallback">Photo à ajouter</div>
                 )}
                 <span className="badge open chain-badge">{item.slug === 'projet-transversal' ? 'Multi-chaînes' : item.name || 'Chaîne de valeur'}</span>
-                <h3>{item.name}</h3>
-                <p>{item.shortIntro || 'Présentation en cours de publication.'}</p>
+                <p style={{ marginTop: '0.5rem' }}>{item.shortIntro || 'Présentation en cours de publication.'}</p>
                 {item.slug ? (
                   <p className="meta">
                     <Link href={`/chaines-valeur/${item.slug}`}>{item.slug === 'projet-transversal' ? 'Comprendre la possibilité' : 'Découvrir la chaîne'}</Link>
@@ -113,6 +164,29 @@ export default async function HomePage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="section infrastructure-band">
+        <div className="container infrastructure-wrap">
+          <div className="infrastructure-copy">
+            <h2 className="section-title">Exemples d&apos;infrastructures éligibles</h2>
+            <p className="hero-vision infrastructure-lead">
+              Physique ou immatérielle : ce qui compte d&apos;abord est le bénéfice collectif pour plusieurs MPME, dans une chaîne prioritaire ou dans un projet transversal.
+            </p>
+          </div>
+
+          <ul className="infrastructure-list">
+            {infrastructureHighlights.map((item) => (
+              <li key={item.title} className={`infrastructure-item ${item.open ? 'is-open' : ''}`}>
+                <span className={`infrastructure-icon ${item.icon}`} aria-hidden="true">{item.glyph}</span>
+                <div className="infrastructure-content">
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
