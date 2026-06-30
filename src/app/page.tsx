@@ -153,6 +153,143 @@ const callBandStatusStyle: CSSProperties = {
   lineHeight: 1.2,
 };
 
+const callBandCountdownStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  border: '1px solid #f0d29d',
+  borderRadius: '999px',
+  color: '#7b4a09',
+  background: '#fef7e8',
+  fontSize: '0.82rem',
+  fontWeight: 700,
+  padding: '0.45rem 0.75rem',
+};
+
+const callBandMetaStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--ink-soft)',
+  lineHeight: 1.45,
+};
+
+const callBandTitleStyle: CSSProperties = {
+  margin: '0.55rem 0 0.45rem',
+  fontSize: 'clamp(1.08rem, 2.2vw, 1.4rem)',
+  lineHeight: 1.25,
+  wordBreak: 'break-word',
+  overflowWrap: 'anywhere',
+};
+
+const callBandItemTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '1rem',
+  wordBreak: 'break-word',
+  overflowWrap: 'anywhere',
+  lineHeight: 1.3,
+};
+
+const callBandHistoryListStyle: CSSProperties = {
+  marginTop: '0.55rem',
+  display: 'grid',
+  gap: '0.6rem',
+};
+
+const callBandHistoryRowStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) auto',
+  gap: '0.8rem',
+  alignItems: 'center',
+  border: '1px solid var(--line)',
+  borderRadius: '12px',
+  background: '#f7f8f2',
+  padding: '0.75rem 0.85rem',
+  isolation: 'isolate' as const,
+};
+
+const callBandHistoryRightStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+};
+
+const callBandHistoryTitleStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--ink)',
+  fontSize: '0.95rem',
+  fontWeight: 700,
+};
+
+const callBandPillBaseStyle: CSSProperties = {
+  border: '1px solid var(--line)',
+  borderRadius: '999px',
+  padding: '0.28rem 0.62rem',
+  fontSize: '0.74rem',
+  textTransform: 'uppercase',
+  fontWeight: 700,
+  color: 'var(--ink-soft)',
+};
+
+const callBandPillOpenStyle: CSSProperties = {
+  color: '#0b6a4b',
+  background: '#e9f6f1',
+  borderColor: '#9dd8c5',
+};
+
+const callBandPillClosedStyle: CSSProperties = {
+  color: '#6d6a62',
+  background: '#f7f2ec',
+  borderColor: '#e1d8c9',
+};
+
+const callBandClosedStyle: CSSProperties = {
+  border: '1px solid var(--line)',
+  borderRadius: '999px',
+  padding: '0.3rem 0.55rem',
+  color: 'var(--ink-soft)',
+  fontSize: '0.75rem',
+};
+
+const callBandEmptyStyle: CSSProperties = {
+  border: '1px dashed var(--line)',
+  borderRadius: '12px',
+  background: '#f7f8f2',
+  padding: '0.95rem 1rem',
+  color: 'var(--ink-soft)',
+};
+
+const callBandEmptyTitleStyle: CSSProperties = {
+  margin: 0,
+  color: 'var(--ink)',
+  fontWeight: 700,
+};
+
+const callBandEmptyIntroStyle: CSSProperties = {
+  display: 'block',
+  marginTop: '0.3rem',
+  fontSize: '0.95rem',
+};
+
+const callBandEyebrowStyle: CSSProperties = {
+  color: 'var(--ink-soft)',
+  fontSize: '0.8rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.09em',
+};
+
+const infraItemTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '1rem',
+  lineHeight: 1.2,
+  overflowWrap: 'anywhere',
+};
+
+const infraItemTextStyle: CSSProperties = {
+  margin: '0.35rem 0 0',
+  color: 'var(--ink-soft)',
+  lineHeight: 1.45,
+  overflowWrap: 'anywhere',
+};
+
 const infraIconStyle: CSSProperties = {
   width: '32px',
   height: '32px',
@@ -299,20 +436,24 @@ export default async function HomePage() {
 
       <section id="home-call-band" className="section section-band band-calls home-call-band" style={callBandSectionStyle}>
         <div className="container">
-          <div className="call-band home-call-band-inner" style={callBandContainerStyle}>
-            <div className="call-band-eyebrow home-call-band-eyebrow">Appels à propositions</div>
+          <div className="home-call-band-inner" style={callBandContainerStyle}>
+            <div className="home-call-band-eyebrow" style={callBandEyebrowStyle}>Appels à propositions</div>
             {featuredCall ? (
-              <article className="call-band-featured home-call-band-featured" style={callBandFeaturedStyle}>
-                <div className="call-band-featured-left home-call-band-featured-left">
-                  <span className="call-band-status home-call-band-status" style={callBandStatusStyle}>
+              <article className="home-call-band-featured" style={callBandFeaturedStyle}>
+                <div className="home-call-band-featured-left">
+                  <span className="home-call-band-status" style={callBandStatusStyle}>
                     <span aria-hidden>●</span>
                     {toCallStateLabel(featuredCall.callStatus, featuredCall.deadlineDate)} {featuredCallMeta.isOpen ? '• Appel actif' : '• Appel clôturé'}
                   </span>
-                  <h3 className="call-band-featured-title home-call-band-title">{featuredCall.title || 'Appel à propositions'}</h3>
-                  <p className="call-band-meta home-call-band-meta">Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
+                  <h3 className="home-call-band-title" style={callBandTitleStyle}>{featuredCall.title || 'Appel à propositions'}</h3>
+                  <p className="home-call-band-meta" style={callBandMetaStyle}>Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
                 </div>
-                <div className="call-band-featured-right home-call-band-featured-right">
-                  {featuredCallCountdown ? <span className="call-band-countdown">{featuredCallCountdown}</span> : null}
+                <div className="home-call-band-featured-right">
+                  {featuredCallCountdown ? (
+                    <span className="home-call-band-countdown" style={callBandCountdownStyle}>
+                      {featuredCallCountdown}
+                    </span>
+                  ) : null}
                   {featuredCall.slug ? (
                     <Link href={`/appels/${featuredCall.slug}`} className="btn secondary home-call-band-link">
                       Voir le détail
@@ -321,27 +462,43 @@ export default async function HomePage() {
                 </div>
               </article>
             ) : (
-              <div className="call-band-empty home-call-band-empty">
-                <p>Aucun appel à propositions en cours</p>
-                <span>Consultez les appels précédents ci-dessous ou revenez prochainement.</span>
+              <div className="home-call-band-empty" style={callBandEmptyStyle}>
+                <p style={callBandEmptyTitleStyle}>Aucun appel à propositions en cours</p>
+                <span style={callBandEmptyIntroStyle}>Consultez les appels précédents ci-dessous ou revenez prochainement.</span>
               </div>
             )}
 
             {pastCalls.length > 0 ? (
-              <div className="call-band-history home-call-band-history">
-                <h4 className="call-band-history-title home-call-band-history-title">
+              <div className="home-call-band-history">
+                <h4 className="home-call-band-history-title" style={callBandHistoryTitleStyle}>
                   Appels précédents ({pastCalls.length})
                 </h4>
-                <div className="call-band-history-list home-call-band-history-list">
+                <div className="home-call-band-history-list" style={callBandHistoryListStyle}>
                   {pastCalls.map((item) => (
-                    <article key={item.id} className="call-band-history-row home-call-band-history-row">
+                    <article key={item.id} className="home-call-band-history-row" style={callBandHistoryRowStyle}>
                       <div>
-                        <h4 className="call-band-history-item-title home-call-band-item-title">{item.title || 'Appel clôturé'}</h4>
-                        <p className="call-band-meta home-call-band-meta">Clôture {toDateLabel(item.deadlineDate)}</p>
+                        <h4 className="home-call-band-item-title" style={callBandItemTitleStyle}>{item.title || 'Appel clôturé'}</h4>
+                        <p className="home-call-band-meta" style={callBandMetaStyle}>Clôture {toDateLabel(item.deadlineDate)}</p>
                       </div>
-                      <div className="call-band-history-right home-call-band-history-right">
-                        <span className={`call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)} home-call-band-pill`}>{toCallStateLabel(item.callStatus, item.deadlineDate)}</span>
-                        {item.slug ? <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link> : <span className="call-band-closed">Clôturé</span>}
+                  <div className="home-call-band-history-right" style={callBandHistoryRightStyle}>
+                        <span
+                          className={`home-call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)}`}
+                          style={{
+                            ...callBandPillBaseStyle,
+                            ...(resolveCallStatus(item.callStatus, item.deadlineDate) === 'open'
+                              ? callBandPillOpenStyle
+                              : callBandPillClosedStyle),
+                          }}
+                        >
+                          {toCallStateLabel(item.callStatus, item.deadlineDate)}
+                        </span>
+                        {item.slug ? (
+                          <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link>
+                        ) : (
+                          <span className="home-call-band-closed" style={callBandClosedStyle}>
+                            Clôturé
+                          </span>
+                        )}
                       </div>
                     </article>
                   ))}
@@ -402,8 +559,8 @@ export default async function HomePage() {
                   {item.glyph}
                 </span>
                 <div className="infrastructure-content home-infra-content">
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
+                  <h3 style={infraItemTitleStyle}>{item.title}</h3>
+                  <p style={infraItemTextStyle}>{item.text}</p>
                 </div>
               </li>
             ))}
