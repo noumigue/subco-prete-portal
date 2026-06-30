@@ -70,7 +70,7 @@ const documentItems = [
     detail: 'DOCX · Modèle à signer',
   },
   {
-    title: 'Fiche de screening E&S',
+    title: 'Fiche de screening environnemental et social',
     detail: 'PDF · Auto-évaluation',
   },
 ];

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { getFooterLinks, getSiteNavigation, type NavigationLinkItem, type SiteLanguage } from '@/lib/strapi-public';
+import { getFooterLinks, getSiteNavigation } from '@/lib/strapi-public';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,21 +19,6 @@ const footerGroups = [
   { key: 'institutional', title: 'Liens institutionnels' },
   { key: 'resources', title: 'Ressources' },
 ] as const;
-function normalizeNavItems(items: NavigationLinkItem[] | undefined) {
-  return (items || [])
-    .filter((item) => item.isVisible !== false && item.url)
-    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-}
-
-function localizedLabel(item: NavigationLinkItem | { labelFr?: string; labelRn?: string }, language: SiteLanguage) {
-  return language === 'rn' ? item.labelRn || '' : item.labelFr || '';
-}
-
-function normalizeMenuUrl(url?: string) {
-  if (!url) return '/';
-  if (url === '/candidature/bis' || url === '/candidature/bis/') return '/candidature';
-  return url;
-}
 
 export default async function RootLayout({
   children,
@@ -44,20 +29,18 @@ export default async function RootLayout({
   const language = cookieStore.get('subco-lang')?.value === 'rn' ? 'rn' : 'fr';
   const [cmsFooterLinks, siteNavigation] = await Promise.all([getFooterLinks(), getSiteNavigation()]);
   const footerLinks = cmsFooterLinks;
-  const primaryNav = normalizeNavItems(siteNavigation?.primaryItems);
-  const newsNav = normalizeNavItems(siteNavigation?.newsItems);
   const supportLabel = language === 'rn'
     ? siteNavigation?.supportLabelRn || ''
     : siteNavigation?.supportLabelFr || '';
   const supportUrl = siteNavigation?.supportUrl || '';
-  const newsLabel = language === 'rn'
-    ? siteNavigation?.newsLabelRn || ''
-    : siteNavigation?.newsLabelFr || '';
-  const ctaLabel = language === 'rn'
-    ? siteNavigation?.ctaLabelRn || ''
-    : siteNavigation?.ctaLabelFr || '';
-  const ctaUrl = siteNavigation?.ctaUrl || '';
   const brandLabel = siteNavigation?.brandLabel || 'SUBCO PRETE';
+  const navItems = [
+    { href: '/#home-top', label: 'Accueil' },
+    { href: '/#home-mechanism-band', label: 'Le Mécanisme' },
+    { href: '/#home-value-chains', label: 'Chaînes de valeur' },
+    { href: '/#home-infrastructure-band', label: 'Infrastructures' },
+    { href: '/actualites', label: 'Actualités' },
+  ];
 
   return (
     <html lang={language}>
@@ -79,24 +62,18 @@ export default async function RootLayout({
           <div className="container nav-wrap">
             <Link href="/" className="brand">{brandLabel}</Link>
             <nav className="main-nav">
-            {primaryNav.map((item) => (
-                <Link key={`${item.url}-${item.sortOrder || 0}`} href={normalizeMenuUrl(item.url)}>
-                  {localizedLabel(item, language)}
-                </Link>
+              {navItems.map((item) => (
+                item.href.startsWith('/#') ? (
+                  <a key={item.href} href={item.href} className={item.className}>
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.href} href={item.href} className={item.className}>
+                    {item.label}
+                  </Link>
+                )
               ))}
-              {newsLabel && newsNav.length > 0 ? (
-                <div className="nav-dropdown">
-                  <Link href={newsNav[0]?.url || '/actualites'} className="nav-dropdown-trigger">{newsLabel}</Link>
-                  <div className="nav-dropdown-menu">
-                    {newsNav.map((item) => (
-                    <Link key={`${item.url}-${item.sortOrder || 0}`} href={normalizeMenuUrl(item.url)}>
-                      {localizedLabel(item, language)}
-                    </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-              {ctaLabel && ctaUrl ? <Link href={normalizeMenuUrl(ctaUrl)} className="btn primary nav-cta">{ctaLabel}</Link> : null}
+              <Link href="/candidature" className="btn primary nav-cta">Candidater</Link>
             </nav>
           </div>
         </header>

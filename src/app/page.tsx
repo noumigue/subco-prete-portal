@@ -190,7 +190,7 @@ const infraOpenItemStyle: CSSProperties = {
 };
 
 const callBandSectionStyle: CSSProperties = {
-  background: '#f2f7ef',
+  background: '#ffffff',
 };
 
 const callBandContainerStyle: CSSProperties = {
@@ -205,7 +205,7 @@ const callBandFeaturedStyle: CSSProperties = {
   alignItems: 'start',
   border: '1px solid var(--line)',
   borderRadius: '12px',
-  background: '#f7f8f2',
+  background: '#fbfaf7',
   padding: '1rem',
 };
 
@@ -279,13 +279,6 @@ const callBandHistoryRightStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-};
-
-const callBandHistoryTitleStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--ink)',
-  fontSize: '0.95rem',
-  fontWeight: 700,
 };
 
 const callBandPillBaseStyle: CSSProperties = {
@@ -397,12 +390,24 @@ function normalizeCallStatus(value?: string): NormalizedCallStatus {
   if (normalized === 'open') return 'open';
   if (normalized === 'closed') return 'closed';
   if (normalized === 'upcoming' || normalized === 'a_venir' || normalized === 'à venir') return 'upcoming';
-  return 'open';
+  return 'upcoming';
 }
 
-function resolveCallStatus(value?: string, deadlineDate?: string) {
+function isFutureDate(value?: string, now = new Date()) {
+  if (!value) return false;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return false;
+  return d.getTime() > now.getTime();
+}
+
+function resolveCallStatus(value?: string, openingDate?: string, deadlineDate?: string) {
   const status = normalizeCallStatus(value);
   if (isPastDeadline(deadlineDate)) return 'closed';
+  if (status === 'closed') return 'closed';
+  if (isFutureDate(openingDate)) return 'upcoming';
+  if (status === 'open') return 'open';
+  if (status === 'upcoming') return 'upcoming';
+  if (deadlineDate) return 'open';
   return status;
 }
 
@@ -413,41 +418,50 @@ function isPastDeadline(value?: string, now = new Date()) {
   return d.getTime() < now.getTime();
 }
 
-function toCallStateLabel(value?: string, deadlineDate?: string) {
-  const status = resolveCallStatus(value, deadlineDate);
+function toCallStateLabel(value?: string, openingDate?: string, deadlineDate?: string) {
+  const status = resolveCallStatus(value, openingDate, deadlineDate);
   if (status === 'open') return 'Ouvert';
   if (status === 'closed') return 'Clôturé';
   return 'À venir';
 }
 
-function sortHomeCalls(a: { id: number; callStatus?: string; deadlineDate?: string }, b: { id: number; callStatus?: string; deadlineDate?: string }) {
-  const statusOrder = (status?: string) => {
-    const resolved = resolveCallStatus(status);
+function toUpcomingBadgeLabel(openingDate?: string) {
+  return openingDate ? `À venir • ${toDateLabel(openingDate)}` : 'À venir';
+}
+
+function sortHomeCalls(
+  a: { id: number; callStatus?: string; openingDate?: string; deadlineDate?: string },
+  b: { id: number; callStatus?: string; openingDate?: string; deadlineDate?: string },
+) {
+  const statusOrder = (status?: string, openingDate?: string, deadlineDate?: string) => {
+    const resolved = resolveCallStatus(status, openingDate, deadlineDate);
     if (resolved === 'open') return 0;
     if (resolved === 'upcoming') return 1;
     return 2;
   };
 
-  const statusDiff = statusOrder(a.callStatus) - statusOrder(b.callStatus);
+  const statusDiff = statusOrder(a.callStatus, a.openingDate, a.deadlineDate) - statusOrder(b.callStatus, b.openingDate, b.deadlineDate);
   if (statusDiff !== 0) return statusDiff;
 
-  const deadlineA = a.deadlineDate ? new Date(a.deadlineDate).getTime() : Number.POSITIVE_INFINITY;
-  const deadlineB = b.deadlineDate ? new Date(b.deadlineDate).getTime() : Number.POSITIVE_INFINITY;
-  if (deadlineA !== deadlineB) return deadlineA - deadlineB;
+  const resolvedA = resolveCallStatus(a.callStatus, a.openingDate, a.deadlineDate);
+  const resolvedB = resolveCallStatus(b.callStatus, b.openingDate, b.deadlineDate);
+
+  const primaryDateA = resolvedA === 'upcoming' ? a.openingDate : a.deadlineDate;
+  const primaryDateB = resolvedB === 'upcoming' ? b.openingDate : b.deadlineDate;
+  const timeA = primaryDateA ? new Date(primaryDateA).getTime() : Number.POSITIVE_INFINITY;
+  const timeB = primaryDateB ? new Date(primaryDateB).getTime() : Number.POSITIVE_INFINITY;
+
+  if (resolvedA === 'closed' && resolvedB === 'closed') {
+    if (timeA !== timeB) return timeB - timeA;
+  } else if (timeA !== timeB) {
+    return timeA - timeB;
+  }
 
   return String(b.id).localeCompare(String(a.id), 'en');
 }
 
-function isDisplayableCall(call: { callStatus?: string }) {
-  return ['open', 'closed', 'upcoming'].includes(resolveCallStatus(call.callStatus));
-}
-
-function buildCallMetadata(call?: { callStatus?: string; deadlineDate?: string }) {
-  if (!call) {
-    return { statusLabel: 'À venir', isOpen: false };
-  }
-  const status = resolveCallStatus(call.callStatus, call.deadlineDate);
-  return { statusLabel: toCallStateLabel(call.callStatus, call.deadlineDate), isOpen: status === 'open' };
+function isDisplayableCall(call: { callStatus?: string; openingDate?: string; deadlineDate?: string }) {
+  return ['open', 'closed', 'upcoming'].includes(resolveCallStatus(call.callStatus, call.openingDate, call.deadlineDate));
 }
 
 export default async function HomePage() {
@@ -474,13 +488,14 @@ export default async function HomePage() {
   const displayableCalls = calls.filter(isDisplayableCall);
   const orderedCalls = [...displayableCalls].sort(sortHomeCalls);
   const featuredCall = orderedCalls[0];
-  const featuredCallMeta = buildCallMetadata(featuredCall);
+  const featuredCallStatus = resolveCallStatus(featuredCall?.callStatus, featuredCall?.openingDate, featuredCall?.deadlineDate);
   const featuredCallCountdown = toDaysRemaining(featuredCall?.deadlineDate);
   const pastCalls = orderedCalls.filter((item) => item.id !== featuredCall?.id).slice(0, 8);
 
   return (
     <main className="min-h-screen">
       <section
+        id="home-top"
         className="hero hero-template"
         style={heroStyle}
       >
@@ -513,7 +528,11 @@ export default async function HomePage() {
                 <div className="home-call-band-featured-left">
                   <span className="home-call-band-status" style={callBandStatusStyle}>
                     <span aria-hidden>●</span>
-                    {toCallStateLabel(featuredCall.callStatus, featuredCall.deadlineDate)} {featuredCallMeta.isOpen ? '• Appel actif' : '• Appel clôturé'}
+                    {featuredCallStatus === 'upcoming'
+                      ? toUpcomingBadgeLabel(featuredCall.openingDate)
+                      : `${toCallStateLabel(featuredCall.callStatus, featuredCall.openingDate, featuredCall.deadlineDate)} • ${
+                          featuredCallStatus === 'open' ? 'Appel actif' : 'Appel clôturé'
+                        }`}
                   </span>
                   <h3 className="home-call-band-title" style={callBandTitleStyle}>{featuredCall.title || 'Appel à propositions'}</h3>
                   <p className="home-call-band-meta" style={callBandMetaStyle}>Clôture {toDateLabel(featuredCall.deadlineDate)}</p>
@@ -539,53 +558,54 @@ export default async function HomePage() {
             )}
 
             {pastCalls.length > 0 ? (
-              <div className="home-call-band-history">
-                <h4 className="home-call-band-history-title" style={callBandHistoryTitleStyle}>
-                  Appels précédents ({pastCalls.length})
-                </h4>
-                <div className="home-call-band-history-list" style={callBandHistoryListStyle}>
-                  {pastCalls.map((item) => (
-                    <article key={item.id} className="home-call-band-history-row" style={callBandHistoryRowStyle}>
-                      <div>
-                        <h4 className="home-call-band-item-title" style={callBandItemTitleStyle}>{item.title || 'Appel clôturé'}</h4>
-                        <p className="home-call-band-meta" style={callBandMetaStyle}>Clôture {toDateLabel(item.deadlineDate)}</p>
-                      </div>
-                  <div className="home-call-band-history-right" style={callBandHistoryRightStyle}>
-                        <span
-                          className={`home-call-band-pill ${resolveCallStatus(item.callStatus, item.deadlineDate)}`}
-                          style={{
-                            ...callBandPillBaseStyle,
-                            ...(resolveCallStatus(item.callStatus, item.deadlineDate) === 'open'
-                              ? callBandPillOpenStyle
-                              : callBandPillClosedStyle),
-                          }}
-                        >
-                          {toCallStateLabel(item.callStatus, item.deadlineDate)}
-                        </span>
-                        {item.slug ? (
-                          <Link href={`/appels/${item.slug}`}>Voir les résultats →</Link>
-                        ) : (
-                          <span className="home-call-band-closed" style={callBandClosedStyle}>
-                            Clôturé
+              <details className="home-call-band-history-toggle">
+                <summary className="home-call-band-history-summary">
+                  Voir les autres appels ({pastCalls.length})
+                </summary>
+                <div className="home-call-band-history">
+                  <div className="home-call-band-history-list" style={callBandHistoryListStyle}>
+                    {pastCalls.map((item) => (
+                      <article key={item.id} className="home-call-band-history-row" style={callBandHistoryRowStyle}>
+                        <div>
+                          <h4 className="home-call-band-item-title" style={callBandItemTitleStyle}>{item.title || 'Appel clôturé'}</h4>
+                          <p className="home-call-band-meta" style={callBandMetaStyle}>Clôture {toDateLabel(item.deadlineDate)}</p>
+                        </div>
+                        <div className="home-call-band-history-right" style={callBandHistoryRightStyle}>
+                          <span
+                            className={`home-call-band-pill ${resolveCallStatus(item.callStatus, item.openingDate, item.deadlineDate)}`}
+                            style={{
+                              ...callBandPillBaseStyle,
+                              ...(resolveCallStatus(item.callStatus, item.openingDate, item.deadlineDate) === 'open'
+                                ? callBandPillOpenStyle
+                                : callBandPillClosedStyle),
+                            }}
+                          >
+                            {toCallStateLabel(item.callStatus, item.openingDate, item.deadlineDate)}
                           </span>
-                        )}
-                      </div>
-                    </article>
-                  ))}
+                          {item.slug ? (
+                            <Link href={`/appels/${item.slug}`}>Voir le détail →</Link>
+                          ) : (
+                            <span className="home-call-band-closed" style={callBandClosedStyle}>
+                              Clôturé
+                            </span>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </details>
             ) : null}
           </div>
-          <p className="meta"><Link href="/appels">Voir tous les appels</Link></p>
         </div>
       </section>
 
       <HomeMechanismBand />
 
-      <section className="section section-band band-chains">
+      <section id="home-value-chains" className="section section-band band-chains">
         <div className="container">
           <h2 className="section-title">5 chaînes de valeur prioritaires + 1 possibilité transversale</h2>
-          <p className="meta">Les cinq chaînes ciblées par le mécanisme de subventions de contrepartie, plus une possibilité de projet transversal utile à plusieurs chaînes.</p>
+          <p className="hero-vision infrastructure-lead chain-intro">Les cinq chaînes ciblées par le mécanisme de subventions de contrepartie, plus une possibilité de projet transversal utile à plusieurs chaînes.</p>
           <div className="grid three">
             {homepageChains.map((item) => (
               <article key={item.id} className="card">
@@ -672,7 +692,7 @@ export default async function HomePage() {
             <p className="eyebrow">Parcours candidat</p>
             <h3>Préparez votre dossier et soumettez-le en ligne</h3>
           </div>
-          <Link href="/candidature/deposer" className="btn primary">Commencer la candidature</Link>
+          <Link href="/candidature" className="btn primary">Commencer la candidature</Link>
         </div>
       </section>
 
