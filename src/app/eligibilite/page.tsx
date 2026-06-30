@@ -418,7 +418,7 @@ export default function EligibilityPage() {
     <main className="min-h-screen">
       <section className="eligibility-page section section-band" style={{ backgroundColor: '#ffffff' }}>
         <div className="container">
-          <p className="eyebrow">Test d&apos;éligibilité</p>
+          <p className="eyebrow candidature-bis-eyebrow">Test d&apos;éligibilité</p>
           <h1>Vérifiez si votre projet est éligible</h1>
           <p className="hero-vision" style={{ maxWidth: '62ch' }}>
             Répondez aux 10 questions ci-dessous pour obtenir un résultat immédiat. Aucun compte requis — vos réponses ne sont pas

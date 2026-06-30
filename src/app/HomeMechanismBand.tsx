@@ -72,7 +72,7 @@ const mechanismLines = [
   },
   {
     title: 'Sélection compétitive',
-    text: "Comparaison des dossiers sur l'éligibilité, la viabilité, l'impact, l'inclusion et les exigences E&S.",
+    text: "Comparaison des dossiers sur l'éligibilité, la viabilité, l'impact, l'inclusion et les exigences environnementales et sociales.",
     icon: 'selection',
     added: true,
   },
@@ -97,7 +97,7 @@ const mechanismLines = [
 
 export default function HomeMechanismBand() {
   return (
-    <section className="section section-band home-mechanism-band">
+    <section id="home-mechanism-band" className="section section-band home-mechanism-band">
       <div className="container">
         <div className="home-mechanism-shell">
           <p className="home-mechanism-eyebrow">Comprendre le financement</p>

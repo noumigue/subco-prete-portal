@@ -8,6 +8,7 @@
   --brand-deep: #06745b;
   --card: #ffffff;
   --line: #d4ddd6;
+  --anchor-offset: 5.75rem;
 }
 
 * {
@@ -158,6 +159,12 @@ h3 {
   color: #fff;
 }
 
+#home-mechanism-band,
+#home-value-chains,
+#home-infrastructure-band {
+  scroll-margin-top: var(--anchor-offset);
+}
+
 .hero {
   padding: 5.2rem 0 4.4rem;
   border-bottom: 1px solid var(--line);
@@ -273,9 +280,9 @@ h3 {
   border-radius: 999px !important;
   color: #7b4a09 !important;
   background: #fef7e8 !important;
-  font-size: 0.82rem !important;
+  font-size: 1rem !important;
   font-weight: 700 !important;
-  padding: 0.45rem 0.75rem !important;
+  padding: 0.55rem 0.9rem !important;
 }
 
 .home-call-band .container {
@@ -286,10 +293,10 @@ h3 {
 .home-call-band .home-call-band-inner {
   display: grid !important;
   gap: 0.9rem !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 14px !important;
-  background: #fff !important;
-  padding: 1rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 .home-call-band .home-call-band-eyebrow {
@@ -307,7 +314,7 @@ h3 {
   align-items: start !important;
   border: 1px solid var(--line) !important;
   border-radius: 12px !important;
-  background: #f7f8f2 !important;
+  background: #fbfaf7 !important;
   padding: 1rem !important;
   isolation: isolate !important;
 }
@@ -343,8 +350,9 @@ h3 {
 
 .home-call-band .home-call-band-featured-right {
   display: flex !important;
-  align-items: center !important;
-  gap: 0.7rem !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 0.6rem !important;
   justify-content: flex-end !important;
 }
 
@@ -355,7 +363,7 @@ h3 {
 .home-call-band .home-call-band-empty {
   border: 1px dashed var(--line) !important;
   border-radius: 12px !important;
-  background: #f7f8f2 !important;
+  background: #fbfaf7 !important;
   padding: 0.95rem 1rem !important;
   color: var(--ink-soft) !important;
 }
@@ -373,8 +381,43 @@ h3 {
 }
 
 .home-call-band .home-call-band-history {
-  border-top: 1px solid var(--line) !important;
-  padding-top: 0.45rem !important;
+  border-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.home-call-band .home-call-band-history-toggle {
+  margin-top: 0.1rem !important;
+}
+
+.home-call-band .home-call-band-history-toggle[open] {
+  display: grid !important;
+  gap: 0.65rem !important;
+}
+
+.home-call-band .home-call-band-history-summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  width: fit-content !important;
+  cursor: pointer !important;
+  color: var(--ink-soft) !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  list-style: none !important;
+}
+
+.home-call-band .home-call-band-history-summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.home-call-band .home-call-band-history-summary::after {
+  content: "↓";
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.home-call-band .home-call-band-history-toggle[open] .home-call-band-history-summary::after {
+  content: "↑";
 }
 
 .home-call-band .home-call-band-history-title {
@@ -397,7 +440,7 @@ h3 {
   align-items: center !important;
   border: 1px solid var(--line) !important;
   border-radius: 12px !important;
-  background: #f7f8f2 !important;
+  background: #fbfaf7 !important;
   padding: 0.75rem 0.85rem !important;
   isolation: isolate !important;
 }
@@ -872,7 +915,7 @@ h3 {
 
 .home-mechanism-intro {
   margin: 0.8rem auto 1.8rem;
-  max-width: 60ch;
+  max-width: none;
   color: var(--ink-soft);
   line-height: 1.65;
   text-align: center;
@@ -1041,7 +1084,7 @@ h3 {
 .infrastructure-band .infrastructure-lead {
   margin-top: 0;
   margin-bottom: 0;
-  max-width: 75ch;
+  max-width: none;
   color: var(--ink-soft);
 }
 
@@ -1130,6 +1173,8 @@ h3 {
 .home-infra-band .home-infra-wrap {
   display: grid !important;
   gap: var(--infra-gap) !important;
+  width: 100% !important;
+  margin-inline: auto !important;
 }
 
 .home-infra-band .home-infra-list {
@@ -1188,8 +1233,15 @@ h3 {
   line-height: 1.45 !important;
 }
 
+.home-infra-band .infrastructure-copy,
+.home-infra-band .infrastructure-lead,
+.home-infra-band .hero-vision.infrastructure-lead {
+  max-width: none !important;
+  width: 100% !important;
+}
+
 .band-calls {
-  background: #f2f7ef;
+  background: #ffffff;
 }
 
 .infrastructure-band {
@@ -1208,7 +1260,7 @@ h3 {
 }
 
 .infrastructure-copy {
-  max-width: 620px;
+  max-width: none;
 }
 
 .infrastructure-lead {
@@ -2036,6 +2088,17 @@ h3 {
   font-size: 0.9rem;
 }
 
+.meta a {
+  color: var(--brand-deep) !important;
+  font-weight: 400 !important;
+  text-decoration: none;
+}
+
+.meta a:hover {
+  color: var(--brand) !important;
+  text-decoration: underline;
+}
+
 .badge {
   display: inline-block;
   padding: 0.2rem 0.5rem;
@@ -2072,7 +2135,11 @@ h3 {
 
 .band-chains .chain-intro {
   display: block;
-  padding-top: 0.45rem;
+  margin: 0.2rem 0 0.55rem;
+  padding-top: 0;
+  max-width: none !important;
+  width: 100%;
+  color: var(--ink-soft);
 }
 
 .two-col {

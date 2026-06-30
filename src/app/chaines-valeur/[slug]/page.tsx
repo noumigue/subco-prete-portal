@@ -24,7 +24,7 @@ export default async function ValueChainDetailPage({ params }: Props) {
   return (
     <main className="section">
       <div className="container" style={{ maxWidth: 900 }}>
-        <p className="meta"><Link href="/chaines-valeur">← Retour aux chaînes de valeur</Link></p>
+        <p className="meta"><Link href="/#home-value-chains">← Retour aux chaînes de valeur</Link></p>
         <h1>{item.name}</h1>
         {mediaUrl(item.heroImage) ? (
           <img className="chain-hero-image" src={mediaUrl(item.heroImage)!} alt={item.name || 'Chaîne de valeur'} />
@@ -37,7 +37,7 @@ export default async function ValueChainDetailPage({ params }: Props) {
           <RichText value={item.fullContent} />
         </article>
         <div className="actions" style={{ marginTop: 16 }}>
-          <Link href="/appels" className="btn ghost">Voir les appels liés</Link>
+          <Link href="/#home-call-band" className="btn ghost">Voir les appels liés</Link>
           <Link href="/candidature/deposer" className="btn primary">Déposer une candidature</Link>
         </div>
       </div>
