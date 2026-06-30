@@ -416,7 +416,7 @@ export default function EligibilityPage() {
 
   return (
     <main className="min-h-screen">
-      <section className="eligibility-page section section-band">
+      <section className="eligibility-page section section-band" style={{ backgroundColor: '#ffffff' }}>
         <div className="container">
           <p className="eyebrow">Test d&apos;éligibilité</p>
           <h1>Vérifiez si votre projet est éligible</h1>
