@@ -29,6 +29,12 @@ function localizedLabel(item: NavigationLinkItem | { labelFr?: string; labelRn?:
   return language === 'rn' ? item.labelRn || '' : item.labelFr || '';
 }
 
+function normalizeMenuUrl(url?: string) {
+  if (!url) return '/';
+  if (url === '/candidature/bis' || url === '/candidature/bis/') return '/candidature';
+  return url;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -73,8 +79,8 @@ export default async function RootLayout({
           <div className="container nav-wrap">
             <Link href="/" className="brand">{brandLabel}</Link>
             <nav className="main-nav">
-              {primaryNav.map((item) => (
-                <Link key={`${item.url}-${item.sortOrder || 0}`} href={item.url || '/'}>
+            {primaryNav.map((item) => (
+                <Link key={`${item.url}-${item.sortOrder || 0}`} href={normalizeMenuUrl(item.url)}>
                   {localizedLabel(item, language)}
                 </Link>
               ))}
@@ -83,14 +89,14 @@ export default async function RootLayout({
                   <Link href={newsNav[0]?.url || '/actualites'} className="nav-dropdown-trigger">{newsLabel}</Link>
                   <div className="nav-dropdown-menu">
                     {newsNav.map((item) => (
-                      <Link key={`${item.url}-${item.sortOrder || 0}`} href={item.url || '/'}>
-                        {localizedLabel(item, language)}
-                      </Link>
+                    <Link key={`${item.url}-${item.sortOrder || 0}`} href={normalizeMenuUrl(item.url)}>
+                      {localizedLabel(item, language)}
+                    </Link>
                     ))}
                   </div>
                 </div>
               ) : null}
-              {ctaLabel && ctaUrl ? <Link href={ctaUrl} className="btn primary nav-cta">{ctaLabel}</Link> : null}
+              {ctaLabel && ctaUrl ? <Link href={normalizeMenuUrl(ctaUrl)} className="btn primary nav-cta">{ctaLabel}</Link> : null}
             </nav>
           </div>
         </header>
