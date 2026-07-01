@@ -20,6 +20,12 @@ const footerGroups = [
   { key: 'resources', title: 'Ressources' },
 ] as const;
 
+type HeaderNavItem = {
+  href: string;
+  label: string;
+  className?: string;
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -34,7 +40,7 @@ export default async function RootLayout({
     : siteNavigation?.supportLabelFr || '';
   const supportUrl = siteNavigation?.supportUrl || '';
   const brandLabel = siteNavigation?.brandLabel || 'SUBCO PRETE';
-  const navItems = [
+  const navItems: HeaderNavItem[] = [
     { href: '/#home-top', label: 'Accueil' },
     { href: '/#home-mechanism-band', label: 'Le Mécanisme' },
     { href: '/#home-value-chains', label: 'Chaînes de valeur' },
