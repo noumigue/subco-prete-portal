@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import HomeMechanismBand from './HomeMechanismBand';
+import HomeProgramStepsBand from './HomeProgramStepsBand';
 import {
   getCalls,
-  getEvents,
   getFaqs,
   getHomepage,
-  getNews,
   getPartners,
+  getProgramSteps,
   getValueChains,
   mediaUrl,
 } from '@/lib/strapi-public';
@@ -465,14 +465,13 @@ function isDisplayableCall(call: { callStatus?: string; openingDate?: string; de
 }
 
 export default async function HomePage() {
-  const [homepage, chains, calls, partners, events, news, faqs] = await Promise.all([
+  const [homepage, chains, calls, partners, faqs, programSteps] = await Promise.all([
     getHomepage(),
     getValueChains(),
     getCalls(),
     getPartners(),
-    getEvents(),
-    getNews(),
     getFaqs(),
+    getProgramSteps(),
   ]);
   const transversalChain = chains.find((item) => item.slug === 'projet-transversal');
   const homepageChains = [
@@ -696,33 +695,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section section-band band-events-news">
-        <div className="container two-col">
-          <div>
-            <h2 className="section-title">Événements</h2>
-            <p className="meta"><Link href="/evenements">Voir tous les événements</Link></p>
-            {events.slice(0, 4).map((item) => (
-              <div key={item.id} className="list-item">
-                <h3>{item.title}</h3>
-                <p>{toDateLabel(item.eventDate)} · {item.location || 'Lieu à confirmer'}</p>
-                {item.slug ? <p className="meta"><Link href={`/evenements/${item.slug}`}>Voir le détail</Link></p> : null}
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <h2 className="section-title">Actualités</h2>
-            <p className="meta"><Link href="/actualites">Voir toutes les actualités</Link></p>
-            {news.slice(0, 4).map((item) => (
-              <div key={item.id} className="list-item">
-                <h3>{item.title}</h3>
-                <p>{item.excerpt || 'Contenu à venir.'}</p>
-                {item.slug ? <p className="meta"><Link href={`/actualites/${item.slug}`}>Lire l’article</Link></p> : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeProgramStepsBand steps={programSteps} />
 
       <section className="section section-band band-stories">
         <div className="container">

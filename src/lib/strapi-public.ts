@@ -196,6 +196,30 @@ export type ResourceDocument = {
   file?: StrapiMedia;
 };
 
+type ProgramStepRaw = {
+  id: number;
+  titre?: string;
+  description?: string;
+  cohorte?: string;
+  statut?: 'termine' | 'en-cours' | 'a-venir';
+  date_affichee?: string;
+  lien_url?: string;
+  lien_label?: string;
+  ordre?: number;
+};
+
+export type ProgramStep = {
+  id: number;
+  title?: string;
+  description?: string;
+  cohort?: string;
+  status?: 'termine' | 'en-cours' | 'a-venir';
+  displayDate?: string;
+  linkUrl?: string;
+  linkLabel?: string;
+  order?: number;
+};
+
 export async function getHomepage() {
   const out = await getJson<StrapiOne<Homepage>>('/api/homepage?populate=heroImage');
   return out?.data || null;
@@ -237,6 +261,21 @@ export async function getCallBySlug(slug: string) {
 export async function getResourceDocuments() {
   const out = await getJson<StrapiList<ResourceDocument>>('/api/resource-documents?sort=title:asc&populate=file');
   return out?.data || [];
+}
+
+export async function getProgramSteps() {
+  const out = await getJson<StrapiList<ProgramStepRaw>>('/api/etape-programmes?sort=cohorte:asc&sort=ordre:asc&pagination[pageSize]=100');
+  return (out?.data || []).map((item) => ({
+    id: item.id,
+    title: item.titre,
+    description: item.description,
+    cohort: item.cohorte,
+    status: item.statut,
+    displayDate: item.date_affichee,
+    linkUrl: item.lien_url,
+    linkLabel: item.lien_label,
+    order: item.ordre,
+  }));
 }
 
 export async function getEvents() {
