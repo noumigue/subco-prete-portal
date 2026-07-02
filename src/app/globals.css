@@ -533,6 +533,17 @@ h3 {
   color: #fff;
 }
 
+.btn.value-chain-secondary {
+  border: 1px solid color-mix(in srgb, var(--brand-deep) 26%, #0b1622);
+  background: #edf7f3;
+  color: #0f4f41;
+}
+
+.btn.value-chain-secondary:hover {
+  background: #dff1ea;
+  color: #0b3f34;
+}
+
 .hero-panel {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.5);

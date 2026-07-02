@@ -37,7 +37,7 @@ export default async function ValueChainDetailPage({ params }: Props) {
           <RichText value={item.fullContent} />
         </article>
         <div className="actions" style={{ marginTop: 16 }}>
-          <Link href="/#home-call-band" className="btn ghost">Voir les appels liés</Link>
+          <Link href="/eligibilite" className="btn value-chain-secondary">Vérifier mon éligibilité</Link>
           <Link href="/candidature/deposer" className="btn primary">Déposer une candidature</Link>
         </div>
       </div>
