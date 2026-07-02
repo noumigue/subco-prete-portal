@@ -111,6 +111,17 @@ export type FaqItem = {
   answer?: RichTextValue;
 };
 
+export type FaqTheme = 'eligibilite' | 'dossier' | 'financement' | 'selection';
+
+export type FaqTopicItem = {
+  id: number;
+  question?: string;
+  reponse?: RichTextValue;
+  theme?: FaqTheme;
+  ordre?: number;
+  publie?: boolean;
+};
+
 export type PartnerItem = {
   id: number;
   name?: string;
@@ -314,6 +325,11 @@ export async function getSuccessStories() {
 export async function getFaqs() {
   const out = await getJson<StrapiList<FaqItem>>('/api/faqs?sort=sortOrder:asc');
   return out?.data || [];
+}
+
+export async function getFaqItems() {
+  const out = await getJson<StrapiList<FaqTopicItem>>('/api/faq-items?filters[publie][$eq]=true&sort[0]=theme:asc&sort[1]=ordre:asc&pagination[pageSize]=100');
+  return out?.data?.filter((item) => item.publie !== false) || [];
 }
 
 export async function getPartners() {

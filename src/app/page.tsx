@@ -1,36 +1,22 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
+import FaqSection from './FaqSection';
 import HomeMechanismBand from './HomeMechanismBand';
+import HomeNotificationBand from './HomeNotificationBand';
 import HomeProgramStepsBand from './HomeProgramStepsBand';
 import {
   getCalls,
-  getFaqs,
+  getFaqItems,
   getHomepage,
   getPartners,
   getProgramSteps,
   getValueChains,
   mediaUrl,
 } from '@/lib/strapi-public';
-import { blocksToText } from '@/lib/richtext';
 
 type HeroStyle = CSSProperties & {
   '--hero-photo'?: string;
 };
-
-const expectedResults = [
-  {
-    title: 'Infrastructures productives renforcées',
-    text: 'Appuyer les équipements, services et capacités qui structurent les chaînes de valeur prioritaires.',
-  },
-  {
-    title: 'MPME mieux connectées aux marchés',
-    text: 'Faciliter l’accès à des débouchés plus fiables grâce à la qualité, la traçabilité et la logistique.',
-  },
-  {
-    title: 'Emplois et inclusion',
-    text: 'Encourager des projets capables de créer des opportunités pour les jeunes, les femmes et les acteurs locaux.',
-  },
-];
 
 function InfrastructureIcon({ kind }: { kind?: string }) {
   switch (kind) {
@@ -464,13 +450,34 @@ function isDisplayableCall(call: { callStatus?: string; openingDate?: string; de
   return ['open', 'closed', 'upcoming'].includes(resolveCallStatus(call.callStatus, call.openingDate, call.deadlineDate));
 }
 
+function cohortRank(value?: string) {
+  const match = String(value || '').match(/cohorte-(\d+)/i);
+  return match ? Number(match[1]) : 0;
+}
+
+function resolveNotificationTargetCohort(programSteps: Awaited<ReturnType<typeof getProgramSteps>>) {
+  const cohorts = [...new Set(programSteps.map((item) => item.cohort).filter(Boolean))]
+    .sort((a, b) => cohortRank(a) - cohortRank(b));
+
+  const fullyUpcoming = cohorts.find((cohort) =>
+    programSteps.filter((item) => item.cohort === cohort).every((item) => item.status === 'a-venir')
+  );
+
+  if (fullyUpcoming) return fullyUpcoming;
+
+  const activeCohort = programSteps.find((item) => item.status === 'en-cours')?.cohort;
+  if (!activeCohort) return cohorts[0] || null;
+
+  return cohorts.find((cohort) => cohortRank(cohort) > cohortRank(activeCohort)) || activeCohort;
+}
+
 export default async function HomePage() {
-  const [homepage, chains, calls, partners, faqs, programSteps] = await Promise.all([
+  const [homepage, chains, calls, partners, faqItems, programSteps] = await Promise.all([
     getHomepage(),
     getValueChains(),
     getCalls(),
     getPartners(),
-    getFaqs(),
+    getFaqItems(),
     getProgramSteps(),
   ]);
   const transversalChain = chains.find((item) => item.slug === 'projet-transversal');
@@ -490,6 +497,8 @@ export default async function HomePage() {
   const featuredCallStatus = resolveCallStatus(featuredCall?.callStatus, featuredCall?.openingDate, featuredCall?.deadlineDate);
   const featuredCallCountdown = toDaysRemaining(featuredCall?.deadlineDate);
   const pastCalls = orderedCalls.filter((item) => item.id !== featuredCall?.id).slice(0, 8);
+  const hasOpenCall = orderedCalls.some((item) => resolveCallStatus(item.callStatus, item.openingDate, item.deadlineDate) === 'open');
+  const notificationTargetCohort = resolveNotificationTargetCohort(programSteps);
 
   return (
     <main className="min-h-screen">
@@ -696,32 +705,11 @@ export default async function HomePage() {
       </section>
 
       <HomeProgramStepsBand steps={programSteps} />
-
-      <section className="section section-band band-stories">
-        <div className="container">
-          <h2 className="section-title">Résultats attendus</h2>
-          <div className="grid three">
-            {expectedResults.map((item) => (
-              <article key={item.title} className="card result-card">
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeNotificationBand disabled={hasOpenCall} targetCohort={notificationTargetCohort} />
 
       <section className="section section-band band-faq">
         <div className="container">
-          <h2 className="section-title">FAQ</h2>
-          <div className="faq-list">
-            {faqs.slice(0, 6).map((item) => (
-              <details key={item.id} className="faq-item">
-                <summary>{item.question || 'Question'}</summary>
-                <p>{blocksToText(item.answer) || 'Réponse en cours de publication.'}</p>
-              </details>
-            ))}
-          </div>
+          <FaqSection items={faqItems} compact />
         </div>
       </section>
     </main>
