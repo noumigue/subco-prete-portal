@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
+import InfraBand from '@/components/InfraBand';
 import FaqSection from './FaqSection';
 import HomeMechanismBand from './HomeMechanismBand';
 import HomeNotificationBand from './HomeNotificationBand';
@@ -16,163 +17,6 @@ import {
 
 type HeroStyle = CSSProperties & {
   '--hero-photo'?: string;
-};
-
-function InfrastructureIcon({ kind }: { kind?: string }) {
-  switch (kind) {
-    case 'factory':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 21h18" />
-          <path d="M5 21V10l5 3V8l5 3V6l4 2v13" />
-          <path d="M8 21v-4" />
-          <path d="M12 21v-3" />
-          <path d="M16 21v-5" />
-        </svg>
-      );
-    case 'warehouse':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 10 12 4l9 6" />
-          <path d="M5 9v11h14V9" />
-          <path d="M9 20v-5h6v5" />
-          <path d="M8 12h.01" />
-          <path d="M16 12h.01" />
-        </svg>
-      );
-    case 'truck':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 7h11v8H3z" />
-          <path d="M14 10h3l3 3v2h-6" />
-          <circle cx="7" cy="17" r="2" />
-          <circle cx="17" cy="17" r="2" />
-        </svg>
-      );
-    case 'badge':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 3 5 6v6c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9V6l-7-3Z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
-      );
-    case 'cloud':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 18h10a4 4 0 0 0 .5-8A5.5 5.5 0 0 0 7 8.5 4.5 4.5 0 0 0 7 18Z" />
-          <path d="M12 11v6" />
-          <path d="m9.5 14.5 2.5 2.5 2.5-2.5" />
-        </svg>
-      );
-    case 'training':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m3 8 9-4 9 4-9 4-9-4Z" />
-          <path d="M7 10v4c0 1.8 2.2 3 5 3s5-1.2 5-3v-4" />
-          <path d="M21 9v6" />
-        </svg>
-      );
-    case 'connect':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="5" width="7" height="5" rx="1" />
-          <rect x="14" y="5" width="7" height="5" rx="1" />
-          <rect x="8.5" y="14" width="7" height="5" rx="1" />
-          <path d="M6.5 10v2h9v2" />
-          <path d="M17.5 10v2h-9" />
-        </svg>
-      );
-    case 'more':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 8v8" />
-          <path d="M8 12h8" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
-
-const infrastructureHighlights = [
-  {
-    title: 'Production et transformation',
-    text: 'Unités de production, transformation agroalimentaire ou minière, ateliers mutualisés.',
-    icon: 'factory',
-  },
-  {
-    title: 'Stockage et conservation',
-    text: 'Entrepôts, chambres froides, silos, centres de collecte et solutions de conservation partagée.',
-    icon: 'warehouse',
-  },
-  {
-    title: 'Logistique et commercialisation',
-    text: 'Plateformes logistiques, marchés, transport adapté, agrégation et mise en marché.',
-    icon: 'truck',
-  },
-  {
-    title: 'Qualité et certification',
-    text: 'Laboratoires, contrôle qualité, inspection, traçabilité et mise en conformité.',
-    icon: 'badge',
-  },
-  {
-    title: 'Numérique et e-commerce',
-    text: 'Plateformes digitales, systèmes de gestion et e-commerce au service des MPME.',
-    icon: 'cloud',
-  },
-  {
-    title: 'Formation et conseil',
-    text: 'Formation, mentorat, assistance technique et accompagnement liés au projet.',
-    icon: 'training',
-  },
-  {
-    title: 'Infrastructure immatérielle',
-    text: 'Eligible si l’usage est collectif et utile aux MPME, sous validation du programme.',
-    icon: 'connect',
-  },
-  {
-    title: 'Et bien d’autres...',
-    text: 'Toute infrastructure à usage collectif ou partagé, sous validation du programme.',
-    open: true,
-    icon: 'more',
-  },
-];
-
-const infraSectionStyle: CSSProperties = {
-  backgroundColor: '#f2f7ef',
-};
-
-const infraWrapStyle: CSSProperties = {
-  display: 'grid',
-  gap: '1rem',
-};
-
-const infraListStyle: CSSProperties = {
-  margin: 0,
-  padding: 0,
-  listStyle: 'none',
-  display: 'grid',
-  gap: '0.72rem',
-  gridTemplateColumns: 'repeat(2, minmax(250px, 1fr))',
-};
-
-const infraItemStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '36px 1fr',
-  gap: '0.7rem',
-  alignItems: 'start',
-  border: '1px solid rgba(95, 108, 122, 0.22)',
-  borderRadius: '10px',
-  backgroundColor: '#fff',
-  padding: '0.85rem',
-  minWidth: 0,
-  boxShadow: '0 6px 20px rgba(20, 43, 33, 0.04)',
-};
-
-const infraOpenItemStyle: CSSProperties = {
-  borderColor: '#aad8c4',
-  backgroundColor: '#ecf8f2',
 };
 
 const callBandSectionStyle: CSSProperties = {
@@ -325,32 +169,6 @@ const callBandEyebrowStyle: CSSProperties = {
   letterSpacing: '0.09em',
 };
 
-const infraItemTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: '1rem',
-  lineHeight: 1.2,
-  overflowWrap: 'anywhere',
-};
-
-const infraItemTextStyle: CSSProperties = {
-  margin: '0.35rem 0 0',
-  color: 'var(--ink-soft)',
-  lineHeight: 1.45,
-  overflowWrap: 'anywhere',
-};
-
-const infraIconStyle: CSSProperties = {
-  width: '32px',
-  height: '32px',
-  borderRadius: '999px',
-  display: 'grid',
-  placeItems: 'center',
-  background: '#e8f3ea',
-  border: '1px solid #c4dfd1',
-  fontSize: '0.85rem',
-  lineHeight: 1,
-  flex: '0 0 32px',
-};
 
 function toDateLabel(value?: string) {
   if (!value) return 'Date à confirmer';
@@ -639,34 +457,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="home-infrastructure-band" className="section infrastructure-band home-infra-band" style={infraSectionStyle}>
-        <div className="container infrastructure-wrap home-infra-wrap" style={infraWrapStyle}>
-          <div className="infrastructure-copy">
-            <h2 className="section-title">Exemples d&apos;infrastructures éligibles</h2>
-            <p className="hero-vision infrastructure-lead">
-              Physique ou immatérielle : ce qui compte d&apos;abord est le bénéfice collectif pour plusieurs MPME, dans une chaîne prioritaire ou dans un projet transversal.
-            </p>
-          </div>
-
-          <ul className="infrastructure-list home-infra-list" style={infraListStyle}>
-            {infrastructureHighlights.map((item) => (
-              <li
-                key={item.title}
-                className={`infrastructure-item home-infra-item ${item.open ? 'is-open' : ''}`}
-                style={item.open ? { ...infraItemStyle, ...infraOpenItemStyle } : infraItemStyle}
-              >
-                <span className={`infrastructure-icon home-infra-icon ${item.icon}`} aria-hidden="true" style={infraIconStyle}>
-                  <InfrastructureIcon kind={item.icon} />
-                </span>
-                <div className="infrastructure-content home-infra-content">
-                  <h3 style={infraItemTitleStyle}>{item.title}</h3>
-                  <p style={infraItemTextStyle}>{item.text}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <InfraBand />
 
       <section className="section section-band band-partners">
         <div className="container">

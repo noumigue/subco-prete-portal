@@ -45,6 +45,24 @@ export type ValueChainItem = {
   heroImage?: StrapiMedia;
 };
 
+export type InfrastructureTypeItem = {
+  id: number;
+  title?: string;
+  slug?: string;
+  order?: number;
+  nature?: 'physique' | 'immaterielle' | 'mixte';
+  icon?: string;
+  cardText?: string;
+  lead?: string;
+  body?: RichTextValue;
+  highlight?: boolean;
+};
+
+export type InfrastructureBand = {
+  title?: string;
+  intro?: string;
+};
+
 function orderValueChains(items: ValueChainItem[]) {
   return [...items].sort((a, b) => {
     const aIsTransversal = a.slug === 'projet-transversal';
@@ -249,6 +267,22 @@ export async function getCandidatureGuide() {
 export async function getValueChains() {
   const out = await getJson<StrapiList<ValueChainItem>>('/api/value-chains?sort=priorityOrder:asc&populate=heroImage');
   return orderValueChains(out?.data || []);
+}
+
+export async function getInfrastructureTypes() {
+  const out = await getJson<StrapiList<InfrastructureTypeItem>>('/api/infrastructure-types?sort=order:asc&pagination[pageSize]=100');
+  return (out?.data || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+
+export async function getInfrastructureBySlug(slug: string) {
+  const q = encodeURIComponent(slug);
+  const out = await getJson<StrapiList<InfrastructureTypeItem>>(`/api/infrastructure-types?filters[slug][$eq]=${q}&pagination[limit]=1`);
+  return out?.data?.[0] || null;
+}
+
+export async function getInfrastructureBand() {
+  const out = await getJson<StrapiOne<InfrastructureBand>>('/api/infrastructure-band');
+  return out?.data || null;
 }
 
 export async function getValueChainBySlug(slug: string) {
