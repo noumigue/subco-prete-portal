@@ -188,7 +188,13 @@ function normalizeBlocks(value: RichTextValue | null | undefined): RichTextBlock
   return normalized;
 }
 
-export function RichText({ value }: { value: RichTextValue | null | undefined }) {
+export function RichText({
+  value,
+  className,
+}: {
+  value: RichTextValue | null | undefined;
+  className?: string;
+}) {
   const blocks = normalizeBlocks(value);
 
   if (!blocks.length) {
@@ -196,7 +202,7 @@ export function RichText({ value }: { value: RichTextValue | null | undefined })
   }
 
   return (
-    <div className="rich-text-content">
+    <div className={className ? `rich-text-content ${className}` : 'rich-text-content'}>
       {blocks.map((block, index) => {
         const key = `${block.type || 'block'}-${index}`;
         const children = block.children || [];

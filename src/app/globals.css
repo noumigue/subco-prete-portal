@@ -1399,6 +1399,11 @@ h3 {
   max-width: 720px;
 }
 
+.infra-article {
+  background: #fff;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+}
+
 .infra-article h1 {
   margin: 0 0 1rem;
   font-size: clamp(1.9rem, 4vw, 2.875rem);
@@ -1412,14 +1417,14 @@ h3 {
   line-height: 1.55;
 }
 
-.infra-rtf {
+.rich-text-content.infra-rtf {
   margin-top: 0.5rem;
   color: #39453f;
   line-height: 1.65;
 }
 
-.infra-rtf h2,
-.infra-rtf h3 {
+.rich-text-content.infra-rtf h2,
+.rich-text-content.infra-rtf h3 {
   margin: 2.35rem 0 0.75rem;
   padding-top: 1.85rem;
   border-top: 1px solid #e5e1d6;
@@ -1427,31 +1432,39 @@ h3 {
   line-height: 1.2;
 }
 
-.infra-rtf h2 {
+.rich-text-content.infra-rtf h2 {
   font-size: 1.45rem;
 }
 
-.infra-rtf h3 {
+.rich-text-content.infra-rtf h3 {
   font-size: 1.2rem;
 }
 
-.infra-rtf p {
+.rich-text-content.infra-rtf p,
+.rich-text-content.infra-rtf ul,
+.rich-text-content.infra-rtf ol {
   margin: 0 0 0.95rem;
 }
 
-.infra-rtf ul {
+.rich-text-content.infra-rtf ul,
+.rich-text-content.infra-rtf ol {
   margin: 0 0 0.95rem;
   padding: 0;
   list-style: none;
 }
 
-.infra-rtf li {
+.rich-text-content.infra-rtf li {
+  display: block;
   position: relative;
   padding-left: 1.35rem;
   margin: 0 0 0.6rem;
 }
 
-.infra-rtf li::before {
+.rich-text-content.infra-rtf li + li {
+  margin-top: 0;
+}
+
+.rich-text-content.infra-rtf li::before {
   content: '';
   position: absolute;
   left: 2px;
@@ -1462,11 +1475,12 @@ h3 {
   background: #b67c22;
 }
 
-.infra-rtf.imm li::before {
+.rich-text-content.infra-rtf.imm li::before {
   background: #2b6c6b;
 }
 
-.infra-rtf b {
+.rich-text-content.infra-rtf b,
+.rich-text-content.infra-rtf strong {
   color: #1b2620;
 }
 
