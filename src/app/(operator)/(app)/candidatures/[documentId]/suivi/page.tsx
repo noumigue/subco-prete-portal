@@ -1,0 +1,113 @@
+import Link from 'next/link';
+import { getPortalCandidature } from '@/lib/portal-api';
+
+const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
+const labels: Record<(typeof phases)[number], string> = {
+  recu: 'Recu',
+  completude: 'Completude',
+  eligibilite: 'Eligibilite',
+  evaluation: 'Evaluation',
+  decision: 'Decision',
+};
+
+function getPill(group?: string, hasComplement?: boolean) {
+  if (hasComplement) return { label: '⚠ Complement demande', className: 'pill-comp' };
+  if (group === 'selectionne') return { label: '✓ Selectionne', className: 'pill-sel' };
+  if (group === 'non_retenu') return { label: '✗ Non retenu', className: 'pill-no' };
+  return { label: '⏳ En instruction', className: 'pill-inst' };
+}
+
+export default async function FollowUpPage({
+  params,
+}: {
+  params: Promise<{ documentId: string }>;
+}) {
+  const { documentId } = await params;
+  const candidature = await getPortalCandidature(documentId);
+  const currentPhase = candidature?.statut?.phase || 'recu';
+  const currentIndex = phases.indexOf(currentPhase);
+  const complement = candidature?.complements?.find((item) => item.statut === 'demande');
+  const isSelected = candidature?.statut?.groupe === 'selectionne';
+  const isRejected = candidature?.statut?.groupe === 'non_retenu';
+  const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
+
+  return (
+    <div className="operator-page">
+      <Link href="/mes-candidatures" className="operator-back-link">← Mes candidatures</Link>
+      <div className="operator-dossier-head">
+        <div>
+          <h1>{candidature?.titreProjet}</h1>
+          <p className="operator-page-intro"><span className="operator-candidature-num">{candidature?.numeroDossier || 'Numero en attente'}</span> · {candidature?.appel?.nom}</p>
+        </div>
+        <div className="operator-dossier-right">
+          <span className={`operator-status-pill ${pill.className}`}>{pill.label}</span>
+        </div>
+      </div>
+
+      <div className="operator-block-title">Avancement du dossier</div>
+      <section className="operator-card">
+        <div className="operator-follow-timeline">
+          {phases.map((phase, index) => (
+            <div key={phase} className={`operator-follow-step${index < currentIndex ? ' done' : ''}${index === currentIndex ? ' current' : ''}${index === currentIndex && complement ? ' comp' : ''}`}>
+              <span className="operator-follow-bead" />
+              <div>
+                <div className="operator-follow-label">{labels[phase]}</div>
+                <div className="operator-follow-meta">{index < currentIndex ? 'Etape franchie' : index === currentIndex ? (complement ? 'Complement attendu' : 'Etape en cours') : 'A venir'}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {complement ? (
+        <section className="operator-action-card">
+          <div className="operator-action-head">⚠ Une piece complementaire est demandee</div>
+          <p>L&apos;UGP a besoin de <strong>{complement.pieceDemandee}</strong> pour poursuivre la verification de votre dossier. A fournir avant le <strong>{complement.echeance || 'A confirmer'}</strong>.</p>
+          <div className="operator-action-drop">
+            Deposez ici la piece demandee (PDF ou image)
+            <span className="operator-action-file">Choisir un fichier</span>
+          </div>
+          <div className="operator-action-foot">
+            <span className="operator-action-hint">Ce depot s&apos;ajoute au dossier ; il ne modifie pas votre candidature deja deposee.</span>
+            <button type="button" className="operator-amber-btn">Envoyer la piece</button>
+          </div>
+        </section>
+      ) : null}
+
+      {isSelected ? (
+        <section className="operator-result-card is-selected">
+          <h2>✓ Votre candidature a ete selectionnee</h2>
+          <p>La convention pourra etre suivie dans la section <strong>Ma subvention</strong>.</p>
+          <Link href="/ma-subvention" className="operator-primary-btn inline">Acceder a Ma subvention</Link>
+        </section>
+      ) : null}
+
+      {isRejected ? (
+        <section className="operator-result-card is-rejected">
+          <h2>✗ Votre candidature n&apos;a pas ete retenue</h2>
+          <div className="operator-motif-box">
+            <span className="operator-motif-label">Motif</span>
+            {candidature?.motifDecisionCourt || 'Motif officiel court a renseigner par l UGP.'}
+          </div>
+        </section>
+      ) : null}
+
+      <div className="operator-block-title">Notifications de ce dossier</div>
+      <section className="operator-card">
+        <div className="operator-journal">
+          {(candidature?.notifications || []).length === 0 ? <p className="operator-muted">Aucune notification rattachee.</p> : candidature?.notifications?.map((item) => (
+            <article key={item.documentId} className="operator-journal-row">
+              <span className="operator-journal-date">{item.envoyeLe || 'Date a confirmer'}</span>
+              <span className="operator-journal-channel">{item.canal?.toUpperCase() || 'EMAIL'}</span>
+              <span className="operator-journal-text">{item.sujet || item.corps}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="operator-pdf-bar">
+        <button type="button" className="operator-secondary-btn inline">⤓ PDF du dossier (permanent)</button>
+      </div>
+    </div>
+  );
+}
