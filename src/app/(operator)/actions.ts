@@ -33,8 +33,11 @@ export async function registerCandidateAction(formData: FormData) {
 export async function loginCandidateAction(formData: FormData) {
   const email = readString(formData, 'email');
   const password = readString(formData, 'password');
+  const next = readString(formData, 'next');
+  // Anti open-redirect : uniquement des chemins internes (/…, pas //…).
+  const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '';
 
-  let target = '/tableau-de-bord';
+  let target = safeNext || '/tableau-de-bord';
 
   try {
     await loginCandidate(email, password);
@@ -42,7 +45,7 @@ export async function loginCandidateAction(formData: FormData) {
     const message = error instanceof Error ? error.message : 'connexion';
     target = /confirm/i.test(message)
       ? `/verifier-email?email=${encodeURIComponent(email)}&error=non-confirme`
-      : `/connexion?error=${encodeURIComponent(message)}`;
+      : `/connexion?error=${encodeURIComponent(message)}${safeNext ? `&next=${encodeURIComponent(safeNext)}` : ''}`;
   }
 
   redirect(target);

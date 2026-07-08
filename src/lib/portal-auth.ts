@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { PortalOrganisation, PortalRole, PortalSession } from './portal-types';
 
@@ -202,7 +202,9 @@ export async function getPortalSession(): Promise<PortalSession | null> {
 export async function requirePortalSession() {
   const session = await getPortalSession();
   if (!session) {
-    redirect('/connexion');
+    const path = (await headers()).get('x-pathname') || '';
+    const next = path.startsWith('/') && !path.startsWith('//') ? `?next=${encodeURIComponent(path)}` : '';
+    redirect(`/connexion${next}`);
   }
 
   return session;

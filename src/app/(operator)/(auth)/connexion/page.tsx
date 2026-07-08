@@ -1,6 +1,12 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { loginCandidateAction } from '../../actions';
+import { getPortalSession } from '@/lib/portal-auth';
 import { OperatorAuthPasswordField } from '@/components/operator-auth-password-field';
+
+function safeNext(value?: string) {
+  return value && value.startsWith('/') && !value.startsWith('//') ? value : '';
+}
 
 export default async function LoginPage({
   searchParams,
@@ -10,6 +16,13 @@ export default async function LoginPage({
   const params = await searchParams;
   const error = Array.isArray(params.error) ? params.error[0] : params.error;
   const reset = Array.isArray(params.reset) ? params.reset[0] : params.reset;
+  const next = safeNext(Array.isArray(params.next) ? params.next[0] : params.next);
+
+  // Déjà connecté → aller directement à la destination voulue (ou au tableau de bord).
+  const session = await getPortalSession();
+  if (session) {
+    redirect(next || '/tableau-de-bord');
+  }
 
   return (
     <main className="operator-auth-main">
@@ -20,6 +33,7 @@ export default async function LoginPage({
         {reset ? <p className="operator-auth-note">Mot de passe modifié. Vous pouvez vous connecter.</p> : null}
         {error ? <p className="operator-auth-error">{error}</p> : null}
         <form action={loginCandidateAction}>
+          {next ? <input type="hidden" name="next" value={next} /> : null}
           <label htmlFor="email">Adresse e-mail</label>
           <input id="email" name="email" type="email" placeholder="nom@organisation.bi" required />
           <OperatorAuthPasswordField id="password" name="password" label="Mot de passe" placeholder="••••••••" required />

@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-const footerGroups = [
-  { key: 'assistance', title: 'Assistance' },
-  { key: 'institutional', title: 'Liens institutionnels' },
-  { key: 'resources', title: 'Ressources' },
+const footerColumns = [
+  { key: 'programme', title: 'Le programme' },
+  { key: 'candidater', title: 'Candidater' },
+  { key: 'aide', title: 'Aide & recours' },
 ] as const;
 
 type HeaderNavItem = {
@@ -118,23 +118,75 @@ export default async function RootLayout({
         {isOperatorRoute ? null : (
           <footer className="site-footer">
             <div className="container footer-wrap">
-              <div>
-                <p>© {new Date().getFullYear()} SUBCO PRETE</p>
-                <p>Plateforme d&apos;information et de soumission</p>
+              <div className="footer-brand">
+                <p className="footer-brand-name">SUBCO-PRETE</p>
+                <p className="footer-tagline">
+                  La plateforme des subventions de contrepartie du PRETE : s’informer, vérifier son éligibilité,
+                  candidater, puis suivre et gérer sa subvention.
+                </p>
               </div>
-              {footerGroups.map((group) => (
-                <div key={group.key} className="footer-links">
-                  <strong>{group.title}</strong>
+              {footerColumns.map((column) => (
+                <div key={column.key} className="footer-links">
+                  <strong>{column.title}</strong>
                   {footerLinks
-                    .filter((item) => item.group === group.key)
+                    .filter((item) => item.group === column.key)
+                    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+                    .map((item) => {
+                      const url = item.url || '/';
+                      const isExternal = /^https?:\/\//i.test(url);
+                      const isOperator = operatorRoutes.some(
+                        (route) => url === route || url.startsWith(`${route}/`),
+                      );
+                      const opensNewTab = isExternal || isOperator;
+                      const arrow = opensNewTab ? (
+                        <span className="footer-newtab" aria-hidden="true">↗</span>
+                      ) : null;
+                      return isExternal ? (
+                        <a
+                          key={`${column.key}-${item.label}`}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.label}
+                          {arrow}
+                        </a>
+                      ) : (
+                        <Link
+                          key={`${column.key}-${item.label}`}
+                          href={url}
+                          {...(isOperator ? { target: '_blank', rel: 'noopener' } : {})}
+                        >
+                          {item.label}
+                          {arrow}
+                        </Link>
+                      );
+                    })}
+                </div>
+              ))}
+            </div>
+            <div className="footer-bottom">
+              <div className="container footer-bottom-inner">
+                <p className="footer-funding">
+                  <strong>Financé par la Banque mondiale</strong> · Mis en œuvre par l’UGP
+                </p>
+                <div className="footer-legal">
+                  <span>© {new Date().getFullYear()} SUBCO-PRETE — Projet PRETE Nyunganira</span>
+                  {footerLinks
+                    .filter((item) => item.group === 'legal')
                     .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
                     .map((item) => (
-                      <Link key={`${group.key}-${item.label}`} href={item.url || '/'}>
+                      <Link key={`legal-${item.label}`} href={item.url || '/'}>
                         {item.label}
                       </Link>
                     ))}
+                  <span className="footer-lang">
+                    <Link href="/lang/fr">FR</Link>
+                    <span aria-hidden="true">·</span>
+                    <Link href="/lang/rn">KI</Link>
+                  </span>
                 </div>
-              ))}
+              </div>
             </div>
           </footer>
         )}

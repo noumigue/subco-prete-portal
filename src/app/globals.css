@@ -3515,6 +3515,263 @@ table {
 }
 
 .footer-links strong {
+  color: #eaf3ef;
+  font-size: 0.9rem;
+  margin-bottom: 0.15rem;
+}
+
+/* Bloc marque + slogan (footer parcours) */
+.footer-brand-name {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.footer-tagline {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #b9d3c8;
+  max-width: 42ch;
+}
+
+/* Barre du bas : financement + copyright + légal + langue */
+.footer-bottom {
+  border-top: 1px solid #26463c;
+}
+
+.footer-bottom-inner {
+  padding: 0.9rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.footer-funding {
+  font-size: 0.8rem;
+  color: #b9d3c8;
+}
+
+.footer-funding strong {
+  color: #eaf3ef;
+}
+
+.footer-legal {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  font-size: 0.78rem;
+  color: #9ec2b5;
+}
+
+.footer-legal a {
+  color: #9ec2b5;
+  text-decoration: none;
+}
+
+.footer-legal a:hover {
+  color: #eaf3ef;
+}
+
+.footer-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #dfeee7;
+}
+
+.footer-lang a {
+  color: #dfeee7;
+}
+
+/* Pages légales / statiques (contact, mentions, confidentialité, accessibilité, réclamations) */
+.legal-page {
+  max-width: 760px;
+}
+
+.legal-lead {
+  margin: 0.4rem 0 1.5rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.legal-section {
+  margin-top: 1.8rem;
+}
+
+.legal-section h2 {
+  font-size: 1.15rem;
+  color: var(--brand-deep);
+  margin-bottom: 0.5rem;
+}
+
+.legal-section p {
+  color: var(--ink);
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+}
+
+.legal-section ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.legal-section a,
+.legal-lead a {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+.resource-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.resource-link {
+  color: var(--brand-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.resource-link:hover {
+  text-decoration: underline;
+}
+
+.resource-link.is-missing {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.resource-desc {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 0.1rem;
+}
+
+.legal-empty {
+  color: var(--ink-soft);
+}
+
+/* Page /reclamations */
+.reclamation-pointer {
+  background: #f2f7ef;
+  border: 1px solid var(--sage-border);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  margin-top: 1.2rem;
+}
+
+.reclamation-pointer p {
+  margin: 0;
+}
+
+.reclamation-note {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 0.6rem;
+}
+
+.reclamation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 560px;
+  margin-top: 0.5rem;
+}
+
+.reclamation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.reclamation-field > span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.reclamation-field em {
+  color: var(--ink-soft);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.reclamation-field input,
+.reclamation-field select,
+.reclamation-field textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  background: #fff;
+  font: inherit;
+}
+
+.reclamation-field textarea {
+  resize: vertical;
+}
+
+.reclamation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.9rem;
+}
+
+.reclamation-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.reclamation-hint {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  background: #faf8f1;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  margin: 0;
+}
+
+.reclamation-error {
+  color: #b23f2f;
+  font-size: 0.9rem;
+}
+
+.reclamation-success {
+  background: #dff1e6;
+  border: 1px solid #bfe3cd;
+  border-radius: 12px;
+  padding: 1.2rem 1.3rem;
+  margin-top: 0.5rem;
+}
+
+.reclamation-success h2 {
+  color: var(--emerald-dark);
+  margin: 0 0 0.4rem;
+}
+
+.reclamation-ticket {
+  font-family: ui-monospace, Menlo, monospace;
+  color: var(--pine);
+}
+
+.footer-links strong {
   color: #fff;
   margin-bottom: 0.25rem;
 }
@@ -3528,6 +3785,13 @@ table {
 .footer-links a:hover,
 .topbar-links a:hover {
   color: #9df2df;
+}
+
+.footer-newtab {
+  font-size: 0.7em;
+  margin-left: 0.28em;
+  opacity: 0.55;
+  vertical-align: 0.08em;
 }
 
 @media (max-width: 900px) {
@@ -5617,5 +5881,920 @@ table {
 
   .operator-form-ack-row span {
     margin-left: 0;
+  }
+}
+
+/* ===== Page /contact — entête type /eligibilite + cartes-canaux ===== */
+.contact-hero-meta {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.15rem;
+  color: var(--muted-warm);
+  font-size: 0.85rem;
+}
+
+.contact-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.contact-hero-meta span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sage-border);
+  flex: 0 0 auto;
+}
+
+.contact-band {
+  background: #f7f6f3;
+  border-top: 1px solid #e9e6de;
+  border-bottom: 1px solid #e9e6de;
+}
+
+.contact-band-head {
+  max-width: 62ch;
+  margin-bottom: 1.5rem;
+}
+
+.contact-band-head h2 {
+  font-size: 1.45rem;
+  line-height: 1.25;
+}
+
+.contact-band-head p {
+  margin-top: 0.45rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 1.35rem 1.4rem 1.4rem;
+  border: 1px solid rgba(188, 200, 191, 0.56);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(23, 106, 77, 0.36);
+}
+
+.contact-card--primary {
+  grid-column: 1 / -1;
+}
+
+.contact-card-head {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.contact-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bad1c4;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.contact-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contact-card-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  padding: 0.16rem 0.55rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 999px;
+  background: var(--sage-tile);
+  color: var(--pine-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.contact-card-head h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.contact-card-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.contact-card-body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.contact-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.contact-step {
+  padding: 0.85rem 0.9rem;
+  border: 1px solid #e6e3da;
+  border-radius: 12px;
+  background: #fbfaf7;
+}
+
+.contact-step-num {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand-deep);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.contact-step h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.contact-step p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.contact-step a {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+.contact-card-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Réclamations & recours — autre régime, carte pine sombre */
+.contact-card--distinct {
+  background: linear-gradient(160deg, var(--pine) 0%, var(--pine-dark) 100%);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #dcefe4;
+}
+
+.contact-card--distinct h3 {
+  color: #fff;
+}
+
+.contact-card--distinct .contact-card-sub {
+  color: rgba(224, 240, 232, 0.78);
+}
+
+.contact-card--distinct .contact-card-body {
+  color: rgba(233, 245, 239, 0.88);
+}
+
+.contact-card--distinct .contact-icon {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: none;
+}
+
+.contact-card--distinct .contact-icon svg {
+  stroke: #bfe6d2;
+}
+
+.contact-card--distinct .contact-card-tag {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #d8f0e2;
+}
+
+.contact-card--distinct .btn {
+  background: #fff;
+  color: var(--pine-dark);
+}
+
+.contact-card--distinct .btn:hover {
+  background: #e9f5ee;
+}
+
+.contact-card-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(220, 239, 228, 0.72);
+}
+
+/* UGP — carte institutionnelle sobre sur tuile sauge */
+.contact-card--ugp {
+  background: var(--sage-tile);
+  border-color: var(--sage-border);
+}
+
+.contact-card--ugp .contact-icon {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #aecbb3;
+}
+
+.contact-card--ugp .contact-card-tag {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.contact-card--ugp .contact-card-sub,
+.contact-card--ugp .contact-card-body {
+  color: #34473f;
+}
+
+.contact-mail-link {
+  color: var(--brand-deep);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(21, 84, 70, 0.35);
+  padding-bottom: 1px;
+}
+
+.contact-mail-link:hover {
+  border-bottom-color: var(--brand-deep);
+}
+
+@media (max-width: 820px) {
+  .contact-grid,
+  .contact-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-card {
+    padding: 1.15rem 1.1rem 1.2rem;
+  }
+
+  .contact-card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .contact-card-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   Page /ressources — Documents & ressources (.docs-*)
+   Même langage visuel que /contact : bandeau doux #f7f6f3,
+   tuiles blanches, pastilles filaires 38px. Ne redéfinit
+   aucune classe .contact-* ; classes préfixées .docs-.
+   ============================================================ */
+
+/* Rangée de méta-chips de l'entête (équivalent .contact-hero-meta) */
+.docs-hero-meta {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.15rem;
+  color: var(--muted-warm);
+  font-size: 0.85rem;
+}
+
+.docs-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.docs-hero-meta span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sage-border);
+  flex: 0 0 auto;
+}
+
+/* Bandeau du corps */
+.docs-band {
+  background: #f7f6f3;
+  border-top: 1px solid #e9e6de;
+  border-bottom: 1px solid #e9e6de;
+}
+
+.docs-band-head {
+  max-width: 62ch;
+  margin-bottom: 1.6rem;
+}
+
+.docs-band-head h2 {
+  font-size: 1.45rem;
+  line-height: 1.25;
+}
+
+.docs-band-head p {
+  margin-top: 0.45rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* Pile des groupes de catégories */
+.docs-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
+}
+
+/* En-tête d'une catégorie : pastille + titre + compteur */
+.docs-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.85rem;
+}
+
+.docs-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bad1c4;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.docs-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-group-title {
+  margin: 0;
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+
+.docs-group-count {
+  margin-left: auto;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 999px;
+  background: var(--sage-tile);
+  color: var(--pine-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Grille des documents (tuiles blanches) */
+.docs-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.docs-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(188, 200, 191, 0.56);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Variante cliquable (document téléchargeable) */
+a.docs-item {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+a.docs-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(23, 106, 77, 0.36);
+}
+
+a.docs-item:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 3px;
+}
+
+.docs-file-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d3e4d6;
+  background: #f4faf5;
+}
+
+.docs-file-icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-item-body {
+  min-width: 0;
+}
+
+.docs-item-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.docs-item-desc {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+/* Affordance de téléchargement (pastille flèche) */
+.docs-item-dl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--sage-border);
+  background: #fff;
+  color: var(--brand-deep);
+  flex: 0 0 auto;
+}
+
+.docs-item-dl svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+a.docs-item:hover .docs-item-dl {
+  background: var(--sage-tile);
+  border-color: rgba(23, 106, 77, 0.36);
+}
+
+/* État "indisponible" (pas de fichier) */
+.docs-item.is-missing {
+  background: #faf9f5;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.docs-item.is-missing .docs-file-icon {
+  background: #f0efe9;
+  border-color: #ddd9cd;
+}
+
+.docs-item.is-missing .docs-file-icon svg {
+  stroke: var(--muted-warm);
+}
+
+.docs-item.is-missing .docs-item-title {
+  color: var(--ink-soft);
+}
+
+.docs-item-flag {
+  flex: 0 0 auto;
+  padding: 0.16rem 0.55rem;
+  border: 1px solid var(--line-warm);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted-warm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* État vide — carte centrée soignée */
+.docs-empty {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2.6rem 1.8rem;
+  border: 1px solid rgba(188, 200, 191, 0.56);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.docs-empty-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 0.4rem;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bad1c4;
+  background: var(--sage-tile);
+}
+
+.docs-empty-icon svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-empty h2 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.docs-empty p {
+  color: var(--ink-soft);
+  line-height: 1.55;
+  max-width: 46ch;
+}
+
+.docs-empty-actions {
+  margin-top: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+/* Empilement sous ~820px */
+@media (max-width: 820px) {
+  .docs-list {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-group-head {
+    flex-wrap: wrap;
+  }
+
+  .docs-empty-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .docs-empty-actions .btn {
+    width: 100%;
+  }
+}
+
+
+/* ===== Page /reclamations — entête type /contact + corps en cartes sur bandeau ===== */
+/* Méta-chips du hero (équivalent .contact-hero-meta) */
+.claim-hero-meta {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.15rem;
+  color: var(--muted-warm);
+  font-size: 0.85rem;
+}
+
+.claim-hero-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.claim-hero-meta span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sage-border);
+  flex: 0 0 auto;
+}
+
+/* Bandeau doux du corps (même valeur que .contact-band) */
+.claim-band {
+  background: #f7f6f3;
+  border-top: 1px solid #e9e6de;
+  border-bottom: 1px solid #e9e6de;
+}
+
+.claim-band-head {
+  max-width: 62ch;
+  margin-bottom: 1.5rem;
+}
+
+.claim-band-head h2 {
+  font-size: 1.45rem;
+  line-height: 1.25;
+}
+
+.claim-band-head p {
+  margin-top: 0.45rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* Encadré différencié « Vous avez un dossier ? » — accent sauge */
+.claim-account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem 1.15rem;
+  margin-bottom: 1.8rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 14px;
+  background: linear-gradient(150deg, #eef6ef 0%, #e3efe3 100%);
+}
+
+.claim-account-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #aecbb3;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.claim-account-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--pine-dark);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.claim-account-text {
+  flex: 1 1 260px;
+}
+
+.claim-account-text h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.02rem;
+  line-height: 1.25;
+  color: var(--pine-dark);
+}
+
+.claim-account-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #34473f;
+}
+
+.claim-account-text a {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+/* Sous-titre des cas d'usage */
+.claim-cases-title {
+  margin: 0 0 0.9rem;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--pine-dark);
+}
+
+/* Grille des 4 cas d'usage */
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+/* Tuile blanche (même langage que .contact-card) */
+.claim-case {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1.2rem 1.25rem;
+  border: 1px solid rgba(188, 200, 191, 0.56);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.claim-case:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(23, 106, 77, 0.36);
+}
+
+.claim-case-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Pastille filaire 38px (même règle que .contact-icon) */
+.claim-case-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bad1c4;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.claim-case-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--brand-deep);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.claim-case-head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.claim-case p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* Marqueur « Anonymat possible » sur le cas signalement */
+.claim-case-flag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.14rem 0.55rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 999px;
+  background: var(--sage-tile);
+  color: var(--pine-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Note de renvoi vers le support */
+.claim-note {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.claim-note a {
+  color: var(--brand-deep);
+  font-weight: 600;
+}
+
+/* Panneau blanc net qui accueille le formulaire client */
+.claim-form-panel {
+  margin-top: 1.8rem;
+  padding: 1.6rem 1.7rem;
+  border: 1px solid rgba(188, 200, 191, 0.56);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.claim-form-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #ece9e0;
+}
+
+.claim-form-title {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+/* Badge « Confidentiel » du panneau formulaire */
+.claim-confidential {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 999px;
+  background: var(--sage-tile);
+  color: var(--pine-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.claim-confidential svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--pine-dark);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 820px) {
+  .claim-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .claim-account {
+    align-items: flex-start;
+  }
+
+  .claim-account .btn {
+    width: 100%;
+  }
+
+  .claim-form-panel {
+    padding: 1.25rem 1.15rem;
+  }
+
+  .claim-form-head {
+    align-items: flex-start;
   }
 }
