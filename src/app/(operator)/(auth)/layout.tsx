@@ -8,7 +8,7 @@ export default function OperatorAuthLayout({
       <header className="operator-auth-topbar">
         <div className="operator-auth-brand">
           <span className="operator-auth-brand-mark">SP</span>
-          <span>SUBCO PRETE<small>Acces operateur</small></span>
+          <span>SUBCO-PRETE<small>Accès opérateur</small></span>
         </div>
       </header>
       {children}

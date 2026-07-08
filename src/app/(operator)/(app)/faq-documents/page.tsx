@@ -7,10 +7,10 @@ export default async function FaqDocumentsPage() {
   return (
     <div className="operator-page">
       <p className="operator-kicker">FAQ & documents</p>
-      <h1>Preparation de dossier</h1>
+      <h1>Préparation de dossier</h1>
       <div className="operator-grid-2">
         <section className="operator-card">
-          <h2>Pieces Annexe 9</h2>
+          <h2>Pièces Annexe 9</h2>
           <ul className="operator-bullet-list">
             {typePieces.map((item) => (
               <li key={item.documentId}>{item.libelle} · {item.groupe} · {item.exigence}</li>

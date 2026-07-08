@@ -15,7 +15,7 @@ export default async function ResetPasswordPage({
       <section className="operator-auth-screen">
         <div className="operator-auth-card">
         <h1>Choisir un nouveau mot de passe</h1>
-        <p className="operator-auth-lead">Depuis le lien recu par e-mail.</p>
+        <p className="operator-auth-lead">Depuis le lien reçu par e-mail.</p>
         {error ? <p className="operator-auth-error">{error}</p> : null}
         <form action={resetPasswordAction}>
           <input type="hidden" name="code" value={code} />
@@ -23,7 +23,7 @@ export default async function ResetPasswordPage({
             id="password"
             name="password"
             label="Nouveau mot de passe"
-            hint="8 caracteres minimum"
+            hint="8 caractères minimum"
             minLength={8}
             placeholder="••••••••"
             required
@@ -39,7 +39,7 @@ export default async function ResetPasswordPage({
           <button type="submit" className="operator-primary-btn">Enregistrer</button>
         </form>
         </div>
-        <p className="operator-auth-annot"><b>Succes.</b> Apres validation, retour a la connexion avec message de confirmation.</p>
+        <p className="operator-auth-annot"><b>Succès.</b> Après validation, retour à la connexion avec message de confirmation.</p>
       </section>
     </main>
   );

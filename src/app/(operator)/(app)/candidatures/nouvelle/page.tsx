@@ -17,13 +17,13 @@ export default async function NewApplicationPage() {
         <h1>Avant de commencer</h1>
         <p className="operator-page-intro">
           {organisation
-            ? 'Votre profil organisation est deja connu. Verifiez les informations au demarrage du formulaire.'
-            : 'Votre premiere candidature consolidera aussi votre profil organisation, lu ensuite dans tout le portail.'}
+            ? 'Votre profil organisation est déjà connu. Vérifiez les informations au démarrage du formulaire.'
+            : 'Votre première candidature consolidera aussi votre profil organisation, lu ensuite dans tout le portail.'}
         </p>
         <div className="operator-checklist">
-          <p>Appel rattache automatiquement : <strong>{openCall?.nom || 'Aucun appel ouvert'}</strong></p>
-          <p>Pieces de l&apos;Annexe 9 : <Link href="/faq-documents">consulter la liste preparatoire</Link></p>
-          <p>Le formulaire Module 3 s&apos;ouvrira ensuite dans le dossier brouillon avec ses 4 etapes de saisie et de depot.</p>
+          <p>Appel rattaché automatiquement : <strong>{openCall?.nom || 'Aucun appel ouvert'}</strong></p>
+          <p>Pièces de l&apos;Annexe 9 : <Link href="/faq-documents">consulter la liste préparatoire</Link></p>
+          <p>Le formulaire Module 3 s&apos;ouvrira ensuite dans le dossier brouillon avec ses 4 étapes de saisie et de dépôt.</p>
         </div>
         <div className="operator-doc-strip">
           {typePieces.slice(0, 4).map((item) => (

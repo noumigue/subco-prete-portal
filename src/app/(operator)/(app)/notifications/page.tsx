@@ -14,7 +14,7 @@ export default async function NotificationsPage() {
             <article key={item.documentId} className={`operator-list-row${item.lu ? '' : ' is-unread'}`}>
               <div>
                 <h3>{item.sujet}</h3>
-                <p>{item.canal?.toUpperCase()} · {item.envoyeLe || 'Date a confirmer'}</p>
+                <p>{item.canal?.toUpperCase()} · {item.envoyeLe || 'Date à confirmer'}</p>
                 <p className="operator-muted">{item.corps}</p>
               </div>
               {!item.lu ? (

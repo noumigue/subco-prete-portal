@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import type { PortalRole, PortalSession } from '@/lib/portal-types';
+import { OperatorNavIcon } from '@/components/operator-nav-icon';
 
 type OperatorShellProps = {
   children: React.ReactNode;
@@ -12,13 +13,13 @@ type OperatorShellProps = {
 };
 
 const navItems = [
-  { href: '/tableau-de-bord', label: 'Tableau de bord', icon: '📊' },
-  { href: '/mon-organisation', label: 'Mon organisation', icon: '🏢' },
-  { href: '/mes-candidatures', label: 'Mes candidatures', icon: '📄' },
-  { href: '/ma-subvention', label: 'Ma subvention', icon: '🔒', lockedFor: 'candidat' as PortalRole },
-  { href: '/notifications', label: 'Notifications', icon: '🔔' },
-  { href: '/faq-documents', label: 'FAQ & documents', icon: '📚' },
-  { href: '/assistance', label: 'Assistance', icon: '🛟' },
+  { href: '/tableau-de-bord', label: 'Tableau de bord', icon: 'dashboard' },
+  { href: '/mon-organisation', label: 'Mon organisation', icon: 'organisation' },
+  { href: '/mes-candidatures', label: 'Mes candidatures', icon: 'candidatures' },
+  { href: '/ma-subvention', label: 'Ma subvention', icon: 'subvention', lockedFor: 'candidat' as PortalRole },
+  { href: '/notifications', label: 'Notifications', icon: 'notifications' },
+  { href: '/faq-documents', label: 'FAQ & documents', icon: 'faq' },
+  { href: '/assistance', label: 'Assistance', icon: 'assistance' },
 ];
 
 export function OperatorShell({ children, session, unreadCount }: OperatorShellProps) {
@@ -30,16 +31,19 @@ export function OperatorShell({ children, session, unreadCount }: OperatorShellP
       <div className={`operator-scrim${open ? ' show' : ''}`} onClick={() => setOpen(false)} />
       <header className="operator-topbar">
         <button type="button" className="operator-burger" onClick={() => setOpen(true)} aria-label="Ouvrir le menu">
-          ☰
+          <OperatorNavIcon name="menu" />
         </button>
         <div className="operator-brand">
           <span className="operator-brand-mark">SP</span>
-          <span>SUBCO-PRETE<small>Portail operateur</small></span>
+          <span>SUBCO-PRETE<small>Portail opérateur</small></span>
         </div>
         <div className="operator-topbar-right">
-          <Link href="/assistance" className="operator-help-pill">🛟 Besoin d&apos;aide ?</Link>
+          <Link href="/assistance" className="operator-help-pill">
+            <OperatorNavIcon name="assistance" />
+            <span>Besoin d&apos;aide ?</span>
+          </Link>
           <Link href="/notifications" className="operator-bell" aria-label="Notifications">
-            🔔
+            <OperatorNavIcon name="notifications" />
             {unreadCount > 0 ? <span className="operator-bell-dot">{unreadCount}</span> : null}
           </Link>
           <div className="operator-account-chip" title={session.orgName}>
@@ -58,16 +62,16 @@ export function OperatorShell({ children, session, unreadCount }: OperatorShellP
               const locked = item.lockedFor && session.role === item.lockedFor;
 
               return locked ? (
-                <div key={item.href} className="operator-nav-item is-locked" aria-disabled="true">
-                  <span className="operator-nav-icon">{item.icon}</span>
+                <div key={item.href} className="operator-nav-item is-locked" aria-disabled="true" title="Disponible après sélection et signature de la convention">
+                  <span className="operator-nav-icon"><OperatorNavIcon name={item.icon} /></span>
                   <span>
                     {item.label}
-                    <small>Disponible apres selection</small>
+                    <small>Disponible après sélection</small>
                   </span>
                 </div>
               ) : (
                 <Link key={item.href} href={item.href} className={`operator-nav-item${active ? ' is-active' : ''}`} onClick={() => setOpen(false)}>
-                  <span className="operator-nav-icon">{item.icon}</span>
+                  <span className="operator-nav-icon"><OperatorNavIcon name={item.icon} /></span>
                   <span>{item.label}</span>
                 </Link>
               );
@@ -75,12 +79,12 @@ export function OperatorShell({ children, session, unreadCount }: OperatorShellP
           </div>
           <div className="operator-sidebar-footer">
             <Link href="/mon-compte" className={`operator-nav-item${pathname === '/mon-compte' ? ' is-active' : ''}`} onClick={() => setOpen(false)}>
-              <span className="operator-nav-icon">⚙️</span>
+              <span className="operator-nav-icon"><OperatorNavIcon name="account" /></span>
               <span>Mon compte</span>
             </Link>
             <Link href="/deconnexion" className="operator-nav-item operator-logout">
-              <span className="operator-nav-icon">↩</span>
-              <span>Se deconnecter</span>
+              <span className="operator-nav-icon"><OperatorNavIcon name="logout" /></span>
+              <span>Se déconnecter</span>
             </Link>
           </div>
         </aside>
@@ -90,8 +94,8 @@ export function OperatorShell({ children, session, unreadCount }: OperatorShellP
           <footer className="operator-foot">
             <a href="#">UGP PRETE</a>
             <a href="#">Aide</a>
-            <a href="#">Mentions legales</a>
-            <span className="operator-foot-fin">Finance par la Banque mondiale · Projet PRETE Nyunganira</span>
+            <a href="#">Mentions légales</a>
+            <span className="operator-foot-fin">Financé par la Banque mondiale · Projet PRETE Nyunganira</span>
           </footer>
         </div>
       </div>

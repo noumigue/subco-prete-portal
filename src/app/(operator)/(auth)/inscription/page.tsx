@@ -14,32 +14,32 @@ export default async function RegisterPage({
     <main className="operator-auth-main">
       <section className="operator-auth-screen">
         <div className="operator-auth-card">
-        <h1>Creer un compte</h1>
+        <h1>Créer un compte</h1>
         <p className="operator-auth-lead">Un seul compte pour candidater et suivre vos dossiers.</p>
         {error ? <p className="operator-auth-error">{error}</p> : null}
         <form action={registerCandidateAction}>
           <label htmlFor="organizationName">Nom de l&apos;organisation <span className="operator-auth-hint">— s&apos;affichera dans votre espace</span></label>
-          <input id="organizationName" name="organizationName" type="text" placeholder="Ex. Cooperative Girumwete" required />
+          <input id="organizationName" name="organizationName" type="text" placeholder="Ex. Coopérative Girumwete" required />
           <label htmlFor="email">Adresse e-mail <span className="operator-auth-hint">— votre identifiant de connexion</span></label>
           <input id="email" name="email" type="email" placeholder="nom@organisation.bi" required />
           <OperatorAuthPasswordField
             id="password"
             name="password"
             label="Mot de passe"
-            hint="8 caracteres minimum"
+            hint="8 caractères minimum"
             minLength={8}
             placeholder="••••••••"
             required
           />
           <label className="operator-auth-check">
             <input type="checkbox" required />
-            <span>J&apos;accepte les conditions d&apos;utilisation et la politique de donnees du projet.</span>
+            <span>J&apos;accepte les conditions d&apos;utilisation et la politique de données du projet.</span>
           </label>
-          <button type="submit" className="operator-primary-btn">Creer mon compte</button>
+          <button type="submit" className="operator-primary-btn">Créer mon compte</button>
         </form>
-        <p className="operator-auth-alt">Deja un compte ? <Link href="/connexion">Se connecter</Link></p>
+        <p className="operator-auth-alt">Déjà un compte ? <Link href="/connexion">Se connecter</Link></p>
         </div>
-        <p className="operator-auth-annot"><b>D3.</b> Le telephone et le contact sont captes plus tard dans le parcours, ici on garde le set minimal de la maquette.</p>
+        <p className="operator-auth-annot"><b>D3.</b> Le téléphone et le contact sont captés plus tard dans le parcours, ici on garde le set minimal de la maquette.</p>
       </section>
     </main>
   );

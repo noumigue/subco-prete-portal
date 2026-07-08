@@ -4,18 +4,18 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { PortalAppel, PortalCandidature, PortalOrganisation, PortalTypePiece } from '@/lib/portal-types';
 
-const LEGAL_STATUSES = ['Cooperative', 'Entreprise', 'Association', 'ONG', 'Fournisseur de services numeriques'];
-const VALUE_CHAINS = ['Fruits tropicaux', 'Volaille', 'Pisciculture', 'Lait', 'Industrie miniere', 'Projet transversal'];
-const SITE_STATUSES = ['Propriete', 'Bail / location', 'Mis a disposition', 'A securiser'];
+const LEGAL_STATUSES = ['Coopérative', 'Entreprise', 'Association', 'ONG', 'Fournisseur de services numériques'];
+const VALUE_CHAINS = ['Fruits tropicaux', 'Volaille', 'Pisciculture', 'Lait', 'Industrie minière', 'Projet transversal'];
+const SITE_STATUSES = ['Propriété', 'Bail / location', 'Mis à disposition', 'À sécuriser'];
 const MATURITY_LEVELS = ['Mature', 'Semi-mature', 'Embryonnaire'];
-const COUNTERPART_TYPES = ['Numeraire', 'Nature', 'Equipement', 'Travaux preparatoires', 'Infrastructures existantes'];
+const COUNTERPART_TYPES = ['Numéraire', 'Nature', 'Équipement', 'Travaux préparatoires', 'Infrastructures existantes'];
 const INFRA_EXAMPLES = [
-  'Unite de transformation ou atelier',
-  'Entrepot, chambre froide ou chaine du froid',
+  'Unité de transformation ou atelier',
+  'Entrepôt, chambre froide ou chaîne du froid',
   'Centre de collecte, distribution ou logistique',
-  'Laboratoire ou dispositif de controle qualite',
-  'Plateforme numerique ou application de mise en relation',
-  'Infrastructure immaterielle ou systeme de gestion',
+  'Laboratoire ou dispositif de contrôle qualité',
+  'Plateforme numérique ou application de mise en relation',
+  'Infrastructure immatérielle ou système de gestion',
 ];
 const PROVINCES: Record<string, string[]> = {
   Buhumuza: ['Butaganzwa', 'Butihinda', 'Cankuzo', 'Gisagara', 'Gisuru', 'Muyinga', 'Ruyigi'],
@@ -24,26 +24,26 @@ const PROVINCES: Record<string, string[]> = {
   Butanyerera: ['Busoni', 'Kayanza', 'Kiremba', 'Kirundo', 'Matongo', 'Muhanga', 'Ngozi', 'Tangara'],
   Gitega: ['Bugendana', 'Gishubi', 'Gitega', 'Karusi', 'Kiganda', 'Muramvya', 'Mwaro', 'Nyabihanga', 'Shombo'],
 };
-const STEP_LABELS = ['Cadrage et eligibilite', 'Le projet', 'Economie et impact', 'Pieces et soumission'];
+const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impact', 'Pièces et soumission'];
 const GATES = [
-  'Structure legalement constituee',
-  'Conformite fiscale sans contentieux majeur',
-  'Aucune activite exclue par le mecanisme',
-  'Capacite de mobiliser une contrepartie d au moins 20 %',
-  'Aucun conflit d interet avec le projet ou l UGP',
+  'Structure légalement constituée',
+  'Conformité fiscale sans contentieux majeur',
+  'Aucune activité exclue par le mécanisme',
+  'Capacité de mobiliser une contrepartie d’au moins 20 %',
+  'Aucun conflit d’intérêt avec le projet ou l’UGP',
 ];
 const ES_FIELDS = [
   'Travaux ou construction',
-  'Pollution, dechets ou nuisances',
-  'Acquisition fonciere ou deplacement',
+  'Pollution, déchets ou nuisances',
+  'Acquisition foncière ou déplacement',
 ];
 const FALLBACK_PIECES = [
   { id: 'lettre', libelle: 'Lettre de motivation', groupe: 'administratif', exigence: 'obligatoire' },
-  { id: 'rc', libelle: 'RC / certificat d enregistrement', groupe: 'administratif', exigence: 'obligatoire' },
+  { id: 'rc', libelle: 'RC / certificat d’enregistrement', groupe: 'administratif', exigence: 'obligatoire' },
   { id: 'nif', libelle: 'NIF', groupe: 'administratif', exigence: 'obligatoire' },
-  { id: 'etats', libelle: 'Etats financiers (3 exercices)', groupe: 'financier', exigence: 'obligatoire' },
-  { id: 'business', libelle: 'Plan d affaires simplifie', groupe: 'financier', exigence: 'obligatoire' },
-  { id: 'site', libelle: 'Preuve de disponibilite du site', groupe: 'technique', exigence: 'obligatoire' },
+  { id: 'etats', libelle: 'États financiers (3 exercices)', groupe: 'financier', exigence: 'obligatoire' },
+  { id: 'business', libelle: 'Plan d’affaires simplifié', groupe: 'financier', exigence: 'obligatoire' },
+  { id: 'site', libelle: 'Preuve de disponibilité du site', groupe: 'technique', exigence: 'obligatoire' },
 ];
 
 type OperatorCandidatureFormProps = {
@@ -84,7 +84,7 @@ export function OperatorCandidatureForm({
   const basePieces = typePieces.length > 0
     ? typePieces.map((piece) => ({
         id: piece.documentId,
-        libelle: piece.libelle || 'Piece',
+        libelle: piece.libelle || 'Pièce',
         groupe: piece.groupe || 'administratif',
         exigence: piece.exigence || 'obligatoire',
       }))
@@ -149,13 +149,13 @@ export function OperatorCandidatureForm({
 
   function goNext() {
     if (step === 1 && !allEligibilityChecked) {
-      showToast('Confirmez toutes les conditions d eligibilite pour continuer.');
+      showToast('Confirmez toutes les conditions d’éligibilité pour continuer.');
       return;
     }
 
     if (step === 4) {
       if (missingPieces.length > 0) {
-        showToast(`Deposez les ${missingPieces.length} piece(s) obligatoire(s) manquante(s) avant de soumettre.`);
+        showToast(`Déposez les ${missingPieces.length} pièce(s) obligatoire(s) manquante(s) avant de soumettre.`);
         return;
       }
       setStep(5);
@@ -171,7 +171,7 @@ export function OperatorCandidatureForm({
 
   function handleCopy() {
     void navigator.clipboard?.writeText(generatedNumber);
-    showToast('Numero de dossier copie.');
+    showToast('Numéro de dossier copié.');
   }
 
   const displayedSiteProvince = sameSite ? operatorProvince : siteProvince;
@@ -185,7 +185,7 @@ export function OperatorCandidatureForm({
         <div className="operator-form-head">
           <div>
             <h1>Nouvelle candidature</h1>
-            <p>{step === 5 ? 'Dossier soumis' : `Etape ${step} sur 4 · ${STEP_LABELS[step - 1].toLowerCase()}`}</p>
+            <p>{step === 5 ? 'Dossier soumis' : `Étape ${step} sur 4 · ${STEP_LABELS[step - 1].toLowerCase()}`}</p>
           </div>
           <Link href="/mes-candidatures" className="operator-form-close" aria-label="Fermer">×</Link>
         </div>
@@ -208,11 +208,11 @@ export function OperatorCandidatureForm({
           {step === 1 ? (
             <section>
               <div className="operator-form-banner">
-                Etape de saisie — aucun document a deposer ici. Les pieces se deposent a l etape 4.
+                Étape de saisie — aucun document à déposer ici. Les pièces se déposent à l’étape 4.
               </div>
 
               <div className="operator-form-field">
-                <label>Appel a propositions</label>
+                <label>Appel à propositions</label>
                 <select value={resolvedCall?.nom || ''} onChange={() => undefined}>
                   <option>{resolvedCall?.nom || 'Aucun appel ouvert'}</option>
                 </select>
@@ -220,11 +220,11 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-card">
                 <div className="operator-form-card-head">
-                  <span>Conditions d eligibilite</span>
+                  <span>Conditions d’éligibilité</span>
                   <span className="operator-piece-badge is-required">obligatoire</span>
                 </div>
                 <div className="operator-form-card-body">
-                  <p className="operator-form-subtle">Toutes les conditions doivent etre confirmees pour continuer.</p>
+                  <p className="operator-form-subtle">Toutes les conditions doivent être confirmées pour continuer.</p>
                   {GATES.map((gate, index) => (
                     <label key={gate} className="operator-form-check">
                       <input
@@ -241,8 +241,8 @@ export function OperatorCandidatureForm({
               </div>
 
               <div className="operator-form-section-title">
-                Operateur / promoteur
-                <span>pre-rempli depuis votre compte, modifiable</span>
+                Opérateur / promoteur
+                <span>pré-rempli depuis votre compte, modifiable</span>
               </div>
 
               <div className="operator-form-grid">
@@ -253,7 +253,7 @@ export function OperatorCandidatureForm({
                 <div className="operator-form-field">
                   <label>Statut juridique</label>
                   <select defaultValue={organisation?.statutJuridique?.libelle || ''}>
-                    <option value="">Selectionner…</option>
+                    <option value="">Sélectionner…</option>
                     {LEGAL_STATUSES.map((status) => <option key={status}>{status}</option>)}
                   </select>
                 </div>
@@ -266,20 +266,20 @@ export function OperatorCandidatureForm({
                   <input type="text" placeholder="RC/BJM/2023/1024" />
                 </div>
                 <div className="operator-form-field">
-                  <label>Representant legal</label>
+                  <label>Représentant légal</label>
                   <input type="text" defaultValue={organisation?.contact || ''} />
                 </div>
                 <div className="operator-form-field">
                   <label>Province</label>
                   <select value={operatorProvince} onChange={(event) => { setOperatorProvince(event.target.value); setOperatorCommune(''); }}>
-                    <option value="">Selectionner une province…</option>
+                    <option value="">Sélectionner une province…</option>
                     {Object.keys(PROVINCES).map((province) => <option key={province}>{province}</option>)}
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>Commune</label>
                   <select value={operatorCommune} onChange={(event) => setOperatorCommune(event.target.value)} disabled={!operatorProvince}>
-                    <option value="">{operatorProvince ? 'Selectionner une commune…' : 'Choisir une province d abord'}</option>
+                    <option value="">{operatorProvince ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
                     {operatorCommunes.map((commune) => <option key={commune}>{commune}</option>)}
                   </select>
                 </div>
@@ -288,7 +288,7 @@ export function OperatorCandidatureForm({
                   <input type="email" defaultValue="" placeholder="nom@operateur.bi" />
                 </div>
                 <div className="operator-form-field">
-                  <label>Telephone</label>
+                  <label>Téléphone</label>
                   <input type="tel" defaultValue={organisation?.telephone || ''} placeholder="+257 …" />
                 </div>
               </div>
@@ -299,22 +299,22 @@ export function OperatorCandidatureForm({
             <section>
               <div className="operator-form-field">
                 <label>Titre du projet</label>
-                <input type="text" value={projectTitle} onChange={(event) => setProjectTitle(event.target.value)} placeholder="Unite de transformation de fruits — Butanyerera" />
+                <input type="text" value={projectTitle} onChange={(event) => setProjectTitle(event.target.value)} placeholder="Unité de transformation de fruits — Butanyerera" />
               </div>
 
               <div className="operator-form-grid">
                 <div className="operator-form-field">
-                  <label>Chaine de valeur</label>
+                  <label>Chaîne de valeur</label>
                   <select defaultValue={organisation?.filierePrincipale?.nom || ''}>
-                    <option value="">Selectionner…</option>
+                    <option value="">Sélectionner…</option>
                     {VALUE_CHAINS.map((chain) => <option key={chain}>{chain}</option>)}
                   </select>
                 </div>
               </div>
 
               <div className="operator-form-field">
-                <label>Type d infrastructure a realiser</label>
-                <p className="operator-form-subtle">Decrivez librement, avec vos mots, l infrastructure que vous souhaitez mettre en oeuvre.</p>
+                <label>Type d’infrastructure à réaliser</label>
+                <p className="operator-form-subtle">Décrivez librement, avec vos mots, l’infrastructure que vous souhaitez mettre en œuvre.</p>
                 <button type="button" className="operator-form-inline-link" onClick={() => setShowExamples((current) => !current)}>
                   Voir quelques exemples
                 </button>
@@ -325,7 +325,7 @@ export function OperatorCandidatureForm({
                     </ul>
                   </div>
                 ) : null}
-                <textarea rows={4} placeholder="Ex. : unite de sechage solaire de mangues d une capacite de 2 t/jour…" />
+                <textarea rows={4} placeholder="Ex. : unité de séchage solaire de mangues d’une capacité de 2 t/jour…" />
               </div>
 
               <div className="operator-form-card">
@@ -333,7 +333,7 @@ export function OperatorCandidatureForm({
                   <span>Localisation du site</span>
                   <label className="operator-form-switch">
                     <input type="checkbox" checked={sameSite} onChange={(event) => setSameSite(event.target.checked)} />
-                    <span>Identique au siege</span>
+                    <span>Identique au siège</span>
                   </label>
                 </div>
                 <div className="operator-form-card-body">
@@ -349,7 +349,7 @@ export function OperatorCandidatureForm({
                         }}
                         disabled={sameSite}
                       >
-                        <option value="">Selectionner une province…</option>
+                        <option value="">Sélectionner une province…</option>
                         {Object.keys(PROVINCES).map((province) => <option key={province}>{province}</option>)}
                       </select>
                     </div>
@@ -360,7 +360,7 @@ export function OperatorCandidatureForm({
                         onChange={(event) => !sameSite && setSiteCommune(event.target.value)}
                         disabled={sameSite || !displayedSiteProvince}
                       >
-                        <option value="">{displayedSiteProvince ? 'Selectionner une commune…' : 'Choisir une province d abord'}</option>
+                        <option value="">{displayedSiteProvince ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
                         {siteCommunes.map((commune) => <option key={commune}>{commune}</option>)}
                       </select>
                     </div>
@@ -372,12 +372,12 @@ export function OperatorCandidatureForm({
                 <div className="operator-form-field">
                   <label>Statut du site</label>
                   <select>
-                    <option value="">Selectionner…</option>
+                    <option value="">Sélectionner…</option>
                     {SITE_STATUSES.map((status) => <option key={status}>{status}</option>)}
                   </select>
                 </div>
                 <div className="operator-form-field">
-                  <label>Usage collectif ou partage</label>
+                  <label>Usage collectif ou partagé</label>
                   <select defaultValue="Oui">
                     <option>Oui</option>
                     <option>Non</option>
@@ -388,9 +388,9 @@ export function OperatorCandidatureForm({
                   <input type="number" min="0" defaultValue="40" />
                 </div>
                 <div className="operator-form-field">
-                  <label>Niveau de maturite</label>
+                  <label>Niveau de maturité</label>
                   <select>
-                    <option value="">Selectionner…</option>
+                    <option value="">Sélectionner…</option>
                     {MATURITY_LEVELS.map((level) => <option key={level}>{level}</option>)}
                   </select>
                 </div>
@@ -403,10 +403,10 @@ export function OperatorCandidatureForm({
                   maxLength={600}
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
-                  placeholder="Probleme traite, infrastructure proposee, beneficiaires MPME, resultats attendus…"
+                  placeholder="Problème traité, infrastructure proposée, bénéficiaires MPME, résultats attendus…"
                 />
                 <div className="operator-form-field-foot">
-                  <span>Restez bref — le detail va dans le business plan a l etape 4.</span>
+                  <span>Restez bref — le détail va dans le business plan à l’étape 4.</span>
                   <span className={note.length >= 600 ? 'is-alert' : ''}>{600 - note.length} restants</span>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export function OperatorCandidatureForm({
                   <input type="text" inputMode="numeric" value={budget} onChange={(event) => setBudget(formatAmount(event.target.value))} />
                 </div>
                 <div className="operator-form-field">
-                  <label>Contrepartie mobilisee (BIF)</label>
+                  <label>Contrepartie mobilisée (BIF)</label>
                   <input type="text" inputMode="numeric" value={counterpart} onChange={(event) => setCounterpart(formatAmount(event.target.value))} />
                 </div>
                 <div className="operator-form-field">
@@ -435,7 +435,7 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-recap">
                 <div className="operator-form-recap-row">
-                  <span>Subvention demandee (auto)</span>
+                  <span>Subvention demandée (auto)</span>
                   <strong>{budgetValue ? `${new Intl.NumberFormat('fr-FR').format(grantValue)} BIF` : '—'}</strong>
                 </div>
                 <div className="operator-form-recap-row">
@@ -450,8 +450,8 @@ export function OperatorCandidatureForm({
               </div>
 
               <div className="operator-form-field">
-                <label>Modele economique</label>
-                <textarea rows={2} placeholder="Revenus, couts, viabilite, exploitation et maintenance…" />
+                <label>Modèle économique</label>
+                <textarea rows={2} placeholder="Revenus, coûts, viabilité, exploitation et maintenance…" />
               </div>
 
               <div className="operator-form-section-title">Impact et inclusion</div>
@@ -469,18 +469,18 @@ export function OperatorCandidatureForm({
                   <input type="number" min="0" value={youth} onChange={(event) => setYouth(event.target.value)} />
                 </div>
                 <div className="operator-form-field">
-                  <label>Refugies</label>
+                  <label>Réfugiés</label>
                   <input type="number" min="0" value={refugees} onChange={(event) => setRefugees(event.target.value)} />
                 </div>
                 <div className="operator-form-field">
-                  <label>Emplois crees</label>
+                  <label>Emplois créés</label>
                   <input type="number" min="0" defaultValue="15" />
                 </div>
               </div>
 
               <div className="operator-form-grid">
                 <div className="operator-form-field">
-                  <label>Projet porte par une femme</label>
+                  <label>Projet porté par une femme</label>
                   <select value={womenLed} onChange={(event) => setWomenLed(event.target.value)}>
                     <option>Oui</option>
                     <option>Non</option>
@@ -496,7 +496,7 @@ export function OperatorCandidatureForm({
               </div>
 
               <div className="operator-form-notice is-strong">
-                Bonus inclusion estime : <strong>+{inclusionBonus} pts</strong> <span>(indicatif, sous reserve d evaluation)</span>
+                Bonus inclusion estimé : <strong>+{inclusionBonus} pts</strong> <span>(indicatif, sous réserve d’évaluation)</span>
               </div>
             </section>
           ) : null}
@@ -504,11 +504,11 @@ export function OperatorCandidatureForm({
           {step === 4 ? (
             <section>
               <div className="operator-form-banner">
-                Etape de depot — une piece par emplacement. Vos donnees saisies tiennent lieu de formulaire de candidature.
+                Étape de dépôt — une pièce par emplacement. Vos données saisies tiennent lieu de formulaire de candidature.
               </div>
 
               <div className="operator-form-section-title">Screening environnemental et social</div>
-              <p className="operator-form-subtle">Obligatoire. Une reponse oui requiert un plan de gestion E&S.</p>
+              <p className="operator-form-subtle">Obligatoire. Une réponse oui requiert un plan de gestion E&S.</p>
               <div className="operator-form-grid">
                 {ES_FIELDS.map((label, index) => (
                   <div className="operator-form-field" key={label}>
@@ -526,14 +526,14 @@ export function OperatorCandidatureForm({
 
               {declaredRisk ? (
                 <div className="operator-form-es-box">
-                  <span>Plan de gestion E&S (PGES) · requis vu le risque declare</span>
+                  <span>Plan de gestion E&S (PGES) · requis vu le risque déclaré</span>
                   <button type="button" className={`operator-upload-btn${deposits.pges ? ' is-done' : ''}`} onClick={() => toggleDeposit('pges')}>
-                    {deposits.pges ? '✓ Depose' : 'Choisir un fichier'}
+                    {deposits.pges ? '✓ Déposé' : 'Choisir un fichier'}
                   </button>
                 </div>
               ) : null}
 
-              <div className="operator-form-section-title">Pieces justificatives</div>
+              <div className="operator-form-section-title">Pièces justificatives</div>
               {groupedPieces.map((group) => (
                 <details key={group.key} className="operator-piece-group" open={group.key === 'administratif'}>
                   <summary>{group.label}</summary>
@@ -548,7 +548,7 @@ export function OperatorCandidatureForm({
                         className={`operator-upload-btn${deposits[piece.id] ? ' is-done' : ''}`}
                         onClick={() => toggleDeposit(piece.id)}
                       >
-                        {deposits[piece.id] ? '✓ Depose' : 'Choisir un fichier'}
+                        {deposits[piece.id] ? '✓ Déposé' : 'Choisir un fichier'}
                       </button>
                     </div>
                   ))}
@@ -557,7 +557,7 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-complete-box">
                 <div className="operator-form-complete-head">
-                  <b>Completude du dossier</b>
+                  <b>Complétude du dossier</b>
                   <span>{depositedRequired} / {requiredPieceIds.length} obligatoires</span>
                 </div>
                 <div className="operator-form-complete-bar">
@@ -566,12 +566,12 @@ export function OperatorCandidatureForm({
                 <p className="operator-form-subtle">
                   {missingPieces.length > 0
                     ? `Manquantes : ${missingPieces.join(', ')}`
-                    : 'Toutes les pieces obligatoires sont deposees.'}
+                    : 'Toutes les pièces obligatoires sont déposées.'}
                 </p>
               </div>
 
               <div className="operator-form-notice is-strong">
-                A la soumission : numero de dossier, accuse par email et SMS, inscription au registre des depots. Vos donnees seront verrouillees.
+                À la soumission : numéro de dossier, accusé par email et SMS, inscription au registre des dépôts. Vos données seront verrouillées.
               </div>
             </section>
           ) : null}
@@ -581,31 +581,31 @@ export function OperatorCandidatureForm({
               <div className="operator-form-confirm-head">
                 <div className="operator-form-confirm-check">✓</div>
                 <h2>Candidature transmise</h2>
-                <p>Votre dossier a ete enregistre et horodate.</p>
+                <p>Votre dossier a été enregistré et horodaté.</p>
               </div>
 
               <div className="operator-form-dossier-box">
                 <div>
-                  <p>Numero de dossier</p>
+                  <p>Numéro de dossier</p>
                   <span>{generatedNumber}</span>
                 </div>
                 <button type="button" className="operator-secondary-btn inline" onClick={handleCopy}>Copier</button>
               </div>
 
-              <p className="operator-form-confirm-label">Accuse de reception envoye</p>
-              <div className="operator-form-ack-row">Email — {organisation?.contact || 'nom@operateur.bi'} <span>✓ envoye</span></div>
-              <div className="operator-form-ack-row">SMS — {organisation?.telephone || '+257 68 •• •• ••'} <span>✓ envoye</span></div>
-              <p className="operator-form-subtle">Inscrit au registre des depots le 04/07/2026 a 14:32.</p>
+              <p className="operator-form-confirm-label">Accusé de réception envoyé</p>
+              <div className="operator-form-ack-row">Email — {organisation?.contact || 'nom@operateur.bi'} <span>✓ envoyé</span></div>
+              <div className="operator-form-ack-row">SMS — {organisation?.telephone || '+257 68 •• •• ••'} <span>✓ envoyé</span></div>
+              <p className="operator-form-subtle">Inscrit au registre des dépôts le 04/07/2026 à 14:32.</p>
 
-              <button type="button" className="operator-primary-btn operator-form-block-btn" onClick={() => showToast('Le PDF de votre candidature sera genere.')}>
-                Telecharger le PDF de ma candidature
+              <button type="button" className="operator-primary-btn operator-form-block-btn" onClick={() => showToast('Le PDF de votre candidature sera généré.')}>
+                Télécharger le PDF de ma candidature
               </button>
               <p className="operator-form-subtle operator-form-centered">
-                Disponible a tout moment depuis votre compte, dans <strong>Mes candidatures</strong>.
+                Disponible à tout moment depuis votre compte, dans <strong>Mes candidatures</strong>.
               </p>
 
               <div className="operator-form-notice">
-                Rien d autre a faire pour l instant. Vous recevrez une notification par email et SMS des que l instruction avancera.
+                Rien d’autre à faire pour l’instant. Vous recevrez une notification par email et SMS dès que l’instruction avancera.
               </div>
             </section>
           ) : null}
@@ -613,14 +613,14 @@ export function OperatorCandidatureForm({
 
         <div className="operator-form-foot">
           <div className="operator-form-foot-left">
-            <span className="operator-form-autosave">Enregistre automatiquement</span>
+            <span className="operator-form-autosave">Enregistré automatiquement</span>
             {step > 1 && step < 5 ? (
               <button type="button" className="operator-secondary-btn inline" onClick={() => setStep((current) => current - 1)}>
                 ← Retour
               </button>
             ) : null}
             {step < 5 ? (
-              <button type="button" className="operator-secondary-btn inline" onClick={() => showToast('Brouillon enregistre. Vous pourrez le reprendre depuis votre compte.')}>
+              <button type="button" className="operator-secondary-btn inline" onClick={() => showToast('Brouillon enregistré. Vous pourrez le reprendre depuis votre compte.')}>
                 Enregistrer et reprendre plus tard
               </button>
             ) : null}
@@ -632,7 +632,7 @@ export function OperatorCandidatureForm({
             </button>
           ) : (
             <Link href="/mes-candidatures" className="operator-secondary-btn inline">
-              Retour a mon compte
+              Retour à mon compte
             </Link>
           )}
         </div>

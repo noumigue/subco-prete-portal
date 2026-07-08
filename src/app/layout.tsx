@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { getFooterLinks, getSiteNavigation } from '@/lib/strapi-public';
 import './globals.css';
+
+const appFont = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-app',
+});
 
 export const metadata: Metadata = {
   title: 'SUBCO PRETE',
@@ -69,7 +76,7 @@ export default async function RootLayout({
   ];
 
   return (
-    <html lang={language}>
+    <html lang={language} className={appFont.variable}>
       <body suppressHydrationWarning>
         {isOperatorRoute ? null : (
           <>

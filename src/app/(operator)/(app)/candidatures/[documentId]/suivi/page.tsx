@@ -3,16 +3,16 @@ import { getPortalCandidature } from '@/lib/portal-api';
 
 const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
 const labels: Record<(typeof phases)[number], string> = {
-  recu: 'Recu',
-  completude: 'Completude',
-  eligibilite: 'Eligibilite',
-  evaluation: 'Evaluation',
-  decision: 'Decision',
+  recu: 'Reçu',
+  completude: 'Complétude',
+  eligibilite: 'Éligibilité',
+  evaluation: 'Évaluation',
+  decision: 'Décision',
 };
 
 function getPill(group?: string, hasComplement?: boolean) {
-  if (hasComplement) return { label: '⚠ Complement demande', className: 'pill-comp' };
-  if (group === 'selectionne') return { label: '✓ Selectionne', className: 'pill-sel' };
+  if (hasComplement) return { label: '⚠ Complément demandé', className: 'pill-comp' };
+  if (group === 'selectionne') return { label: '✓ Sélectionné', className: 'pill-sel' };
   if (group === 'non_retenu') return { label: '✗ Non retenu', className: 'pill-no' };
   return { label: '⏳ En instruction', className: 'pill-inst' };
 }
@@ -37,7 +37,7 @@ export default async function FollowUpPage({
       <div className="operator-dossier-head">
         <div>
           <h1>{candidature?.titreProjet}</h1>
-          <p className="operator-page-intro"><span className="operator-candidature-num">{candidature?.numeroDossier || 'Numero en attente'}</span> · {candidature?.appel?.nom}</p>
+          <p className="operator-page-intro"><span className="operator-candidature-num">{candidature?.numeroDossier || 'Numéro en attente'}</span> · {candidature?.appel?.nom}</p>
         </div>
         <div className="operator-dossier-right">
           <span className={`operator-status-pill ${pill.className}`}>{pill.label}</span>
@@ -52,7 +52,7 @@ export default async function FollowUpPage({
               <span className="operator-follow-bead" />
               <div>
                 <div className="operator-follow-label">{labels[phase]}</div>
-                <div className="operator-follow-meta">{index < currentIndex ? 'Etape franchie' : index === currentIndex ? (complement ? 'Complement attendu' : 'Etape en cours') : 'A venir'}</div>
+                <div className="operator-follow-meta">{index < currentIndex ? 'Étape franchie' : index === currentIndex ? (complement ? 'Complément attendu' : 'Étape en cours') : 'À venir'}</div>
               </div>
             </div>
           ))}
@@ -61,33 +61,33 @@ export default async function FollowUpPage({
 
       {complement ? (
         <section className="operator-action-card">
-          <div className="operator-action-head">⚠ Une piece complementaire est demandee</div>
-          <p>L&apos;UGP a besoin de <strong>{complement.pieceDemandee}</strong> pour poursuivre la verification de votre dossier. A fournir avant le <strong>{complement.echeance || 'A confirmer'}</strong>.</p>
+          <div className="operator-action-head">⚠ Une pièce complémentaire est demandée</div>
+          <p>L&apos;UGP a besoin de <strong>{complement.pieceDemandee}</strong> pour poursuivre la vérification de votre dossier. À fournir avant le <strong>{complement.echeance || 'À confirmer'}</strong>.</p>
           <div className="operator-action-drop">
-            Deposez ici la piece demandee (PDF ou image)
+            Déposez ici la pièce demandée (PDF ou image)
             <span className="operator-action-file">Choisir un fichier</span>
           </div>
           <div className="operator-action-foot">
-            <span className="operator-action-hint">Ce depot s&apos;ajoute au dossier ; il ne modifie pas votre candidature deja deposee.</span>
-            <button type="button" className="operator-amber-btn">Envoyer la piece</button>
+            <span className="operator-action-hint">Ce dépôt s&apos;ajoute au dossier ; il ne modifie pas votre candidature déjà déposée.</span>
+            <button type="button" className="operator-amber-btn">Envoyer la pièce</button>
           </div>
         </section>
       ) : null}
 
       {isSelected ? (
         <section className="operator-result-card is-selected">
-          <h2>✓ Votre candidature a ete selectionnee</h2>
-          <p>La convention pourra etre suivie dans la section <strong>Ma subvention</strong>.</p>
-          <Link href="/ma-subvention" className="operator-primary-btn inline">Acceder a Ma subvention</Link>
+          <h2>✓ Votre candidature a été sélectionnée</h2>
+          <p>La convention pourra être suivie dans la section <strong>Ma subvention</strong>.</p>
+          <Link href="/ma-subvention" className="operator-primary-btn inline">Accéder à Ma subvention</Link>
         </section>
       ) : null}
 
       {isRejected ? (
         <section className="operator-result-card is-rejected">
-          <h2>✗ Votre candidature n&apos;a pas ete retenue</h2>
+          <h2>✗ Votre candidature n&apos;a pas été retenue</h2>
           <div className="operator-motif-box">
             <span className="operator-motif-label">Motif</span>
-            {candidature?.motifDecisionCourt || 'Motif officiel court a renseigner par l UGP.'}
+            {candidature?.motifDecisionCourt || 'Motif officiel court à renseigner par l’UGP.'}
           </div>
         </section>
       ) : null}
@@ -95,9 +95,9 @@ export default async function FollowUpPage({
       <div className="operator-block-title">Notifications de ce dossier</div>
       <section className="operator-card">
         <div className="operator-journal">
-          {(candidature?.notifications || []).length === 0 ? <p className="operator-muted">Aucune notification rattachee.</p> : candidature?.notifications?.map((item) => (
+          {(candidature?.notifications || []).length === 0 ? <p className="operator-muted">Aucune notification rattachée.</p> : candidature?.notifications?.map((item) => (
             <article key={item.documentId} className="operator-journal-row">
-              <span className="operator-journal-date">{item.envoyeLe || 'Date a confirmer'}</span>
+              <span className="operator-journal-date">{item.envoyeLe || 'Date à confirmer'}</span>
               <span className="operator-journal-channel">{item.canal?.toUpperCase() || 'EMAIL'}</span>
               <span className="operator-journal-text">{item.sujet || item.corps}</span>
             </article>

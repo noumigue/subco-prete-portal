@@ -1,7 +1,6 @@
+// Tailwind v4 retiré (aucun utilitaire utilisé). Reset contrôlé dans globals.css.
 const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
+  plugins: {},
 };
 
 export default config;

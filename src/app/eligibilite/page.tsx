@@ -63,7 +63,7 @@ const QUESTION_GROUPS = [
     questions: [
       {
         id: 'q1',
-        text: 'Statut juridique de votre organisation *',
+        text: 'Statut juridique de votre organisation',
         required: true,
         type: 'radio',
         layout: '1',
@@ -77,7 +77,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q2',
-        text: 'Votre organisation est-elle légalement enregistrée au Burundi ? *',
+        text: 'Votre organisation est-elle légalement enregistrée au Burundi ?',
         required: true,
         hint: 'NIF (Numéro d’identification fiscale) et RC (Registre de commerce) valides requis.',
         type: 'radio',
@@ -90,7 +90,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q3',
-        text: 'Votre organisation est-elle en règle vis-à-vis de ses obligations fiscales ? *',
+        text: 'Votre organisation est-elle en règle vis-à-vis de ses obligations fiscales ?',
         required: true,
         type: 'radio',
         layout: '3',
@@ -102,7 +102,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q4',
-        text: 'Votre organisation est-elle engagée dans un contentieux majeur en cours ? *',
+        text: 'Votre organisation est-elle engagée dans un contentieux majeur en cours ?',
         required: true,
         hint: 'Un contentieux pouvant compromettre la mise en œuvre du projet.',
         type: 'radio',
@@ -114,7 +114,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q5',
-        text: 'Pouvez-vous mobiliser au minimum 20% du coût total du projet en contrepartie ? *',
+        text: 'Pouvez-vous mobiliser au minimum 20% du coût total du projet en contrepartie ?',
         required: true,
         hint: 'La contrepartie peut être numéraire, en nature, équipements ou travaux préparatoires.',
         type: 'radio',
@@ -151,7 +151,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q7',
-        text: 'Région(s) d’intervention de votre projet ? *',
+        text: 'Région(s) d’intervention de votre projet ?',
         required: true,
         type: 'checkbox',
         layout: '3',
@@ -166,7 +166,7 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q8',
-        text: 'Votre infrastructure bénéficiera-t-elle à plusieurs MPME (usage collectif ou partagé) ? *',
+        text: 'Votre infrastructure bénéficiera-t-elle à plusieurs MPME (usage collectif ou partagé) ?',
         required: true,
         hint: 'Le programme finance en priorité les infrastructures à usage collectif bénéficiant à plusieurs acteurs économiques.',
         type: 'radio',
@@ -419,7 +419,7 @@ export default function EligibilityPage() {
       <section className="eligibility-page section section-band" style={{ backgroundColor: '#ffffff' }}>
         <div className="container">
           <p className="eyebrow candidature-bis-eyebrow">Test d&apos;éligibilité</p>
-          <h1>Vérifiez si votre projet est éligible</h1>
+          <h1 className="page-title">Vérifiez si votre projet est éligible</h1>
           <p className="hero-vision" style={{ maxWidth: '62ch' }}>
             Répondez aux 10 questions ci-dessous pour obtenir un résultat immédiat. Aucun compte requis — vos réponses ne sont pas
             enregistrées.
@@ -433,9 +433,6 @@ export default function EligibilityPage() {
       </section>
 
       <div className="container eligibility-progress-wrap">
-        <p className="section-title" style={{ marginBottom: '0.5rem', color: 'var(--brand-deep)', fontWeight: 700 }}>
-          Progression de votre saisie
-        </p>
         <div className="progress-track">
           <div className={`progress-seg ${identityComplete ? 'is-active' : ''}`} />
           <div className={`progress-seg ${projectComplete ? 'is-active' : ''}`} />
