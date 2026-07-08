@@ -188,7 +188,14 @@ export type FooterLink = {
   id: number;
   label?: string;
   url?: string;
-  group?: 'assistance' | 'institutional' | 'resources';
+  group?:
+    | 'assistance'
+    | 'institutional'
+    | 'resources'
+    | 'programme'
+    | 'candidater'
+    | 'aide'
+    | 'legal';
   sortOrder?: number;
   isVisible?: boolean;
 };
