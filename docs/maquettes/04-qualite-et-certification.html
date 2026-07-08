@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Qualité et certification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --card:#FFFFFF; --ink:#1B2620; --muted:#5C6B62; --line:#E5E1D6;
+    --forest:#1F5741; --forest-soft:#EAF1ED; --ochre:#B67C22;
+    --teal:#2B6C6B; --teal-soft:#E7F0F0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Spectral",Georgia,serif;font-weight:600;line-height:1.2;margin:0}
+
+  .wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+  h1{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.01em;margin:0 0 16px}
+  .lead{font-size:20px;color:#354139;margin:0}
+
+  .rtf{margin-top:8px}
+  .rtf h2{font-size:23px;margin:38px 0 12px;padding-top:30px;border-top:1px solid var(--line)}
+  .rtf p{margin:0 0 14px;color:#39453f}
+  .rtf ul{margin:0 0 14px;padding:0;list-style:none}
+  .rtf ul li{position:relative;padding-left:22px;margin:0 0 9px;color:#39453f}
+  .rtf ul li::before{content:"";position:absolute;left:2px;top:11px;
+    width:7px;height:7px;border-radius:2px;background:var(--ochre)}
+  .rtf ul li b{color:var(--ink)}
+  .rtf .ex li::before{background:var(--forest)}
+  .rtf.imm .ex li::before{background:var(--teal)}
+
+  .cta{margin-top:44px;background:var(--forest);color:#fff;border-radius:var(--radius);
+    padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .cta h3{font-size:21px;color:#fff}
+  .cta p{margin:6px 0 0;color:#CFE0D8;font-size:14px}
+  .cta .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{all:unset;cursor:pointer;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px}
+  .btn.primary{background:#E9C77C;color:#2A2411}
+  .btn.ghost{border:1px solid rgba(255,255,255,.4);color:#fff}
+  .btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  .others{margin-top:52px;padding-top:28px;border-top:1px solid var(--line)}
+  .others .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:14px}
+  .others ol{list-style:none;margin:0;padding:0;counter-reset:t;
+    display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .others li{counter-increment:t}
+  .others a,.others .self{display:flex;gap:12px;align-items:baseline;width:100%;
+    padding:11px 12px;border-radius:10px;font-size:15px;text-decoration:none;
+    color:var(--muted);transition:background .15s,color .15s}
+  .others a{cursor:pointer}
+  .others a:hover{background:#fff;color:var(--ink)}
+  .others a::before,.others .self::before{content:counter(t,decimal-leading-zero);
+    font-family:"Spectral",serif;font-size:12px;color:var(--muted);min-width:20px}
+  .others li.active .self{color:var(--ink);font-weight:700}
+  .others a:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+
+  @media (max-width:640px){ .others ol{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <article>
+      <h1>Qualité et certification</h1>
+      <p class="lead">Les marchés les plus rémunérateurs imposent conformité et traçabilité. Sans moyens de contrôler et de certifier ses produits, un opérateur reste cantonné aux circuits informels.</p>
+      <div class="rtf">
+<h2>Ce que recouvre ce type</h2>
+<p>Ces infrastructures améliorent la conformité, la confiance des acheteurs et l'accès aux marchés formels. Elles soutiennent la montée en gamme des produits, la réduction des rejets et le respect des normes.</p>
+<ul>
+<li>Contrôle qualité, analyses simples ou spécialisées</li>
+<li>Inspection et mise en conformité</li>
+<li>Traçabilité et documentation qualité</li>
+<li>Accompagnement à la certification</li>
+<li>Réduction des défauts</li>
+</ul>
+<h2>Pourquoi c'est pertinent pour le PRETE</h2>
+<p>L'amélioration de la qualité réduit les pertes, valorise mieux les produits, fidélise les acheteurs et débloque l'accès à des marchés jusque-là fermés. Un service mutualisé de qualité peut bénéficier à plusieurs chaînes à la fois.</p>
+<ul>
+<li><b>Qualité produit</b> améliorée, rejets et non-conformités réduits.</li>
+<li><b>Confiance des acheteurs</b> renforcée.</li>
+<li><b>Accès à des marchés structurés</b>.</li>
+<li><b>Traçabilité</b> et professionnalisation des pratiques.</li>
+</ul>
+<h2>Exemples d'infrastructures et de services</h2>
+<ul class="ex">
+<li><b>Mini-laboratoire ou laboratoire partagé</b> — réaliser tests, contrôles et vérifications utiles aux MPME.</li>
+<li><b>Système de traçabilité</b> — suivre lots, producteurs, étapes de traitement et conditions de conformité.</li>
+<li><b>Dispositif d'appui à la certification</b> — accompagner les opérateurs vers les standards de marché.</li>
+</ul>
+<h2>Ce qui rend un projet solide</h2>
+<ul>
+<li>Un besoin de marché réel et un usage partagé.</li>
+<li>Un personnel compétent et des protocoles clairs.</li>
+<li>Une articulation avec la production, le stockage et la commercialisation.</li>
+<li>Une capacité de maintenance et de gestion documentaire.</li>
+</ul>
+<p>Les principaux écueils sont un <b>faible usage</b> du service, un <b>coût de fonctionnement</b> élevé et des <b>procédures trop complexes</b>.</p>
+      </div>
+
+      <div class="cta">
+        <div>
+          <h3>Ce type correspond à votre projet ?</h3>
+          <p>Vérifiez votre éligibilité, puis préparez votre candidature.</p>
+        </div>
+        <div class="btns">
+          <button class="btn primary">Tester mon éligibilité</button>
+          <button class="btn ghost">Candidater</button>
+        </div>
+      </div>
+
+      <nav class="others" aria-label="Autres types d'infrastructure">
+        <div class="eyebrow">Autres types d'infrastructure</div>
+        <ol><li><a href="01-production-et-transformation.html">Production et transformation</a></li>
+          <li><a href="02-stockage-et-conservation.html">Stockage et conservation</a></li>
+          <li><a href="03-logistique-et-commercialisation.html">Logistique et commercialisation</a></li>
+          <li class="active"><span class="self">Qualité et certification</span></li>
+          <li><a href="05-numerique-et-e-commerce.html">Numérique et e-commerce</a></li>
+          <li><a href="06-formation-et-conseil.html">Formation et conseil</a></li>
+          <li><a href="07-infrastructure-immaterielle.html">Infrastructure immatérielle</a></li>
+          <li><a href="08-et-bien-d-autres.html">Et bien d'autres…</a></li></ol>
+      </nav>
+    </article>
+  </main>
+</body>
+</html>

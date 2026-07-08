@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Mes candidatures</title>
+<style>
+  :root{
+    --pine:#155446;--pine-dark:#0e3d34;--pine-mid:#17564a;
+    --emerald:#2e9d63;--emerald-dark:#25844f;
+    --cream:#f1eee5;--sage-tile:#dcecdd;--sage-base:#d6e4d4;--sage-border:#c4dcc6;
+    --ink:#1f2d28;--muted:#5c6b64;--line:#dfdccf;--white:#fff;--lock:#9aa9a2;
+    --radius:12px;--shadow:0 1px 2px rgba(20,60,50,.06),0 6px 18px rgba(20,60,50,.06);
+  }
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:3px solid var(--emerald);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .demobar{background:#fbfaf4;border-bottom:1px dashed var(--lock);padding:8px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
+  .demobar strong{color:var(--pine)}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--sage-border);border-radius:8px;overflow:hidden;background:var(--white)}
+  .seg button{border:0;background:transparent;padding:5px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--sage-border)}
+  .seg button.on{background:var(--pine);color:#fff}
+
+  .app{display:grid;grid-template-columns:248px 1fr;grid-template-rows:60px 1fr auto;grid-template-areas:"head head" "nav main" "nav foot";min-height:calc(100vh - 40px)}
+
+  header.top{grid-area:head;background:linear-gradient(90deg,var(--pine-mid),var(--pine-dark));color:#fff;display:flex;align-items:center;gap:12px;padding:0 16px;position:sticky;top:0;z-index:20}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:var(--emerald);display:grid;place-items:center;font-size:14px;font-weight:800}
+  .brand small{display:block;font-weight:500;font-size:11px;opacity:.82}
+  .hamburger{display:none;background:transparent;border:0;color:#fff;font-size:20px;cursor:pointer;padding:6px}
+  .head-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .help-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .bell{position:relative;background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px}
+  .bell .dot{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;background:var(--emerald);border:2px solid var(--pine-dark);border-radius:999px;font-size:10px;font-weight:700;display:grid;place-items:center}
+  .account{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 10px 5px 6px;font-size:13px;cursor:pointer;color:#fff}
+  .account .avatar{width:26px;height:26px;border-radius:50%;background:var(--sage-base);color:var(--pine);display:grid;place-items:center;font-weight:700;font-size:12px}
+  .account .who{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  nav.side{grid-area:nav;background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .nav-scroll{flex:1;min-height:0;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+  .nav-footer{flex-shrink:0;padding:8px 10px 12px;background:var(--white);border-top:1px solid var(--line)}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--ink);text-decoration:none;font-size:14.5px;cursor:pointer;border:1px solid transparent}
+  .nav-item .ic{width:20px;text-align:center;opacity:.75;font-size:15px}
+  .nav-item:hover{background:#f6f8f5}
+  .nav-item.active{background:var(--sage-tile);color:var(--pine);font-weight:600;border-color:var(--sage-border)}
+  .nav-item.active .ic{opacity:1}
+  .nav-locked{color:var(--lock);cursor:not-allowed}
+  .nav-locked .ic{opacity:.55}
+  .lock-note{display:block;font-size:11px;color:var(--lock);margin-top:1px}
+
+  footer.foot{grid-area:foot;border-top:1px solid var(--line);padding:14px 22px;font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;background:#faf8f1}
+  footer.foot a{text-decoration:none}
+  footer.foot .fin{margin-left:auto;opacity:.85}
+
+  main.content{grid-area:main;padding:26px 30px;max-width:920px}
+  .page-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .page-title{font-size:22px;font-weight:700;color:var(--pine);margin:0}
+  .page-sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .newbtn{margin-left:auto}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:9px 15px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none}
+  .btn-primary{background:var(--emerald);color:#fff}.btn-primary:hover{background:var(--emerald-dark)}
+  .btn-ghost{background:transparent;border-color:var(--sage-border);color:var(--pine)}.btn-ghost:hover{background:#f6f8f5}
+  .btn-danger{background:transparent;border-color:#e2c4bc;color:#9a5546}.btn-danger:hover{background:#faf1ee}
+  .btn-sm{padding:7px 12px;font-size:13px}
+
+  .section-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+  .section-label .count{background:var(--sage-tile);border:1px solid var(--sage-border);border-radius:999px;padding:0 8px;font-size:11px;color:var(--pine)}
+
+  .row{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .row .main{flex:1;min-width:220px}
+  .row .title{font-size:15.5px;font-weight:600;color:var(--ink);margin:0 0 4px}
+  .row .info{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+  .row .num{font-family:ui-monospace,Menlo,monospace;color:var(--pine);font-weight:700}
+  .row .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;border:1px solid}
+  .pill-draft{background:#f7efd9;border-color:#e6d59a;color:#8a6d1f}
+  .pill-inst{background:var(--sage-tile);border-color:var(--sage-border);color:var(--pine)}
+  .pill-sel{background:#dff1e6;border-color:#bfe3cd;color:var(--emerald-dark)}
+  .pill-no{background:#f2ece9;border-color:#e0d3ce;color:#8a5a4e}
+
+  .note{font-size:12px;color:var(--muted);font-style:italic;margin-top:6px}
+
+  .empty{background:var(--white);border:1px dashed var(--sage-border);border-radius:var(--radius);padding:32px 24px;text-align:center;color:var(--muted)}
+  .empty h3{color:var(--pine);margin:0 0 6px;font-size:16px}
+  .empty p{margin:0 0 16px;font-size:14px}
+
+  .annot{border:1px dashed var(--lock);border-radius:10px;background:#fbfaf4;padding:11px 13px;font-size:12.5px;color:var(--muted);margin-top:18px}
+  .annot b{color:var(--pine)}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--pine-dark);color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s;z-index:60}
+  .toast.show{opacity:1}
+
+  /* confirm dialog */
+  .overlay{position:fixed;inset:0;background:rgba(14,61,52,.42);display:none;align-items:center;justify-content:center;padding:20px;z-index:70}
+  .overlay.show{display:flex}
+  .dialog{background:var(--white);border-radius:var(--radius);max-width:400px;width:100%;padding:22px;box-shadow:var(--shadow)}
+  .dialog h3{margin:0 0 8px;font-size:17px;color:var(--pine)}
+  .dialog p{margin:0 0 18px;font-size:14px;color:var(--muted)}
+  .dialog .acts{display:flex;justify-content:flex-end;gap:10px}
+
+  .scrim{display:none;position:fixed;inset:0;background:rgba(14,61,52,.4);z-index:25}
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;grid-template-areas:"head" "main" "foot"}
+    .hamburger{display:inline-flex}
+    nav.side{position:fixed;top:0;left:0;bottom:0;width:260px;z-index:30;transform:translateX(-100%);transition:transform .2s ease}
+    nav.side.open{transform:translateX(0)}
+    .scrim.show{display:block}
+    .account .who{max-width:110px}
+    main.content{padding:20px 16px}
+    .newbtn{margin-left:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+  <div class="demobar" role="region" aria-label="Contenu de liste (démo)">
+    <span><strong>Aperçu maquette</strong> · contenu :</span>
+    <span class="seg" id="segList">
+      <button data-l="vide" class="on">Vide</button>
+      <button data-l="brouillon">1 brouillon</button>
+      <button data-l="soumis">1 soumise</button>
+      <button data-l="historique">Historique</button>
+      <button data-l="complet">En cours + historique</button>
+    </span>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+
+  <div class="app">
+    <header class="top">
+      <button class="hamburger" id="burger" aria-label="Ouvrir le menu">☰</button>
+      <div class="brand"><span class="mark">SP</span><span>SUBCO-PRETE<small>Portail opérateur</small></span></div>
+      <div class="head-right">
+        <button class="help-pill">🛟 Besoin d'aide&nbsp;?</button>
+        <button class="bell" aria-label="Notifications">🔔<span class="dot">2</span></button>
+        <button class="account"><span class="avatar">CG</span><span class="who">Coopérative Girumwete</span><span>▾</span></button>
+      </div>
+    </header>
+
+    <nav class="side" id="side" aria-label="Navigation principale">
+      <div class="nav-scroll">
+        <a class="nav-item"><span class="ic">📊</span>Tableau de bord</a>
+        <a class="nav-item"><span class="ic">🏢</span>Mon organisation</a>
+        <a class="nav-item active"><span class="ic">📄</span>Mes candidatures</a>
+        <a class="nav-item nav-locked"><span class="ic">🔒</span><span>Ma subvention<span class="lock-note">Disponible après sélection</span></span></a>
+        <a class="nav-item"><span class="ic">🔔</span>Notifications</a>
+        <a class="nav-item"><span class="ic">📚</span>FAQ &amp; documents</a>
+        <a class="nav-item"><span class="ic">🛟</span>Assistance</a>
+      </div>
+      <div class="nav-footer">
+        <a class="nav-item" style="font-size:13px;color:var(--muted)"><span class="ic">⚙️</span>Mon compte</a>
+      </div>
+    </nav>
+
+    <main class="content">
+      <div class="page-head">
+        <h1 class="page-title">Mes candidatures</h1>
+        <a class="btn btn-primary newbtn" id="newBtn">+ Nouvelle candidature</a>
+      </div>
+      <p class="page-sub">Retrouvez vos dossiers et poursuivez-les selon leur statut.</p>
+
+      <div id="listRoot"></div>
+
+      <p class="annot"><b>Libellés regroupés (M2).</b> La chaîne fine (reçu → complétude → éligibilité → évaluation) est résumée ici en <b>« En instruction »</b> ; le détail vit un cran plus bas, dans le suivi dédié (Module 4). <b>« Voir le suivi » ouvre une page dédiée (M3).</b> Seul un brouillon est supprimable (M1, confirmation simple).</p>
+    </main>
+
+    <footer class="foot">
+      <a href="#">UGP PRETE</a><a href="#">Aide</a><a href="#">Mentions légales</a>
+      <span class="fin">Financé par la Banque mondiale · Projet PRETE Nyunganira</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="overlay" id="confirm">
+    <div class="dialog" role="alertdialog" aria-modal="true">
+      <h3>Supprimer ce brouillon&nbsp;?</h3>
+      <p>Cette action est définitive. Le brouillon et son contenu seront perdus.</p>
+      <div class="acts">
+        <button class="btn btn-ghost" id="cancelDel">Annuler</button>
+        <button class="btn btn-danger" id="okDel">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Jeux de données par contenu de liste
+  const DATA = {
+    vide:       { cours:[], histo:[], appelOuvert:true },
+    brouillon:  { cours:[{id:'d1',type:'draft',titre:'Unité de séchage de mangues',cohorte:'Cohorte 1',etape:'Étape 3 sur 4',date:'modifié le 12 juil. 2026'}], histo:[], appelOuvert:true },
+    soumis:     { cours:[{id:'s1',type:'inst',titre:'Unité de séchage de mangues',num:'PRETE-AP-C1-2026-00042',cohorte:'Cohorte 1',date:'déposé le 12 juil. 2026'}], histo:[], appelOuvert:true },
+    historique: { cours:[], histo:[{id:'h1',type:'no',titre:'Ferme avicole de Gihanga',num:'PRETE-AP-C1-2026-00017',cohorte:'Cohorte 1',date:'décision du 20 sept. 2026'}], appelOuvert:true },
+    complet:    { cours:[{id:'d2',type:'draft',titre:'Séchoir solaire — Rumonge',cohorte:'Cohorte 2',etape:'Étape 1 sur 4',date:'modifié le 3 juil. 2026'}],
+                  histo:[{id:'h2',type:'no',titre:'Ferme avicole de Gihanga',num:'PRETE-AP-C1-2026-00017',cohorte:'Cohorte 1',date:'décision du 20 sept. 2026'},
+                         {id:'h3',type:'sel',titre:'Étang piscicole — Nyanza-Lac',num:'PRETE-AP-C0-2025-00088',cohorte:'Cohorte pilote',date:'décision du 15 déc. 2025'}], appelOuvert:true }
+  };
+  let state='vide';
+  let model=null;
+
+  function pill(type){
+    if(type==='draft') return '<span class="pill pill-draft">✎ Brouillon</span>';
+    if(type==='inst')  return '<span class="pill pill-inst">⏳ En instruction</span>';
+    if(type==='sel')   return '<span class="pill pill-sel">✓ Sélectionné</span>';
+    return '<span class="pill pill-no">✗ Non retenu</span>';
+  }
+  function rowHTML(it){
+    let acts='', note='', numLine='';
+    if(it.type==='draft'){
+      acts = `<a class="btn btn-primary btn-sm" data-act="reprendre">Reprendre</a>
+              <a class="btn btn-ghost btn-sm" data-act="pdf">⤓ PDF brouillon</a>
+              <a class="btn btn-danger btn-sm" data-act="del" data-id="${it.id}">🗑 Supprimer</a>`;
+      note = `<div class="note">PDF filigrané « brouillon — non soumis », sans numéro.</div>`;
+      numLine = `<span>${it.etape}</span>`;
+    } else if(it.type==='inst'){
+      acts = `<a class="btn btn-ghost btn-sm" data-act="suivi">Voir le suivi</a>
+              <a class="btn btn-ghost btn-sm" data-act="pdf">⤓ PDF du dossier</a>`;
+      numLine = `<span class="num">${it.num}</span>`;
+      note = `<div class="note">PDF permanent (instantané figé) · dossier non modifiable.</div>`;
+    } else if(it.type==='sel'){
+      acts = `<a class="btn btn-ghost btn-sm" data-act="suivi">Voir le suivi</a>
+              <a class="btn btn-ghost btn-sm" data-act="pdf">⤓ PDF</a>`;
+      numLine = `<span class="num">${it.num}</span>`;
+      note = `<div class="note">La suite se poursuit dans « Ma subvention ».</div>`;
+    } else {
+      acts = `<a class="btn btn-ghost btn-sm" data-act="pdf">⤓ PDF</a>`;
+      numLine = `<span class="num">${it.num}</span>`;
+    }
+    return `<div class="row">
+      <div class="main">
+        <p class="title">${it.titre}</p>
+        <div class="info">${pill(it.type)} <span>${it.cohorte}</span> ${numLine} <span>${it.date}</span></div>
+        ${note}
+      </div>
+      <div class="acts">${acts}</div>
+    </div>`;
+  }
+
+  function render(){
+    model = JSON.parse(JSON.stringify(DATA[state]));
+    const root=document.getElementById('listRoot');
+    const hasActive = model.cours.length>0;
+
+    // CTA visible seulement si aucune candidature vivante (mêmes règles que le tableau de bord)
+    document.getElementById('newBtn').style.display = hasActive ? 'none' : 'inline-flex';
+
+    if(model.cours.length===0 && model.histo.length===0){
+      root.innerHTML = `<div class="empty">
+        <h3>Aucune candidature pour le moment</h3>
+        <p>Dès qu'un appel à propositions est ouvert, lancez votre première candidature.</p>
+        <a class="btn btn-primary" id="emptyCta">+ Nouvelle candidature</a>
+      </div>`;
+      return;
+    }
+
+    let html='';
+    html += `<div class="section-label">En cours <span class="count">${model.cours.length}</span></div>`;
+    html += model.cours.length ? model.cours.map(rowHTML).join('')
+          : `<div class="empty" style="padding:20px"><p style="margin:0">Aucune candidature en cours.</p></div>`;
+
+    if(model.histo.length){
+      html += `<div class="section-label">Historique <span class="count">${model.histo.length}</span></div>`;
+      html += model.histo.map(rowHTML).join('');
+    }
+    root.innerHTML = html;
+  }
+
+  // interactions
+  function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1900)}
+  let pendingDel=null;
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('[data-act]');
+    if(a){
+      const act=a.dataset.act;
+      if(act==='reprendre') toast('→ ouvre le Module 3 à la dernière étape');
+      else if(act==='suivi') toast('→ ouvre la page de suivi dédiée (Module 4)');
+      else if(act==='pdf') toast('→ génération du PDF');
+      else if(act==='del'){pendingDel=a.dataset.id;document.getElementById('confirm').classList.add('show');document.getElementById('okDel').focus()}
+      return;
+    }
+    if(e.target.id==='newBtn'||e.target.id==='emptyCta') toast('→ Avant de commencer → Module 3, étape 1');
+  });
+  document.getElementById('cancelDel').addEventListener('click',()=>{document.getElementById('confirm').classList.remove('show');pendingDel=null});
+  document.getElementById('okDel').addEventListener('click',()=>{
+    // suppression réelle dans le modèle courant
+    DATA[state].cours = DATA[state].cours.filter(x=>x.id!==pendingDel);
+    document.getElementById('confirm').classList.remove('show');
+    pendingDel=null; render(); toast('Brouillon supprimé');
+  });
+
+  document.getElementById('segList').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    // recharger les données d'origine (annuler une éventuelle suppression précédente)
+    location.hash=''; state=b.dataset.l;
+    [...e.currentTarget.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    // restaurer le jeu si modifié
+    if(b.dataset.l==='brouillon') DATA.brouillon.cours=[{id:'d1',type:'draft',titre:'Unité de séchage de mangues',cohorte:'Cohorte 1',etape:'Étape 3 sur 4',date:'modifié le 12 juil. 2026'}];
+    if(b.dataset.l==='complet') DATA.complet.cours=[{id:'d2',type:'draft',titre:'Séchoir solaire — Rumonge',cohorte:'Cohorte 2',etape:'Étape 1 sur 4',date:'modifié le 3 juil. 2026'}];
+    render();
+  });
+
+  // mobile drawer
+  const side=document.getElementById('side'),scrim=document.getElementById('scrim');
+  document.getElementById('burger').addEventListener('click',()=>{side.classList.add('open');scrim.classList.add('show')});
+  scrim.addEventListener('click',()=>{side.classList.remove('open');scrim.classList.remove('show')});
+
+  render();
+</script>
+</body>
+</html>

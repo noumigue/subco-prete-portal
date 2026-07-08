@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Jonction « Nouvelle candidature » (Module 3 ↔ portail)</title>
+<style>
+  :root{
+    --pine:#155446;--pine-dark:#0e3d34;--pine-mid:#17564a;
+    --emerald:#2e9d63;--emerald-dark:#25844f;
+    --cream:#f1eee5;--sage-tile:#dcecdd;--sage-base:#d6e4d4;--sage-border:#c4dcc6;
+    --ink:#1f2d28;--muted:#5c6b64;--line:#dfdccf;--white:#fff;--lock:#9aa9a2;
+    --radius:12px;--shadow:0 1px 2px rgba(20,60,50,.06),0 10px 30px rgba(20,60,50,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:3px solid var(--emerald);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .demobar{background:#fbfaf4;border-bottom:1px dashed var(--lock);padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+  .demobar strong{color:var(--pine)}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--sage-border);border-radius:8px;overflow:hidden;background:var(--white)}
+  .seg button{border:0;background:transparent;padding:5px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--sage-border)}
+  .seg button.on{background:var(--pine);color:#fff}
+
+  .topbar{background:linear-gradient(90deg,var(--pine-mid),var(--pine-dark));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:var(--emerald);display:grid;place-items:center;font-size:14px;font-weight:800}
+  .brand small{display:block;font-weight:500;font-size:11px;opacity:.82}
+
+  .wrap{max-width:720px;margin:0 auto;padding:26px 18px 40px}
+
+  .kicker{font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--emerald-dark);margin:0 0 6px}
+  h1{font-size:20px;color:var(--pine);margin:0 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
+  .card.callout{background:var(--sage-tile);border:1px solid var(--pine)}
+  .card h3{margin:0 0 4px;font-size:16px;color:var(--pine)}
+  .card .meta{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 18px;font-size:14.5px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none}
+  .btn-primary{background:var(--emerald);color:#fff}
+  .btn-primary:hover{background:var(--emerald-dark)}
+  .btn-ghost{background:transparent;border-color:var(--sage-border);color:var(--pine)}
+  .btn-ghost:hover{background:#f6f8f5}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+  .actions .right{margin-left:auto}
+
+  .banner{background:#fbfaf4;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
+
+  .cta-explain{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .cta-explain code{background:var(--sage-tile);border:1px solid var(--sage-border);border-radius:5px;padding:1px 6px;font-size:12px;color:var(--pine)}
+
+  /* interstitiel */
+  ul.needs{list-style:none;padding:0;margin:6px 0 0}
+  ul.needs li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  ul.needs li:last-child{border-bottom:0}
+  ul.needs .mk{color:var(--emerald);font-weight:800}
+  .info-line{display:flex;gap:9px;align-items:flex-start;background:var(--sage-tile);border:1px solid var(--sage-border);border-radius:10px;padding:11px 13px;font-size:13.5px;margin-top:14px}
+  .save-line{font-size:13px;color:var(--muted);margin-top:12px;display:flex;gap:8px;align-items:center}
+  .link{color:var(--emerald-dark);font-weight:600;text-decoration:none;cursor:pointer}
+  .link:hover{text-decoration:underline}
+
+  .annex{margin-top:10px;border:1px solid var(--sage-border);border-radius:10px;overflow:hidden;display:none}
+  .annex.show{display:block}
+  .annex-head{background:var(--sage-tile);padding:9px 13px;font-size:12.5px;color:var(--pine);font-weight:600;display:flex;justify-content:space-between}
+  .annex-body{padding:12px 13px;font-size:13px;color:var(--muted)}
+  .annex-grp{font-weight:600;color:var(--ink);margin:8px 0 2px}
+  .annex-note{font-style:italic;font-size:12px;margin-top:10px}
+
+  .annot{border:1px dashed var(--lock);border-radius:10px;background:#fbfaf4;padding:11px 13px;font-size:12.5px;color:var(--muted);margin-top:16px}
+  .annot b{color:var(--pine)}
+
+  footer{padding:16px 20px;border-top:1px solid var(--line);background:#faf8f1;font-size:12.5px;color:var(--muted);text-align:center}
+
+  .view{display:none}.view.active{display:block}
+  .landnote{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);font-size:14px}
+  .landnote code{background:var(--sage-tile);border:1px solid var(--sage-border);border-radius:5px;padding:1px 6px;color:var(--pine)}
+</style>
+</head>
+<body>
+
+  <div class="demobar" role="region" aria-label="Sélecteur d'état (démo)">
+    <span><strong>Aperçu maquette</strong> · état du compte :</span>
+    <span class="seg" id="segEtat">
+      <button data-e="e0" class="on">0 · aucune (appel ouvert)</button>
+      <button data-e="brouillon">Brouillon en cours</button>
+      <button data-e="soumis">Soumise / instruction</button>
+      <button data-e="echec_ouvert">Non-sélection + nouvel appel</button>
+      <button data-e="echec_ferme">Non-sélection + aucun appel</button>
+    </span>
+  </div>
+
+  <div class="topbar">
+    <div class="brand"><span class="mark">SP</span><span>SUBCO-PRETE<small>Portail opérateur</small></span></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ===== Vue 1 : le CTA résolu dans le tableau de bord ===== -->
+    <section class="view active" data-view="portail">
+      <p class="kicker">Tableau de bord — extrait</p>
+      <h1>Point de branchement : « + Nouvelle candidature »</h1>
+      <p class="sub">Le portail ne place pas un bouton fixe : il <b>résout</b> le bon point d'entrée selon l'état.</p>
+      <div id="ctaCard"></div>
+    </section>
+
+    <!-- ===== Vue 2 : Avant de commencer (interstitiel) ===== -->
+    <section class="view" data-view="avant">
+      <p class="kicker" id="av-cohorte">Cohorte 1 · clôture 30 septembre 2026</p>
+      <h1>Avant de commencer votre candidature</h1>
+      <p class="sub" id="av-sub"></p>
+
+      <div class="card">
+        <h3 style="font-size:15px">Ce dont vous aurez besoin</h3>
+        <ul class="needs" id="av-needs"></ul>
+
+        <div class="annex" id="annex">
+          <div class="annex-head"><span>Pièces de l'Annexe 9</span><span class="link" id="annexClose">Fermer ✕</span></div>
+          <div class="annex-body">
+            <div class="annex-grp">Administratives</div>
+            <div class="annex-grp">Financières</div>
+            <div class="annex-grp">Techniques</div>
+            <p class="annex-note">La liste réelle des 18 types de pièces (avec statut obligatoire / si applicable / si disponible) est gérée dans les Référentiels et présentée dans « FAQ & documents ». Ce lien y renverra en production.</p>
+          </div>
+        </div>
+
+        <div class="info-line" id="av-info"></div>
+        <div class="save-line">💾 Vous pouvez enregistrer et reprendre à tout moment.</div>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-ghost" data-back>Retour</a>
+        <a class="btn btn-primary right" data-go="form">Commencer</a>
+      </div>
+
+      <p class="annot"><b>Routage de consolidation (backend).</b> À l'étape 1, les champs identité &amp; siège alimentent le <b>Profil Organisation</b> (naît au fil des sauvegardes — J1 ; source de vérité de « Identique au siège » ; toute modif met à jour le maître — J2). Le rattachement AAP + déclarations §5 + le projet alimentent la <b>Candidature</b>. Un dossier déjà soumis n'est jamais réécrit (instantané figé).</p>
+    </section>
+
+    <!-- ===== Vue 3 : atterrissages (Reprendre / Suivre / Form) ===== -->
+    <section class="view" data-view="land">
+      <div class="landnote" id="landBody"></div>
+      <div class="actions" style="margin-top:14px"><a class="btn btn-ghost" data-back>Retour</a></div>
+    </section>
+
+  </div>
+
+  <footer>UGP PRETE · Financé par la Banque mondiale · Projet PRETE Nyunganira</footer>
+
+<script>
+  let etat='e0';
+
+  const NEEDS_COMMON = [
+    "Une contrepartie d'au moins 20 % du budget de votre projet",
+    "__ANNEXE__",              // ligne avec lien réel
+    "Un court screening environnemental et social (E&S)"
+  ];
+  const NEED_ORG = "Les informations de votre organisation (siège, statut juridique)";
+
+  function renderCTA(){
+    const el=document.getElementById('ctaCard');
+    if(etat==='e0'){
+      el.innerHTML=`
+      <div class="card callout">
+        <p class="kicker" style="color:var(--emerald-dark)">Appel à propositions ouvert</p>
+        <h3>Cohorte 1 — 5 filières prioritaires + projets transversaux</h3>
+        <p class="meta">Clôture des dépôts : 30 septembre 2026</p>
+        <a class="btn btn-primary" data-go="avant" data-variant="premiere">+ Nouvelle candidature</a>
+        <p class="cta-explain">État 0 → ouvre <code>Avant de commencer</code> puis l'étape 1 (création du dossier + du profil).</p>
+      </div>`;
+    }
+    else if(etat==='brouillon'){
+      el.innerHTML=`
+      <div class="card">
+        <p class="kicker">Candidature en cours — brouillon</p>
+        <h3>« Unité de séchage de mangues »</h3>
+        <p class="meta">Cohorte 1 · Étape 3 sur 4 · dernière modification 12 juillet 2026</p>
+        <a class="btn btn-primary" data-go="land" data-land="reprendre">Reprendre</a>
+        <p class="cta-explain">Une candidature est vivante → pas de nouvelle candidature. « Reprendre » rouvre le Module 3 à l'<code>étape 3</code>.</p>
+      </div>`;
+    }
+    else if(etat==='soumis'){
+      el.innerHTML=`
+      <div class="card">
+        <p class="kicker">Candidature soumise</p>
+        <h3>PRETE-AP-C1-2026-00042</h3>
+        <p class="meta">En cours d'instruction</p>
+        <a class="btn btn-ghost" data-go="land" data-land="suivre">Suivre mon dossier</a>
+        <p class="cta-explain">Dossier en instruction → n'ouvre pas le formulaire. Renvoie vers <code>Mes candidatures</code> (suivi Module 4).</p>
+      </div>`;
+    }
+    else if(etat==='echec_ouvert'){
+      el.innerHTML=`
+      <div class="card callout">
+        <p class="kicker" style="color:var(--emerald-dark)">Nouvel appel ouvert · Cohorte 2</p>
+        <h3>Votre candidature précédente n'a pas été retenue</h3>
+        <p class="meta">Vous pouvez déposer une nouvelle candidature à cet appel.</p>
+        <a class="btn btn-primary" data-go="avant" data-variant="ulterieure">+ Nouvelle candidature</a>
+        <p class="cta-explain">Non-sélection sur tous les appels précédents + appel ouvert → <code>Avant de commencer</code> (variante ultérieure, profil déjà connu).</p>
+      </div>`;
+    }
+    else if(etat==='echec_ferme'){
+      el.innerHTML=`
+      <div class="banner">Votre candidature précédente n'a pas été retenue. <b>Aucun appel n'est ouvert actuellement</b> — vous serez notifié dès l'ouverture du prochain appel. <br><span style="font-size:12.5px">Pas de bouton mort : on informe au lieu d'afficher un CTA inactif.</span></div>`;
+    }
+    bindGo();
+  }
+
+  function renderAvant(variant){
+    const isPrem = variant==='premiere';
+    document.getElementById('av-sub').textContent = isPrem
+      ? "Première candidature — la saisie de l'étape 1 créera votre profil d'organisation."
+      : "Vos informations d'organisation sont déjà enregistrées ; vous n'aurez qu'à les vérifier.";
+
+    const list = document.getElementById('av-needs');
+    const items = isPrem ? [...NEEDS_COMMON, NEED_ORG] : [...NEEDS_COMMON];
+    list.innerHTML = items.map(t=>{
+      if(t==='__ANNEXE__'){
+        return `<li><span class="mk">•</span><span>Les pièces de l'Annexe 9 (administratives, financières, techniques) — <a class="link" id="annexLink">voir la liste</a></span></li>`;
+      }
+      return `<li><span class="mk">•</span><span>${t}</span></li>`;
+    }).join('');
+
+    document.getElementById('av-info').innerHTML = isPrem
+      ? `ℹ <span>Votre profil d'organisation sera <b>créé</b> à partir de cette candidature.</span>`
+      : `ℹ <span>Vos informations d'organisation sont déjà enregistrées — un simple <b>contrôle</b> suffira.</span>`;
+
+    document.getElementById('annex').classList.remove('show');
+    // (re)lier le lien Annexe
+    const al=document.getElementById('annexLink');
+    if(al) al.addEventListener('click',()=>document.getElementById('annex').classList.add('show'));
+  }
+  document.addEventListener('click',e=>{
+    if(e.target.id==='annexClose') document.getElementById('annex').classList.remove('show');
+  });
+
+  function renderLand(kind){
+    const b=document.getElementById('landBody');
+    if(kind==='reprendre') b.innerHTML=`<b>Reprendre le brouillon</b><br>→ ouvre le <code>Module 3</code> à la dernière étape atteinte (ici l'étape 3). Aucun interstitiel : on ne pose les attentes qu'à la création.`;
+    else if(kind==='suivre') b.innerHTML=`<b>Suivre mon dossier</b><br>→ ouvre <code>Mes candidatures</code> : la ligne du dossier <code>PRETE-AP-C1-2026-00042</code> et sa timeline de statut (Module 4).`;
+    else b.innerHTML=`<b>Commencer</b><br>→ entre dans le <code>Module 3</code>, étape 1 (Cadrage &amp; éligibilité). Un brouillon est créé et rattaché au compte + à l'appel ouvert.`;
+  }
+
+  function go(view,opt){
+    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.view===view));
+    if(view==='avant') renderAvant(opt.variant||'premiere');
+    if(view==='land') renderLand(opt.land||'');
+    window.scrollTo({top:0});
+  }
+  function bindGo(){
+    document.querySelectorAll('[data-go]').forEach(el=>{
+      el.onclick=ev=>{ev.preventDefault();
+        if(el.dataset.go==='form'){go('land',{land:'form'});return;}
+        go(el.dataset.go,{variant:el.dataset.variant,land:el.dataset.land});
+      };
+    });
+    document.querySelectorAll('[data-back]').forEach(el=>el.onclick=ev=>{ev.preventDefault();go('portail',{})});
+  }
+
+  document.getElementById('segEtat').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    [...e.currentTarget.children].forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); etat=b.dataset.e; go('portail',{}); renderCTA();
+  });
+
+  renderCTA();
+</script>
+</body>
+</html>

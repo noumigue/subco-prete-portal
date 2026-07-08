@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Infrastructure immatérielle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --card:#FFFFFF; --ink:#1B2620; --muted:#5C6B62; --line:#E5E1D6;
+    --forest:#1F5741; --forest-soft:#EAF1ED; --ochre:#B67C22;
+    --teal:#2B6C6B; --teal-soft:#E7F0F0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Spectral",Georgia,serif;font-weight:600;line-height:1.2;margin:0}
+
+  .wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+  h1{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.01em;margin:0 0 16px}
+  .lead{font-size:20px;color:#354139;margin:0}
+
+  .rtf{margin-top:8px}
+  .rtf h2{font-size:23px;margin:38px 0 12px;padding-top:30px;border-top:1px solid var(--line)}
+  .rtf p{margin:0 0 14px;color:#39453f}
+  .rtf ul{margin:0 0 14px;padding:0;list-style:none}
+  .rtf ul li{position:relative;padding-left:22px;margin:0 0 9px;color:#39453f}
+  .rtf ul li::before{content:"";position:absolute;left:2px;top:11px;
+    width:7px;height:7px;border-radius:2px;background:var(--ochre)}
+  .rtf ul li b{color:var(--ink)}
+  .rtf .ex li::before{background:var(--forest)}
+  .rtf.imm .ex li::before{background:var(--teal)}
+
+  .cta{margin-top:44px;background:var(--forest);color:#fff;border-radius:var(--radius);
+    padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .cta h3{font-size:21px;color:#fff}
+  .cta p{margin:6px 0 0;color:#CFE0D8;font-size:14px}
+  .cta .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{all:unset;cursor:pointer;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px}
+  .btn.primary{background:#E9C77C;color:#2A2411}
+  .btn.ghost{border:1px solid rgba(255,255,255,.4);color:#fff}
+  .btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  .others{margin-top:52px;padding-top:28px;border-top:1px solid var(--line)}
+  .others .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:14px}
+  .others ol{list-style:none;margin:0;padding:0;counter-reset:t;
+    display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .others li{counter-increment:t}
+  .others a,.others .self{display:flex;gap:12px;align-items:baseline;width:100%;
+    padding:11px 12px;border-radius:10px;font-size:15px;text-decoration:none;
+    color:var(--muted);transition:background .15s,color .15s}
+  .others a{cursor:pointer}
+  .others a:hover{background:#fff;color:var(--ink)}
+  .others a::before,.others .self::before{content:counter(t,decimal-leading-zero);
+    font-family:"Spectral",serif;font-size:12px;color:var(--muted);min-width:20px}
+  .others li.active .self{color:var(--ink);font-weight:700}
+  .others a:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+
+  @media (max-width:640px){ .others ol{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <article>
+      <h1>Infrastructure immatérielle</h1>
+      <p class="lead">Une infrastructure productive n'est pas forcément un bâtiment ou une machine : elle peut être immatérielle dès lors qu'elle fournit un service structurant, collectif et durable aux MPME.</p>
+      <div class="rtf imm">
+<h2>Ce que recouvre ce type</h2>
+<p>Ce type transversal fédère les investissements portant sur un service plutôt que sur un bien physique : il recoupe la qualité, le numérique et l'appui, dès lors que l'investissement améliore durablement la performance, l'organisation, la traçabilité ou l'accès au marché.</p>
+<ul>
+<li>Services de traçabilité et systèmes d'information</li>
+<li>Dispositifs qualité et certification</li>
+<li>Assistance technique et appui à l'organisation</li>
+<li>Services partagés et outils de gestion collective</li>
+</ul>
+<h2>Pourquoi c'est pertinent pour le PRETE</h2>
+<p>Bien conçues, ces infrastructures améliorent l'efficacité des acteurs et structurent des services utiles à plusieurs MPME, sans reposer uniquement sur des équipements lourds. Elles doivent pouvoir être décrites comme un <b>service structurant</b>, pas comme une idée ou une dépense d'accompagnement sans effet tangible.</p>
+<ul>
+<li><b>Chaînes mieux organisées</b>, traçabilité et qualité améliorées.</li>
+<li><b>Services professionnalisés</b>.</li>
+<li><b>Accès au marché</b> facilité.</li>
+<li><b>Coûts de coordination</b> réduits.</li>
+</ul>
+<h2>Exemples d'infrastructures et de services</h2>
+<ul class="ex">
+<li><b>Système collectif de traçabilité</b> — documenter flux, lots, producteurs et conditions de conformité.</li>
+<li><b>Service mutualisé d'appui qualité ou conformité</b> — aider plusieurs acteurs à respecter les standards du marché.</li>
+<li><b>Outil ou centre de services numériques</b> — soutenir gestion, vente, coordination et pilotage.</li>
+</ul>
+<h2>Ce qui rend un projet solide</h2>
+<ul>
+<li>Un service concret et récurrent, à l'utilité collective démontrée.</li>
+<li>Des bénéficiaires réels et identifiés.</li>
+<li>Un mécanisme clair de gestion et d'animation.</li>
+<li>Un modèle économique crédible.</li>
+</ul>
+<p>Le principal écueil est une <b>utilité trop abstraite</b> entraînant une faible adoption.</p>
+      </div>
+
+      <div class="cta">
+        <div>
+          <h3>Ce type correspond à votre projet ?</h3>
+          <p>Vérifiez votre éligibilité, puis préparez votre candidature.</p>
+        </div>
+        <div class="btns">
+          <button class="btn primary">Tester mon éligibilité</button>
+          <button class="btn ghost">Candidater</button>
+        </div>
+      </div>
+
+      <nav class="others" aria-label="Autres types d'infrastructure">
+        <div class="eyebrow">Autres types d'infrastructure</div>
+        <ol><li><a href="01-production-et-transformation.html">Production et transformation</a></li>
+          <li><a href="02-stockage-et-conservation.html">Stockage et conservation</a></li>
+          <li><a href="03-logistique-et-commercialisation.html">Logistique et commercialisation</a></li>
+          <li><a href="04-qualite-et-certification.html">Qualité et certification</a></li>
+          <li><a href="05-numerique-et-e-commerce.html">Numérique et e-commerce</a></li>
+          <li><a href="06-formation-et-conseil.html">Formation et conseil</a></li>
+          <li class="active"><span class="self">Infrastructure immatérielle</span></li>
+          <li><a href="08-et-bien-d-autres.html">Et bien d'autres…</a></li></ol>
+      </nav>
+    </article>
+  </main>
+</body>
+</html>

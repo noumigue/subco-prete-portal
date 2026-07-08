@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUBCO-PRETE — Nouvelle candidature</title>
+<style>
+:root{
+  --navy:#155446; --navy-d:#103f36; --green:#2e9d63; --green-d:#24804f;
+  --ink:#233028; --muted:#616d63; --line:#e2ddcf; --line-in:#cdd6cb;
+  --panel:#f3f6f0; --bg:#f1eee5; --white:#fff;
+  --ok-bg:#e2efe4; --ok:#248050; --warn-bg:#f7efda; --warn:#9a6a10;
+  --danger-bg:#f6e7e2; --danger:#b23f2f; --info-bg:#e7efe4;
+  --sage:#d6e4d4; --sage-tile:#dcecdd; --mint-line:#c4dcc6; --pine-d:#103f36;
+  --pine-g1:#17564a; --pine-g2:#0e3d34;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.55;padding:24px 12px;}
+.modal{max-width:720px;margin:0 auto;background:var(--white);border:1px solid var(--line);
+  border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(18,58,99,.10);}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 22px;background:linear-gradient(90deg,var(--pine-g1),var(--pine-g2));}
+.head h1{margin:0;font-size:18px;font-weight:600;color:#fff;}
+.head p{margin:3px 0 0;font-size:13px;color:#bcd8cd;}
+.xbtn{border:1px solid rgba(255,255,255,.35);background:transparent;border-radius:8px;width:34px;height:34px;
+  cursor:pointer;color:#dbeee5;font-size:18px;line-height:1;}
+.xbtn:hover{background:rgba(255,255,255,.12);}
+.prog{display:flex;gap:8px;padding:16px 22px 0;}
+.prog .seg{flex:1;}
+.prog .bar{height:4px;border-radius:2px;background:var(--line);}
+.prog .seg.done .bar,.prog .seg.active .bar{background:var(--green);}
+.prog .seg small{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.prog .seg.active small{color:var(--green-d);font-weight:600;}
+.body{padding:20px 22px 4px;}
+.view{display:none;}
+.view.on{display:block;}
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--info-bg);
+  border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--muted);}
+.banner svg{flex:none;margin-top:1px;}
+.sect{font-size:15px;font-weight:600;color:var(--navy-d);margin:2px 0 10px;}
+.sub{font-size:13px;color:var(--muted);margin:0 0 12px;}
+.field{margin-bottom:14px;}
+.field>label{display:block;font-size:13px;color:var(--navy);font-weight:500;margin-bottom:5px;}
+.ref{color:var(--muted);font-weight:400;font-size:12px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+.grid5{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;}
+input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{
+  width:100%;font:inherit;color:var(--ink);background:var(--white);
+  border:1px solid var(--line-in);border-radius:var(--radius);padding:9px 11px;min-height:40px;}
+textarea{resize:vertical;min-height:auto;}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:34px;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(47,158,79,.15);}
+input:disabled,select:disabled{background:var(--panel);color:var(--muted);}
+.hint{font-size:12px;color:var(--muted);margin:5px 0 0;}
+.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.card .card-h{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;background:var(--info-bg);border-bottom:1px solid var(--line);font-weight:600;font-size:14px;color:var(--navy-d);}
+.card .card-b{padding:6px 14px 12px;}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:14px;cursor:pointer;}
+.chk input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--green);}
+.badge{font-size:11px;padding:1px 8px;border-radius:11px;margin-left:6px;white-space:nowrap;}
+.b-obl{background:var(--info-bg);color:var(--navy);}
+.b-opt{background:var(--white);color:var(--muted);border:1px solid var(--line);}
+.recap{background:var(--panel);border-radius:12px;padding:12px 14px;margin-bottom:14px;}
+.recap .row{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:3px 0;}
+.recap .row .lab{color:var(--muted);}
+.pill{font-size:12px;padding:2px 9px;border-radius:var(--radius);margin-left:6px;}
+.p-ok{background:var(--ok-bg);color:var(--ok);}
+.p-warn{background:var(--warn-bg);color:var(--warn);}
+.p-danger{background:var(--danger-bg);color:var(--danger);}
+details.acc{border:1px solid var(--line);border-radius:14px;padding:6px 14px;margin-bottom:10px;}
+details.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  font-weight:600;font-size:14px;color:var(--navy-d);padding:6px 0;}
+details.acc>summary::-webkit-details-marker{display:none;}
+.pc{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 0;border-top:1px solid var(--line);font-size:14px;}
+.pc .nm{min-width:0;}
+.upl{flex:none;border:1px solid var(--line-in);background:var(--white);border-radius:8px;
+  padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--navy);}
+.upl:hover{background:var(--panel);}
+.upl.done{color:var(--ok);border-color:var(--ok);}
+.esbox{margin-top:12px;background:var(--warn-bg);border-radius:var(--radius);padding:10px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.esbox .lab{font-size:14px;color:var(--warn);}
+.compl{background:var(--panel);border-radius:14px;padding:14px;margin:6px 0 14px;}
+.compl .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.compl .top b{font-size:14px;color:var(--navy-d);}
+.pbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;}
+.pbar>i{display:block;height:100%;background:var(--green);width:0;transition:width .2s;}
+.notif{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;margin:6px 0 0;font-size:13px;color:var(--muted);}
+.notif.hi{background:var(--sage-tile);border-color:var(--mint-line);color:var(--pine-d);}
+.notif.hi b{color:var(--pine-d);}
+.count{font-size:12px;color:var(--muted);white-space:nowrap;}
+.count.max{color:var(--danger);font-weight:500;}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 22px;margin-top:12px;border-top:1px solid var(--line);flex-wrap:wrap;}
+.foot .left{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.foot #btn-next{margin-left:auto;}
+.autosave{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.btn{border:1px solid var(--line-in);background:var(--white);border-radius:var(--radius);
+  padding:9px 16px;font:inherit;font-size:14px;cursor:pointer;color:var(--navy);}
+.btn:hover{background:var(--panel);}
+.btn:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+.btn-primary{background:var(--green);border-color:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-d);}
+.btn-primary:disabled{background:#bcdcc6;border-color:#bcdcc6;cursor:not-allowed;}
+.btn-block{width:100%;justify-content:center;display:flex;align-items:center;gap:8px;}
+/* confirmation */
+.cf-head{text-align:center;padding:26px 22px 18px;border-bottom:1px solid var(--line);}
+.cf-check{width:54px;height:54px;border-radius:50%;background:var(--ok-bg);display:flex;
+  align-items:center;justify-content:center;margin:0 auto 14px;color:var(--ok);}
+.cf-head h2{margin:0;font-size:19px;font-weight:600;color:var(--navy-d);}
+.cf-head p{margin:6px 0 0;color:var(--muted);font-size:14px;}
+.dossier{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--panel);border-radius:12px;padding:12px 14px;}
+.dossier .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;font-size:16px;color:var(--navy-d);}
+.acc-row{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:14px;color:var(--muted);}
+.acc-row+.acc-row{border-top:1px solid var(--line);}
+.acc-row .ok{margin-left:auto;font-size:12px;color:var(--ok);white-space:nowrap;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--navy-d);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;
+  opacity:0;pointer-events:none;transition:.25s;z-index:50;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+svg{display:inline-block;vertical-align:middle;}
+@media (max-width:520px){
+  body{padding:0;} .modal{border-radius:0;border-left:0;border-right:0;}
+  .prog .seg small{font-size:11px;}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="modal" role="dialog" aria-label="Nouvelle candidature — dossier d'appel à propositions">
+  <div class="head">
+    <div>
+      <h1>Nouvelle candidature</h1>
+      <p id="crumb">Étape 1 sur 4 · cadrage et éligibilité</p>
+    </div>
+    <button class="xbtn" aria-label="Fermer" onclick="toast('Brouillon conservé. Vous pourrez le reprendre depuis votre compte.')">&times;</button>
+  </div>
+
+  <div class="prog" id="prog">
+    <div class="seg active"><div class="bar"></div><small>Cadrage et éligibilité</small></div>
+    <div class="seg"><div class="bar"></div><small>Le projet</small></div>
+    <div class="seg"><div class="bar"></div><small>Économie et impact</small></div>
+    <div class="seg"><div class="bar"></div><small>Pièces et soumission</small></div>
+  </div>
+
+  <div class="body">
+
+    <!-- ÉTAPE 1 -->
+    <section class="view on" id="v1">
+      <div class="banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span>Étape de saisie — aucun document à déposer ici. Les pièces se déposent à l'étape 4.</span>
+      </div>
+
+      <div class="field">
+        <label>Appel à propositions <span class="ref">· référentiel</span></label>
+        <select id="aap"></select>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span>Conditions d'éligibilité</span><span class="badge b-obl">obligatoire</span></div>
+        <div class="card-b">
+          <p class="sub" style="margin:8px 0 6px">Toutes les conditions doivent être confirmées pour continuer.</p>
+          <label class="chk"><input type="checkbox" class="gate">Structure légalement constituée (RC ou enregistrement)</label>
+          <label class="chk"><input type="checkbox" class="gate">En conformité fiscale, sans contentieux majeur</label>
+          <label class="chk"><input type="checkbox" class="gate">Aucune activité exclue par le mécanisme</label>
+          <label class="chk"><input type="checkbox" class="gate">Capacité de mobiliser une contrepartie d'au moins 20 %</label>
+          <label class="chk"><input type="checkbox" class="gate">Aucun conflit d'intérêt avec le projet ou l'UGP</label>
+        </div>
+      </div>
+
+      <div class="sect" style="margin-top:16px">Opérateur / promoteur
+        <span class="ref" style="float:right;font-weight:400">pré-rempli depuis votre compte, modifiable</span></div>
+      <div class="grid">
+        <div class="field"><label>Raison sociale</label><input type="text" value="Coopérative Umuhora"></div>
+        <div class="field"><label>Statut juridique <span class="ref">· référentiel</span></label><select id="statut"></select></div>
+        <div class="field"><label>NIF</label><input type="text" placeholder="4001234567"></div>
+        <div class="field"><label>RC / enregistrement</label><input type="text" placeholder="RC/BJM/2023/1024"></div>
+        <div class="field"><label>Représentant légal</label><input type="text" placeholder="Nom et prénom"></div>
+        <div class="field"><label>Province <span class="ref">· référentiel</span></label><select id="op-prov"></select></div>
+        <div class="field"><label>Commune <span class="ref">· référentiel</span></label><select id="op-com" disabled><option>Choisir une province d'abord</option></select></div>
+        <div class="field"><label>Email de contact</label><input type="email" placeholder="nom@operateur.bi"></div>
+        <div class="field"><label>Téléphone <span class="ref">· pour l'accusé SMS</span></label><input type="tel" placeholder="+257 …"></div>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 2 -->
+    <section class="view" id="v2">
+      <div class="field"><label>Titre du projet</label>
+        <input type="text" placeholder="Unité de transformation de fruits — Butanyerera"></div>
+
+      <div class="grid">
+        <div class="field"><label>Chaîne de valeur <span class="ref">· référentiel</span></label><select id="filiere"></select></div>
+      </div>
+
+      <div class="field">
+        <label>Type d'infrastructure à réaliser</label>
+        <p class="sub" style="margin:0 0 8px">Décrivez librement, avec vos mots, l'infrastructure que vous souhaitez mettre en œuvre.</p>
+        <details id="infra-ex" style="margin-bottom:10px">
+          <summary style="list-style:none;cursor:pointer;color:var(--green);font-size:13px;display:inline-flex;align-items:center;gap:6px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>Voir quelques exemples</summary>
+          <div id="infra-ex-body" style="margin-top:10px;padding:12px 14px;background:var(--panel);border-radius:var(--radius);font-size:13px;color:var(--muted)"></div>
+        </details>
+        <textarea rows="4" placeholder="Ex. : unité de séchage solaire de mangues d'une capacité de 2 t/jour, avec chambre froide et atelier de conditionnement pour les coopératives de la zone…"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span>Localisation du site</span>
+          <label style="font-weight:400;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px"><input type="checkbox" id="same-site" style="accent-color:var(--green)">Identique au siège</label>
+        </div>
+        <div class="card-b">
+          <div class="grid" style="margin-top:6px">
+            <div class="field"><label>Province <span class="ref">· référentiel</span></label><select id="st-prov"></select></div>
+            <div class="field"><label>Commune <span class="ref">· référentiel</span></label><select id="st-com" disabled><option>Choisir une province d'abord</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field"><label>Statut du site <span class="ref">· référentiel</span></label><select id="statut-site"></select></div>
+        <div class="field"><label>Usage collectif ou partagé</label><select><option>Oui</option><option>Non</option></select></div>
+        <div class="field"><label>MPME / acteurs desservis</label><input type="number" min="0" placeholder="ex. 40"></div>
+        <div class="field"><label>Niveau de maturité <span class="ref">· référentiel</span></label><select id="maturite"></select></div>
+      </div>
+
+      <div class="field"><label>Note conceptuelle <span class="ref">· courte, 600 caractères max</span></label>
+        <textarea id="note" rows="3" maxlength="600" placeholder="Problème traité, infrastructure proposée, bénéficiaires MPME, résultats attendus…"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:5px">
+          <p class="hint" style="margin:0">Restez bref — le détail va dans le business plan à l'étape 4.</p>
+          <span class="count" id="note-count">600 restants</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 3 -->
+    <section class="view" id="v3">
+      <div class="sect">Financement</div>
+      <div class="grid">
+        <div class="field"><label>Budget total du projet (BIF)</label><input type="text" inputmode="numeric" id="budget" value="100 000 000"></div>
+        <div class="field"><label>Contrepartie mobilisée (BIF)</label><input type="text" inputmode="numeric" id="contre" value="25 000 000"></div>
+        <div class="field"><label>Type de contrepartie <span class="ref">· référentiel</span></label><select id="type-contre"></select></div>
+      </div>
+
+      <div class="recap">
+        <div class="row"><span class="lab">Subvention demandée (auto)</span><span id="sub"><b>—</b></span></div>
+        <div class="row"><span class="lab">Part de contrepartie</span><span><b id="pct">—</b><span id="status" class="pill"></span></span></div>
+      </div>
+
+      <div class="field"><label>Modèle économique <span class="ref">· en bref</span></label>
+        <textarea rows="2" placeholder="Revenus, coûts, viabilité, exploitation et maintenance…"></textarea></div>
+
+      <div class="sect" style="margin-top:16px">Impact et inclusion</div>
+      <div class="grid5">
+        <div class="field"><label>MPME</label><input type="number" min="0" id="i-mpme" value="40"></div>
+        <div class="field"><label>Femmes</label><input type="number" min="0" id="i-fem" value="24"></div>
+        <div class="field"><label>Jeunes</label><input type="number" min="0" id="i-jeu" value="10"></div>
+        <div class="field"><label>Réfugiés</label><input type="number" min="0" id="i-ref" value="8"></div>
+        <div class="field"><label>Emplois créés</label><input type="number" min="0" value="15"></div>
+      </div>
+      <div class="grid" style="margin-top:2px">
+        <div class="field"><label>Projet porté par une femme</label><select id="i-wl"><option>Oui</option><option>Non</option></select></div>
+        <div class="field"><label>Zone rurale ou fragile</label><select id="i-rural"><option>Oui</option><option>Non</option></select></div>
+      </div>
+      <div class="notif hi" style="align-items:center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#103f36" stroke-width="2"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7S12 3 8.5 3 5 6 8 7h4zM12 7s0-4 3.5-4S19 6 16 7h-4z"/></svg>
+        <span>Bonus inclusion estimé : <b id="bonus">—</b> <span style="opacity:.7">(indicatif, sous réserve d'évaluation)</span></span>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 4 -->
+    <section class="view" id="v4">
+      <div class="banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2"><path d="M4 16v3h16v-3M12 4v11M8 8l4-4 4 4"/></svg>
+        <span>Étape de dépôt — une pièce par emplacement. Vos données saisies tiennent lieu de formulaire de candidature.</span>
+      </div>
+
+      <div class="sect">Screening environnemental et social</div>
+      <p class="sub">Obligatoire. Une réponse « oui » requiert un plan de gestion E&S.</p>
+      <div class="grid">
+        <div class="field"><label>Travaux / construction ?</label><select class="es"><option>Oui</option><option>Non</option></select></div>
+        <div class="field"><label>Pollution, déchets, nuisances ?</label><select class="es"><option selected>Non</option><option>Oui</option></select></div>
+        <div class="field"><label>Acquisition foncière / déplacement ?</label><select class="es"><option selected>Non</option><option>Oui</option></select></div>
+      </div>
+      <div id="pges-wrap">
+        <div class="esbox pc" data-req="1" data-dep="0" data-name="Plan de gestion E&S (PGES)">
+          <span class="lab">Plan de gestion E&S (PGES) · requis vu le risque déclaré</span>
+          <button class="upl" type="button">Choisir un fichier</button>
+        </div>
+      </div>
+
+      <div class="sect" style="margin-top:18px">Pièces justificatives</div>
+      <div id="pieces"></div>
+
+      <div class="compl">
+        <div class="top"><b>Complétude du dossier</b><span id="cx" style="font-weight:600">—</span></div>
+        <div class="pbar"><i id="cbar"></i></div>
+        <p class="hint" id="cmiss" style="margin-top:8px"></p>
+      </div>
+
+      <div class="notif hi">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#103f36" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.5zM8 9h8M8 12h5"/></svg>
+        <span>À la soumission : numéro de dossier, accusé par email et SMS, inscription au registre des dépôts. Vos données seront verrouillées.</span>
+      </div>
+    </section>
+
+    <!-- CONFIRMATION -->
+    <section class="view" id="vc">
+      <div class="cf-head" style="border:0;padding-top:8px">
+        <div class="cf-check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5 9-10"/></svg></div>
+        <h2>Candidature transmise</h2>
+        <p>Votre dossier a été enregistré et horodaté.</p>
+      </div>
+      <div class="dossier" style="margin-bottom:14px">
+        <div><p class="hint" style="margin:0">Numéro de dossier</p><span class="num" id="cf-num">PRETE-AP-C1-2026-00042</span></div>
+        <button class="btn" id="cf-copy" style="padding:7px 12px">Copier</button>
+      </div>
+      <p style="font-size:13px;font-weight:600;color:var(--navy);margin:0 0 4px">Accusé de réception envoyé</p>
+      <div class="acc-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2"><path d="M4 5h16v14H4zM4 6l8 6 8-6"/></svg>
+        Email — nom@operateur.bi<span class="ok">✓ envoyé</span></div>
+      <div class="acc-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg>
+        SMS — +257 68 •• •• ••<span class="ok">✓ envoyé</span></div>
+      <p class="hint" style="margin:8px 0 0">Inscrit au registre des dépôts le 04/07/2026 à 14:32.</p>
+
+      <div style="margin-top:16px">
+        <button class="btn btn-primary btn-block" onclick="toast('Le PDF de votre candidature sera généré. (Génération côté serveur en production.)')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg>Télécharger le PDF de ma candidature</button>
+        <p class="hint" style="text-align:center;margin-top:8px">Disponible à tout moment depuis votre compte, dans « Mes candidatures ».</p>
+      </div>
+
+      <div class="notif" style="margin-top:14px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#667085" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 7 3 9H3c0-2 3-2 3-9M10 21h4"/></svg>
+        <span>Rien d'autre à faire pour l'instant. Vous recevrez une notification par email et SMS dès que l'instruction avancera — vous pourrez alors suivre votre dossier depuis votre compte.</span>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="foot" id="foot">
+    <div class="left">
+      <span class="autosave">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#616d63" stroke-width="2"><path d="M5 3h11l3 3v15H5zM8 3v6h7"/></svg>
+        Enregistré automatiquement</span>
+      <button class="btn" id="btn-prev" style="display:none" onclick="go(cur-1)">← Retour</button>
+      <button class="btn" id="btn-draft" onclick="toast('Brouillon enregistré. Vous pourrez le reprendre depuis votre compte.')">Enregistrer et reprendre plus tard</button>
+    </div>
+    <button class="btn btn-primary" id="btn-next" disabled onclick="onNext()">Continuer →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   RÉFÉRENTIELS — en production, cet objet est servi par le module Référentiels
+   (Strapi), éditable sans redéploiement. Ici pré-rempli pour la démo.
+   Les communes et la liste des pièces restent « à valider UGP ».
+   ========================================================================= */
+const REFERENTIELS = {
+  aap: ["Cohorte 1 — infrastructures productives (ouvert)"],
+  statutJuridique: ["Coopérative","Entreprise","Association","ONG","Fournisseur de services numériques"],
+  filieres: ["Fruits tropicaux","Volaille","Pisciculture","Lait","Industrie minière","Projet transversal"],
+  statutSite: ["Propriété","Bail / location","Mis à disposition","À sécuriser"],
+  maturite: ["Mature","Semi-mature","Embryonnaire"],
+  typeContrepartie: ["Numéraire","Nature","Équipement","Travaux préparatoires","Infrastructures existantes"],
+  plafondCohorte: 80000000,
+  provinces: {
+    "Buhumuza":["Butaganzwa","Butihinda","Cankuzo","Gisagara","Gisuru","Muyinga","Ruyigi"],
+    "Bujumbura":["Bubanza","Bukinanyana","Cibitoke","Isare","Mpanda","Mugere","Mugina","Muhuta","Mukaza","Ntahangwa","Rwibaga"],
+    "Burunga":["Bururi","Makamba","Matana","Musongati","Nyanza","Rumonge","Rutana"],
+    "Butanyerera":["Busoni","Kayanza","Kiremba","Kirundo","Matongo","Muhanga","Ngozi","Tangara"],
+    "Gitega":["Bugendana","Gishubi","Gitega","Karusi","Kiganda","Muramvya","Mwaro","Nyabihanga","Shombo"]
+  },
+  infraExemples: [
+    "Production et transformation — unité de transformation, atelier",
+    "Stockage et conservation — entrepôt, chambre froide, chaîne du froid",
+    "Logistique et commercialisation — centre de collecte, distribution",
+    "Qualité et certification — laboratoire, contrôle qualité",
+    "Infrastructure numérique — plateforme, application de mise en relation",
+    "Infrastructure immatérielle — système de gestion, dispositif de formation",
+    "… et tout autre type adapté à votre projet"
+  ],
+  piecesAnnexe9: [
+    {name:"Lettre de motivation", group:"Administratif", statut:"obligatoire", dep:true},
+    {name:"RC / certificat d'enregistrement", group:"Administratif", statut:"obligatoire", dep:true},
+    {name:"NIF", group:"Administratif", statut:"obligatoire", dep:true},
+    {name:"Attestation de conformité fiscale", group:"Administratif", statut:"obligatoire", dep:true},
+    {name:"Statuts", group:"Administratif", statut:"obligatoire", dep:true},
+    {name:"CV du promoteur / personnel clé", group:"Administratif", statut:"obligatoire", dep:false},
+    {name:"Déclaration de conflit d'intérêt", group:"Administratif", statut:"obligatoire", dep:false},
+    {name:"Autorisations sectorielles", group:"Administratif", statut:"si applicable", dep:false},
+    {name:"États financiers (3 exercices)", group:"Financier", statut:"obligatoire", dep:true},
+    {name:"Relevés bancaires (6 mois)", group:"Financier", statut:"obligatoire", dep:false},
+    {name:"Plan d'affaires simplifié", group:"Financier", statut:"obligatoire", dep:true},
+    {name:"Engagement de contrepartie", group:"Financier", statut:"obligatoire", dep:false},
+    {name:"Devis / pro forma", group:"Financier", statut:"obligatoire", dep:false},
+    {name:"Preuve de disponibilité du site", group:"Technique", statut:"obligatoire", dep:true},
+    {name:"Liste des bénéficiaires", group:"Technique", statut:"obligatoire", dep:false},
+    {name:"Photos / plans / schémas", group:"Technique", statut:"si disponible", dep:false}
+  ]
+};
+
+/* -------- helpers -------- */
+const $=s=>document.querySelector(s), $$=s=>Array.prototype.slice.call(document.querySelectorAll(s));
+const nf=new Intl.NumberFormat('fr-FR');
+function opt(list, sel){return ['<option value="">Sélectionner…</option>'].concat(list.map(v=>`<option${v===sel?' selected':''}>${v}</option>`)).join('');}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2600);}
+
+/* -------- populate référentiels -------- */
+$('#aap').innerHTML = REFERENTIELS.aap.map(v=>`<option>${v}</option>`).join('');
+$('#statut').innerHTML = opt(REFERENTIELS.statutJuridique,"Coopérative");
+$('#filiere').innerHTML = opt(REFERENTIELS.filieres);
+$('#statut-site').innerHTML = opt(REFERENTIELS.statutSite);
+$('#maturite').innerHTML = opt(REFERENTIELS.maturite);
+$('#type-contre').innerHTML = REFERENTIELS.typeContrepartie.map(v=>`<option>${v}</option>`).join('');
+$('#infra-ex-body').innerHTML = "À titre indicatif, sans que cela vous limite :<ul style='margin:8px 0 0;padding-left:18px'>"+
+  REFERENTIELS.infraExemples.map(e=>`<li>${e}</li>`).join('')+"</ul>";
+const provKeys = Object.keys(REFERENTIELS.provinces);
+['#op-prov','#st-prov'].forEach(id=>{$(id).innerHTML='<option value="">Sélectionner une province…</option>'+provKeys.map(p=>`<option>${p}</option>`).join('');});
+
+/* -------- cascade province -> commune -------- */
+function cascade(provSel, comSel){
+  provSel.addEventListener('change',()=>fillCom(provSel,comSel));
+  function fillCom(ps,cs){
+    const p=ps.value, list=REFERENTIELS.provinces[p];
+    if(!list){cs.innerHTML="<option>Choisir une province d'abord</option>";cs.disabled=true;return;}
+    cs.disabled=false;
+    cs.innerHTML='<option value="">Sélectionner une commune…</option>'+list.map(c=>`<option>${c}</option>`).join('');
+  }
+}
+cascade($('#op-prov'),$('#op-com'));
+cascade($('#st-prov'),$('#st-com'));
+
+/* identique au siège */
+$('#same-site').addEventListener('change',e=>{
+  const on=e.target.checked, sp=$('#st-prov'), sc=$('#st-com');
+  if(on){ sp.value=$('#op-prov').value; sp.disabled=true; sc.disabled=true;
+          sc.innerHTML=`<option>${$('#op-com').value||'(reprend le siège)'}</option>`; }
+  else { sp.disabled=false; sc.disabled=true; sc.innerHTML="<option>Choisir une province d'abord</option>"; }
+});
+
+/* -------- éligibilité gate (étape 1) -------- */
+function refreshGate(){
+  const all=$$('.gate').every(c=>c.checked);
+  if(cur===1) $('#btn-next').disabled=!all;
+}
+$$('.gate').forEach(c=>c.addEventListener('change',refreshGate));
+
+/* -------- calcul financier (étape 3) -------- */
+function raw(el){return Number((el.value||'').replace(/[^0-9]/g,''))||0;}
+function group(el){const n=raw(el);el.value=n?nf.format(n):'';}
+function money(){
+  const b=raw($('#budget')), c=raw($('#contre')), s=b-c;
+  $('#sub').innerHTML = b? '<b>'+nf.format(s)+' BIF</b>' : '<b>—</b>';
+  const st=$('#status'), pc=$('#pct');
+  if(b>0){
+    const p=Math.round(c/b*1000)/10; pc.textContent=p+' %';
+    if(c>b){st.textContent='contrepartie > budget';st.className='pill p-danger';}
+    else if(p>=20){st.textContent='conforme (≥ 20 %)';st.className='pill p-ok';}
+    else{st.textContent='insuffisant (< 20 %)';st.className='pill p-warn';}
+  } else {pc.textContent='—';st.textContent='';st.className='pill';}
+}
+['#budget','#contre'].forEach(id=>{const el=$(id);el.addEventListener('input',money);el.addEventListener('blur',()=>{group(el);money();});});
+
+/* -------- bonus inclusion (étape 3) -------- */
+function inclusion(){
+  const m=+$('#i-mpme').value||0,f=+$('#i-fem').value||0,j=+$('#i-jeu').value||0,r=+$('#i-ref').value||0;
+  const genre=((m>0&&f/m>=0.5)||$('#i-wl').value==='Oui')?5:0;
+  const jr=(j>0||r>0)?3:0, loc=$('#i-rural').value==='Oui'?2:0;
+  $('#bonus').textContent='+'+Math.min(10,genre+jr+loc)+' pts';
+}
+['#i-mpme','#i-fem','#i-jeu','#i-ref'].forEach(id=>$(id).addEventListener('input',inclusion));
+['#i-wl','#i-rural'].forEach(id=>$(id).addEventListener('change',inclusion));
+
+/* -------- pièces (étape 4) construites depuis le référentiel -------- */
+function statutBadge(s){return s==='obligatoire'?'<span class="badge b-obl">obligatoire</span>':'<span class="badge b-opt">'+s+'</span>';}
+function buildPieces(){
+  const groups=["Administratif","Financier","Technique"];
+  const html=groups.map((g,gi)=>{
+    const rows=REFERENTIELS.piecesAnnexe9.filter(p=>p.group===g).map(p=>
+      `<div class="pc" data-req="${p.statut==='obligatoire'?1:0}" data-dep="${p.dep?1:0}" data-name="${p.name}">
+         <span class="nm">${p.name} ${statutBadge(p.statut)}</span>
+         <button class="upl" type="button"></button></div>`).join('');
+    return `<details class="acc"${gi===0?' open':''}><summary>${g}</summary>${rows}</details>`;
+  }).join('');
+  $('#pieces').innerHTML=html;
+  $$('#pieces .pc').forEach(pc=>{
+    const b=pc.querySelector('.upl'); label(pc,b);
+    b.addEventListener('click',()=>{pc.dataset.dep=pc.dataset.dep==='1'?'0':'1';label(pc,b);completeness();});
+  });
+}
+function label(pc,b){
+  if(pc.dataset.dep==='1'){b.classList.add('done');b.innerHTML='✓ Déposé';}
+  else{b.classList.remove('done');b.textContent='Choisir un fichier';}
+}
+function completeness(){
+  const pcs=$$('#v4 .pc'), req=pcs.filter(p=>p.dataset.req==='1'), dep=req.filter(p=>p.dataset.dep==='1');
+  $('#cx').textContent=dep.length+' / '+req.length+' obligatoires';
+  $('#cbar').style.width=Math.round(dep.length/req.length*100)+'%';
+  const miss=req.filter(p=>p.dataset.dep!=='1').map(p=>p.dataset.name);
+  const el=$('#cmiss');
+  if(miss.length){el.textContent='Manquantes : '+miss.join(', ');el.style.color='var(--muted)';}
+  else{el.textContent='Toutes les pièces obligatoires sont déposées.';el.style.color='var(--ok)';}
+  if(cur===4) $('#btn-next').disabled=false; /* soumission possible; contrôle mou au clic */
+  return miss;
+}
+/* screening E&S -> PGES conditionnel */
+function esScreen(){
+  const risk=$$('.es').some(s=>s.value==='Oui');
+  const wrap=$('#pges-wrap'), pc=wrap.querySelector('.pc');
+  wrap.style.display=risk?'':'none'; pc.dataset.req=risk?'1':'0';
+  const b=pc.querySelector('.upl'); label(pc,b);
+  b.onclick=()=>{pc.dataset.dep=pc.dataset.dep==='1'?'0':'1';label(pc,b);completeness();};
+  completeness();
+}
+$$('.es').forEach(s=>s.addEventListener('change',esScreen));
+
+/* -------- navigation -------- */
+let cur=1;
+function go(step){
+  cur=step;
+  $$('.view').forEach(v=>v.classList.remove('on'));
+  const map={1:'v1',2:'v2',3:'v3',4:'v4',5:'vc'};
+  $('#'+map[step]).classList.add('on');
+  // progress + crumb
+  const labels=['cadrage et éligibilité','le projet','économie et impact','pièces et soumission'];
+  $$('#prog .seg').forEach((s,i)=>{s.classList.remove('active','done');
+    if(step<=4){ if(i<step-1)s.classList.add('done'); if(i===step-1)s.classList.add('active'); }
+    else s.classList.add('done');});
+  $('#prog').style.display = step===5?'none':'flex';
+  $('#crumb').textContent = step===5?'Dossier soumis':('Étape '+step+' sur 4 · '+labels[step-1]);
+  // footer
+  const foot=$('#foot'), prev=$('#btn-prev'), draft=$('#btn-draft'), next=$('#btn-next');
+  if(step===5){foot.style.display='flex';prev.style.display='none';draft.style.display='none';
+    next.textContent='Retour à mon compte';next.disabled=false;next.className='btn';next.onclick=()=>toast('Retour à votre compte.');
+    return;}
+  prev.style.display = step===1?'none':'inline-block';
+  draft.style.display='inline-block';
+  next.className='btn btn-primary'; next.onclick=onNext;
+  next.innerHTML = step===4?'Soumettre le dossier':'Continuer →';
+  if(step===1){next.disabled=!$$('.gate').every(c=>c.checked);}
+  else if(step===4){completeness();next.disabled=false;}
+  else next.disabled=false;
+  document.querySelector('.modal').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function onNext(){
+  if(cur===4){
+    const miss=completeness();
+    if(miss.length){toast('Déposez les '+miss.length+' pièce(s) obligatoire(s) manquante(s) avant de soumettre.');
+      $('#pieces').querySelectorAll('details').forEach(d=>d.open=true); return;}
+    go(5); return;
+  }
+  go(cur+1);
+}
+
+/* -------- confirmation: copier numéro -------- */
+$('#cf-copy').addEventListener('click',()=>{
+  const t=$('#cf-num').textContent;
+  try{navigator.clipboard&&navigator.clipboard.writeText(t);}catch(e){}
+  const b=$('#cf-copy'),o=b.textContent;b.textContent='Copié ✓';setTimeout(()=>b.textContent=o,1500);
+});
+
+/* -------- compteur note conceptuelle -------- */
+const note=$('#note'), noteC=$('#note-count'), NMAX=600;
+function noteCount(){const n=note.value.length;noteC.textContent=(NMAX-n)+' restants';noteC.classList.toggle('max',n>=NMAX);}
+note.addEventListener('input',noteCount);
+
+/* -------- init -------- */
+money(); inclusion(); buildPieces(); esScreen(); noteCount(); go(1);
+</script>
+</body>
+</html>

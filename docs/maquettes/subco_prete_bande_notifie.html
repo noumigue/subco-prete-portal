@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Être notifié — SUBCO-PRETE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --white:    #FFFFFF;
+  --off:      #F7F6F3;
+  --border:   #DDDBD7;
+  --text:     #1A1917;
+  --muted:    #6B6965;
+  --accent:   #1B5E3B;
+  --accent-l: #E8F2EC;
+  --accent-b: #C2DDD0;
+  --sage:     #D6E4D4;   /* couleur de fond bande "Résultats attendus" */
+  --sage-d:   #C0D6BC;   /* bordure légèrement plus sombre */
+  --danger:   #E24B4A;
+  --r: 6px; --r-lg: 12px;
+}
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--off); color: var(--text);
+  padding: 48px 24px; -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 880px; margin: 0 auto; }
+
+/* DEMO TOGGLE */
+.demo { display: flex; align-items: center; gap: 8px; margin-bottom: 0; flex-wrap: wrap; }
+.demo-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+.demo-btn {
+  font-size: 11px; padding: 5px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--white);
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.demo-btn.on { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* BAND — fond sage comme "Résultats attendus" */
+.band-section {
+  background: var(--sage);
+  padding: 48px 40px;
+}
+.band-section.disabled { background: color-mix(in srgb, var(--sage) 60%, #fff); }
+
+.band-inner {
+  max-width: 880px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 48px; align-items: center;
+  position: relative;
+  transition: opacity .3s;
+}
+.band-section.disabled .band-inner { opacity: .35; pointer-events: none; }
+
+/* LEFT */
+.band-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 26px; font-weight: 400; color: var(--text);
+  margin-bottom: 10px; line-height: 1.25;
+}
+.band-sub { font-size: 14px; color: var(--muted); line-height: 1.75; }
+
+/* FORM CARD — carte blanche comme les 3 cartes "Résultats attendus" */
+.form-card {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 24px 22px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.input-row { display: flex; gap: 8px; }
+.email-input {
+  flex: 1; height: 40px; padding: 0 14px;
+  border: 1px solid var(--border); border-radius: var(--r);
+  background: var(--white); font-family: inherit; font-size: 13px;
+  color: var(--text); outline: none; transition: border-color .15s;
+}
+.email-input:focus { border-color: var(--accent); }
+.email-input::placeholder { color: var(--muted); }
+.email-input.error { border-color: var(--danger); }
+.submit-btn {
+  height: 40px; padding: 0 20px; border-radius: var(--r);
+  background: var(--accent); color: #fff; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: opacity .15s;
+}
+.submit-btn:hover { opacity: .88; }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.check-row { display: flex; align-items: flex-start; gap: 9px; cursor: pointer; }
+.checkbox {
+  width: 15px; height: 15px; border-radius: 3px; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--white);
+  margin-top: 1px; transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.checkbox.checked { background: var(--accent); border-color: var(--accent); }
+.checkbox.checked::after {
+  content: ''; width: 8px; height: 5px;
+  border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+}
+.check-label { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.privacy-note {
+  font-size: 11px; color: var(--muted);
+  display: flex; align-items: center; gap: 5px;
+}
+.privacy-note svg { width: 13px; height: 13px; fill: none; stroke: var(--muted); stroke-width: 1.5; flex-shrink: 0; }
+.error-msg { font-size: 11px; color: var(--danger); display: none; }
+.error-msg.visible { display: block; }
+
+/* CONFIRMATION */
+.confirm-wrap { display: flex; align-items: flex-start; gap: 14px; animation: fadeUp .3s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.confirm-icon {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--accent-l); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.confirm-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 2; }
+.confirm-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.confirm-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.confirm-sub strong { color: var(--text); font-weight: 500; }
+.progress-bar { height: 2px; background: var(--sage-d); border-radius: 1px; margin-top: 12px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 1px; width: 100%; transition: width linear; }
+.confirm-reset {
+  font-size: 11px; color: var(--muted); margin-top: 8px;
+  cursor: pointer; text-decoration: underline; display: inline-block;
+}
+.confirm-reset:hover { color: var(--text); }
+
+/* DISABLED OVERLAY */
+.disabled-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(214,228,212,.65);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  border-radius: var(--r-lg);
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.band-section.disabled .disabled-overlay { opacity: 1; pointer-events: auto; }
+.disabled-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 24px; padding: 10px 20px;
+  font-size: 13px; color: var(--muted);
+}
+.disabled-pill svg { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 1.6; flex-shrink: 0; }
+.disabled-pill a { color: var(--accent); font-weight: 500; text-decoration: none; margin-left: 4px; }
+.disabled-pill a:hover { text-decoration: underline; }
+
+@media (max-width: 680px) {
+  .band-section { padding: 36px 20px; }
+  .band-inner { grid-template-columns: 1fr; gap: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="demo" style="margin-bottom:16px">
+    <span class="demo-label">Simuler l'état :</span>
+    <button class="demo-btn" id="btn-dis" onclick="setState('disabled')">AMI en cours (grisé)</button>
+    <button class="demo-btn on" id="btn-act" onclick="setState('active')">Aucun AMI (actif)</button>
+  </div>
+
+  <!-- BANDE — même structure que "Résultats attendus" -->
+  <div class="band-section" id="band">
+    <div class="band-inner">
+
+      <!-- GAUCHE -->
+      <div>
+        <div class="band-title">Être notifié à l'ouverture du prochain AMI</div>
+        <div class="band-sub">Aucun appel à propositions n'est ouvert actuellement. Laissez votre email — nous vous alertons dès que le prochain AMI est publié.</div>
+      </div>
+
+      <!-- DROITE — carte blanche comme les cartes "Résultats attendus" -->
+      <div class="form-card" id="right-panel"></div>
+
+      <!-- OVERLAY -->
+      <div class="disabled-overlay">
+        <div class="disabled-pill">
+          <svg viewBox="0 0 24 24"><path d="M4 4l16 16M2 7a3 3 0 013-3h14a3 3 0 013 3v10a3 3 0 01-3 3H5a3 3 0 01-3-3V7z"/></svg>
+          Les candidatures sont ouvertes —
+          <a href="#appels">Candidatez directement →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+let checked = false;
+let timer = null;
+
+function setState(s) {
+  const band = document.getElementById('band');
+  document.getElementById('btn-dis').className = 'demo-btn' + (s === 'disabled' ? ' on' : '');
+  document.getElementById('btn-act').className = 'demo-btn' + (s === 'active' ? ' on' : '');
+  s === 'disabled' ? band.classList.add('disabled') : band.classList.remove('disabled');
+  resetForm();
+}
+
+function renderForm() {
+  return `
+    <div class="input-row">
+      <input class="email-input" type="email" placeholder="votre@email.com" id="email-input" onkeydown="if(event.key==='Enter')submitForm()">
+      <button class="submit-btn" id="submit-btn" onclick="submitForm()">M'alerter →</button>
+    </div>
+    <div class="error-msg" id="error-msg">Veuillez saisir un email valide et accepter les conditions.</div>
+    <div class="check-row" onclick="toggleCheck()">
+      <div class="checkbox" id="checkbox"></div>
+      <span class="check-label">J'accepte de recevoir des notifications sur les appels à propositions SUBCO-PRETE</span>
+    </div>
+    <div class="privacy-note">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Votre email ne sera utilisé qu'à cette fin. Désinscription à tout moment.
+    </div>`;
+}
+
+function toggleCheck() {
+  checked = !checked;
+  const cb = document.getElementById('checkbox');
+  if (cb) cb.className = 'checkbox' + (checked ? ' checked' : '');
+}
+
+function submitForm() {
+  const input = document.getElementById('email-input');
+  const errMsg = document.getElementById('error-msg');
+  if (!input) return;
+  const email = input.value.trim();
+  const valid = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && checked;
+  if (!valid) {
+    input.classList.add('error');
+    if (errMsg) errMsg.classList.add('visible');
+    setTimeout(() => {
+      input.classList.remove('error');
+      if (errMsg) errMsg.classList.remove('visible');
+    }, 2200);
+    return;
+  }
+  showConfirm(email);
+}
+
+function showConfirm(email) {
+  const panel = document.getElementById('right-panel');
+  const DELAY = 4000;
+  panel.innerHTML = `
+    <div class="confirm-wrap">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="confirm-title">Vous serez notifié !</div>
+        <div class="confirm-sub">Confirmation envoyée à <strong>${email}</strong>. Nous vous alerterons à l'ouverture du prochain AMI.</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+        <span class="confirm-reset" onclick="resetForm()">Utiliser un autre email</span>
+      </div>
+    </div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const prog = document.getElementById('prog');
+    if (prog) { prog.style.transition = `width ${DELAY}ms linear`; prog.style.width = '0%'; }
+  }));
+  if (timer) clearTimeout(timer);
+  timer = setTimeout(resetForm, DELAY + 100);
+}
+
+function resetForm() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  checked = false;
+  const panel = document.getElementById('right-panel');
+  if (panel) panel.innerHTML = renderForm();
+}
+
+resetForm();
+setState('active');
+</script>
+</body>
+</html>

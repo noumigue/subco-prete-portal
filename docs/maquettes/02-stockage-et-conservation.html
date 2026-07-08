@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Stockage et conservation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --card:#FFFFFF; --ink:#1B2620; --muted:#5C6B62; --line:#E5E1D6;
+    --forest:#1F5741; --forest-soft:#EAF1ED; --ochre:#B67C22;
+    --teal:#2B6C6B; --teal-soft:#E7F0F0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Public Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Spectral",Georgia,serif;font-weight:600;line-height:1.2;margin:0}
+
+  .wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+  h1{font-size:clamp(30px,4.4vw,46px);letter-spacing:-.01em;margin:0 0 16px}
+  .lead{font-size:20px;color:#354139;margin:0}
+
+  .rtf{margin-top:8px}
+  .rtf h2{font-size:23px;margin:38px 0 12px;padding-top:30px;border-top:1px solid var(--line)}
+  .rtf p{margin:0 0 14px;color:#39453f}
+  .rtf ul{margin:0 0 14px;padding:0;list-style:none}
+  .rtf ul li{position:relative;padding-left:22px;margin:0 0 9px;color:#39453f}
+  .rtf ul li::before{content:"";position:absolute;left:2px;top:11px;
+    width:7px;height:7px;border-radius:2px;background:var(--ochre)}
+  .rtf ul li b{color:var(--ink)}
+  .rtf .ex li::before{background:var(--forest)}
+  .rtf.imm .ex li::before{background:var(--teal)}
+
+  .cta{margin-top:44px;background:var(--forest);color:#fff;border-radius:var(--radius);
+    padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .cta h3{font-size:21px;color:#fff}
+  .cta p{margin:6px 0 0;color:#CFE0D8;font-size:14px}
+  .cta .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{all:unset;cursor:pointer;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px}
+  .btn.primary{background:#E9C77C;color:#2A2411}
+  .btn.ghost{border:1px solid rgba(255,255,255,.4);color:#fff}
+  .btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  .others{margin-top:52px;padding-top:28px;border-top:1px solid var(--line)}
+  .others .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin-bottom:14px}
+  .others ol{list-style:none;margin:0;padding:0;counter-reset:t;
+    display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .others li{counter-increment:t}
+  .others a,.others .self{display:flex;gap:12px;align-items:baseline;width:100%;
+    padding:11px 12px;border-radius:10px;font-size:15px;text-decoration:none;
+    color:var(--muted);transition:background .15s,color .15s}
+  .others a{cursor:pointer}
+  .others a:hover{background:#fff;color:var(--ink)}
+  .others a::before,.others .self::before{content:counter(t,decimal-leading-zero);
+    font-family:"Spectral",serif;font-size:12px;color:var(--muted);min-width:20px}
+  .others li.active .self{color:var(--ink);font-weight:700}
+  .others a:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+
+  @media (max-width:640px){ .others ol{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <article>
+      <h1>Stockage et conservation</h1>
+      <p class="lead">Une production réussie ne vaut que si elle peut être conservée jusqu'au bon moment pour être vendue. Le stockage redonne aux MPME la maîtrise du temps entre production et vente.</p>
+      <div class="rtf">
+<h2>Ce que recouvre ce type</h2>
+<p>Les infrastructures de stockage et de conservation sécurisent les produits, réduisent les pertes et lissent l'offre. Elles sont particulièrement décisives dans les chaînes confrontées à la périssabilité, à la saisonnalité ou à l'irrégularité des flux.</p>
+<ul>
+<li>Entreposage, collecte et regroupement</li>
+<li>Conservation au froid ou conservation temporaire</li>
+<li>Gestion des stocks et stockage mutualisé</li>
+<li>Stabilisation des flux de vente</li>
+<li>Limitation des pertes post-récolte ou post-production</li>
+</ul>
+<h2>Pourquoi c'est pertinent pour le PRETE</h2>
+<p>Une meilleure conservation évite les ventes précipitées, permet d'atteindre des marchés plus exigeants et d'améliorer les prix. Le stockage partagé rend rentable un équipement qu'aucun acteur ne pourrait financer seul.</p>
+<ul>
+<li><b>Pertes réduites</b> et produits mieux conservés.</li>
+<li><b>Revenus améliorés</b> par une offre lissée dans le temps.</li>
+<li><b>Régularité d'approvisionnement</b> vers des marchés plus exigeants.</li>
+<li><b>Commercialisation</b> plus efficace.</li>
+</ul>
+<h2>Exemples d'infrastructures et de services</h2>
+<ul class="ex">
+<li><b>Chambre froide partagée</b> — prolonger la durée de conservation des produits périssables, éviter les ventes forcées.</li>
+<li><b>Entrepôt ou magasin de stockage</b> — entreposer dans de bonnes conditions avant vente, transformation ou distribution.</li>
+<li><b>Centre de collecte avec conservation temporaire</b> — regrouper les volumes et stabiliser les flux d'une offre dispersée.</li>
+</ul>
+<h2>Ce qui rend un projet solide</h2>
+<ul>
+<li>Une capacité adaptée aux volumes réels.</li>
+<li>Des règles claires d'accès et de tarification.</li>
+<li>Une solution énergétique fiable et une maintenance assurée.</li>
+<li>Une bonne gestion de stock (rotation, hygiène, température).</li>
+<li>Une articulation avec la logistique et les marchés.</li>
+</ul>
+<p>Les principaux écueils sont le <b>mauvais dimensionnement</b> et des <b>coûts énergétiques</b> trop élevés au regard de l'usage.</p>
+      </div>
+
+      <div class="cta">
+        <div>
+          <h3>Ce type correspond à votre projet ?</h3>
+          <p>Vérifiez votre éligibilité, puis préparez votre candidature.</p>
+        </div>
+        <div class="btns">
+          <button class="btn primary">Tester mon éligibilité</button>
+          <button class="btn ghost">Candidater</button>
+        </div>
+      </div>
+
+      <nav class="others" aria-label="Autres types d'infrastructure">
+        <div class="eyebrow">Autres types d'infrastructure</div>
+        <ol><li><a href="01-production-et-transformation.html">Production et transformation</a></li>
+          <li class="active"><span class="self">Stockage et conservation</span></li>
+          <li><a href="03-logistique-et-commercialisation.html">Logistique et commercialisation</a></li>
+          <li><a href="04-qualite-et-certification.html">Qualité et certification</a></li>
+          <li><a href="05-numerique-et-e-commerce.html">Numérique et e-commerce</a></li>
+          <li><a href="06-formation-et-conseil.html">Formation et conseil</a></li>
+          <li><a href="07-infrastructure-immaterielle.html">Infrastructure immatérielle</a></li>
+          <li><a href="08-et-bien-d-autres.html">Et bien d'autres…</a></li></ol>
+      </nav>
+    </article>
+  </main>
+</body>
+</html>

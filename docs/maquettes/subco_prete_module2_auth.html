@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBCO-PRETE — Parcours d'accès opérateur (Module 2)</title>
+<style>
+  :root{
+    --pine:#155446;--pine-dark:#0e3d34;--pine-mid:#17564a;
+    --emerald:#2e9d63;--emerald-dark:#25844f;
+    --cream:#f1eee5;--sage-tile:#dcecdd;--sage-base:#d6e4d4;--sage-border:#c4dcc6;
+    --ink:#1f2d28;--muted:#5c6b64;--line:#dfdccf;--white:#fff;--lock:#9aa9a2;
+    --radius:12px;--shadow:0 1px 2px rgba(20,60,50,.06),0 10px 30px rgba(20,60,50,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--cream);line-height:1.5;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:3px solid var(--emerald);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* demo bar */
+  .demobar{background:#fbfaf4;border-bottom:1px dashed var(--lock);padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+  .demobar strong{color:var(--pine)}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--sage-border);border-radius:8px;overflow:hidden;background:var(--white)}
+  .seg button{border:0;background:transparent;padding:5px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--sage-border)}
+  .seg button.on{background:var(--pine);color:#fff}
+
+  /* brand bar */
+  .topbar{background:linear-gradient(90deg,var(--pine-mid),var(--pine-dark));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+  .brand .mark{width:30px;height:30px;border-radius:8px;background:var(--emerald);display:grid;place-items:center;font-size:14px;font-weight:800}
+  .brand small{display:block;font-weight:500;font-size:11px;opacity:.82}
+
+  /* layout */
+  .wrap{min-height:calc(100vh - 150px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:430px;padding:30px 30px 26px}
+  h1{font-size:21px;color:var(--pine);margin:0 0 6px}
+  .lead{color:var(--muted);font-size:14px;margin:0 0 22px}
+
+  label{display:block;font-size:13.5px;font-weight:600;color:var(--ink);margin:14px 0 5px}
+  .hint{font-weight:400;color:var(--muted);font-size:12.5px}
+  .field{position:relative}
+  input[type=text],input[type=email],input[type=password]{
+    width:100%;padding:11px 12px;font-size:14.5px;border:1px solid var(--sage-border);border-radius:10px;background:#fcfdfc;color:var(--ink)
+  }
+  input:focus{border-color:var(--emerald);background:#fff}
+  .eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:0;cursor:pointer;font-size:15px;padding:6px;color:var(--muted)}
+
+  .check{display:flex;align-items:flex-start;gap:9px;margin:18px 0 4px;font-size:13px;color:var(--muted)}
+  .check input{margin-top:2px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;margin-top:20px}
+  .btn-primary{background:var(--emerald);color:#fff}
+  .btn-primary:hover{background:var(--emerald-dark)}
+
+  .alt{text-align:center;font-size:13.5px;color:var(--muted);margin-top:18px}
+  .alt a,.link{color:var(--emerald-dark);font-weight:600;text-decoration:none;cursor:pointer}
+  .alt a:hover,.link:hover{text-decoration:underline}
+  .row-between{display:flex;justify-content:flex-end;margin-top:6px}
+
+  /* status / wall screens */
+  .icon-badge{width:56px;height:56px;border-radius:14px;background:var(--sage-tile);border:1px solid var(--sage-border);display:grid;place-items:center;font-size:26px;margin:0 0 16px}
+  .icon-badge.ok{background:var(--emerald);border-color:var(--emerald)}
+  .to{font-family:ui-monospace,Menlo,monospace;color:var(--pine);font-weight:700}
+  .wall-note{background:var(--sage-tile);border:1px solid var(--sage-border);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--ink);margin:16px 0 6px}
+  .resend{font-size:13.5px;color:var(--muted);margin-top:16px}
+  .resend .dis{color:var(--lock)}
+  .neutral-msg{background:#fbfaf4;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--muted);margin-top:18px;display:none}
+  .neutral-msg.show{display:block}
+
+  /* designer annotation */
+  .annot{border:1px dashed var(--lock);border-radius:10px;background:#fbfaf4;padding:10px 13px;font-size:12.5px;color:var(--muted);margin:18px auto 0;max-width:430px}
+  .annot b{color:var(--pine)}
+
+  footer{padding:16px 20px;border-top:1px solid var(--line);background:#faf8f1;font-size:12.5px;color:var(--muted);text-align:center}
+
+  .screen{display:none}
+  .screen.active{display:block}
+</style>
+</head>
+<body>
+
+  <div class="demobar" role="region" aria-label="Sélecteur d'écran (démo)">
+    <span><strong>Aperçu maquette</strong> · écran :</span>
+    <span class="seg" id="segScreen">
+      <button data-s="creer" class="on">Créer un compte</button>
+      <button data-s="verif">Vérifier e-mail</button>
+      <button data-s="login">Se connecter</button>
+      <button data-s="oubli">Mot de passe oublié</button>
+      <button data-s="reset">Nouveau mot de passe</button>
+      <button data-s="active">✓ Vérifié</button>
+    </span>
+  </div>
+
+  <div class="topbar">
+    <div class="brand"><span class="mark">SP</span><span>SUBCO-PRETE<small>Accès opérateur</small></span></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ========== A · Créer un compte ========== -->
+    <section class="screen active" data-screen="creer">
+      <div class="card">
+        <h1>Créer un compte</h1>
+        <p class="lead">Un seul compte pour candidater et suivre vos dossiers.</p>
+
+        <label for="c-org">Nom de l'organisation <span class="hint">— s'affichera dans votre espace</span></label>
+        <div class="field"><input type="text" id="c-org" placeholder="Ex. Coopérative Girumwete"></div>
+
+        <label for="c-mail">Adresse e-mail <span class="hint">— votre identifiant de connexion</span></label>
+        <div class="field"><input type="email" id="c-mail" placeholder="nom@organisation.bi"></div>
+
+        <label for="c-pwd">Mot de passe <span class="hint">— 8 caractères minimum</span></label>
+        <div class="field">
+          <input type="password" id="c-pwd" placeholder="••••••••">
+          <button class="eye" type="button" aria-label="Afficher le mot de passe" data-eye="c-pwd">👁</button>
+        </div>
+
+        <label class="check"><input type="checkbox"> J'accepte les conditions d'utilisation et la politique de données du projet.</label>
+
+        <a class="btn btn-primary" data-go="verif">Créer mon compte</a>
+        <p class="alt">Déjà un compte ? <a data-go="login">Se connecter</a></p>
+      </div>
+      <p class="annot"><b>D3 — set minimal.</b> Ni téléphone (capté à la 1re candidature, D1), ni nom de contact (capté au profil organisation). Le nom d'organisation est obligatoire ici : il alimente la salutation du tableau de bord.</p>
+    </section>
+
+    <!-- ========== B · Vérifier e-mail (porte dure) ========== -->
+    <section class="screen" data-screen="verif">
+      <div class="card">
+        <div class="icon-badge">✉️</div>
+        <h1>Vérifiez votre adresse e-mail</h1>
+        <p class="lead">Un lien d'activation a été envoyé à <span class="to">k****@coop-girumwete.bi</span>. Ouvrez-le pour activer votre compte.</p>
+
+        <div class="wall-note">Votre compte reste inactif tant que l'adresse n'est pas vérifiée. Vous ne pourrez ni accéder à votre espace ni commencer une candidature avant.</div>
+
+        <p class="resend" id="resendLine"><span class="dis">Rien reçu ? Renvoyer le lien (0:<span id="cd">45</span>)</span></p>
+        <p class="alt">Mauvaise adresse ? <a data-go="creer">Modifier</a></p>
+      </div>
+      <p class="annot"><b>D2 — porte dure.</b> Écran bloquant, pas d'échappatoire « brouillon » avant vérification. Le lien renvoie vers l'écran « ✓ Vérifié ».</p>
+    </section>
+
+    <!-- ========== C · Se connecter ========== -->
+    <section class="screen" data-screen="login">
+      <div class="card">
+        <h1>Se connecter</h1>
+        <p class="lead">Accédez à votre espace opérateur.</p>
+
+        <label for="l-mail">Adresse e-mail</label>
+        <div class="field"><input type="email" id="l-mail" placeholder="nom@organisation.bi"></div>
+
+        <label for="l-pwd">Mot de passe</label>
+        <div class="field">
+          <input type="password" id="l-pwd" placeholder="••••••••">
+          <button class="eye" type="button" aria-label="Afficher le mot de passe" data-eye="l-pwd">👁</button>
+        </div>
+        <div class="row-between"><a class="link" data-go="oubli">Mot de passe oublié ?</a></div>
+
+        <a class="btn btn-primary" data-go="active">Se connecter</a>
+        <p class="alt">Pas encore de compte ? <a data-go="creer">Créer un compte</a></p>
+      </div>
+      <p class="annot"><b>D2 — cas non vérifié.</b> Si l'e-mail n'est pas encore vérifié, la connexion n'entre pas : elle affiche « Vérifiez d'abord votre adresse e-mail » + un bouton « renvoyer le lien » (renvoie vers l'écran de vérification).</p>
+    </section>
+
+    <!-- ========== D · Mot de passe oublié ========== -->
+    <section class="screen" data-screen="oubli">
+      <div class="card">
+        <h1>Mot de passe oublié</h1>
+        <p class="lead">Saisissez votre adresse e-mail : si un compte existe, vous recevrez un lien de réinitialisation.</p>
+
+        <label for="o-mail">Adresse e-mail</label>
+        <div class="field"><input type="email" id="o-mail" placeholder="nom@organisation.bi"></div>
+
+        <a class="btn btn-primary" id="sendReset">Envoyer le lien</a>
+        <div class="neutral-msg" id="neutralMsg">Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.</div>
+        <p class="alt"><a data-go="login">← Retour à la connexion</a></p>
+      </div>
+      <p class="annot"><b>D4 — anti-énumération.</b> Message neutre identique que l'adresse existe ou non : on ne révèle jamais si un compte est rattaché à l'e-mail.</p>
+    </section>
+
+    <!-- ========== E · Nouveau mot de passe ========== -->
+    <section class="screen" data-screen="reset">
+      <div class="card">
+        <h1>Choisir un nouveau mot de passe</h1>
+        <p class="lead">Depuis le lien reçu par e-mail.</p>
+
+        <label for="r-pwd">Nouveau mot de passe <span class="hint">— 8 caractères minimum</span></label>
+        <div class="field">
+          <input type="password" id="r-pwd" placeholder="••••••••">
+          <button class="eye" type="button" aria-label="Afficher le mot de passe" data-eye="r-pwd">👁</button>
+        </div>
+
+        <label for="r-pwd2">Confirmer le mot de passe</label>
+        <div class="field">
+          <input type="password" id="r-pwd2" placeholder="••••••••">
+          <button class="eye" type="button" aria-label="Afficher le mot de passe" data-eye="r-pwd2">👁</button>
+        </div>
+
+        <a class="btn btn-primary" data-go="login">Enregistrer</a>
+      </div>
+      <p class="annot"><b>Succès.</b> « Mot de passe modifié. » puis retour à la connexion.</p>
+    </section>
+
+    <!-- ========== Atterrissage · Vérifié ========== -->
+    <section class="screen" data-screen="active">
+      <div class="card" style="text-align:center">
+        <div class="icon-badge ok" style="margin:0 auto 16px">✓</div>
+        <h1>E-mail vérifié — votre compte est actif</h1>
+        <p class="lead">Vous pouvez maintenant accéder à votre espace opérateur.</p>
+        <a class="btn btn-primary" href="#" onclick="return false">Accéder à mon espace</a>
+      </div>
+      <p class="annot"><b>Jonction.</b> « Accéder à mon espace » ouvre la <b>coquille</b> (tableau de bord, état 0) — le fichier livré précédemment.</p>
+    </section>
+
+  </div>
+
+  <footer>UGP PRETE · Financé par la Banque mondiale · Projet PRETE Nyunganira</footer>
+
+<script>
+  // navigation entre écrans
+  function show(name){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.dataset.screen===name));
+    document.querySelectorAll('#segScreen button').forEach(b=>b.classList.toggle('on', b.dataset.s===name));
+    window.scrollTo({top:0,behavior:'instant'});
+    if(name==='verif') startCountdown();
+    if(name!=='oubli'){const n=document.getElementById('neutralMsg'); if(n) n.classList.remove('show');}
+  }
+  document.getElementById('segScreen').addEventListener('click',e=>{const b=e.target.closest('button');if(b)show(b.dataset.s)});
+  document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();show(el.dataset.go)}));
+
+  // afficher/masquer mot de passe
+  document.querySelectorAll('[data-eye]').forEach(btn=>btn.addEventListener('click',()=>{
+    const inp=document.getElementById(btn.dataset.eye);
+    const showing=inp.type==='text';
+    inp.type=showing?'password':'text';
+    btn.textContent=showing?'👁':'🙈';
+  }));
+
+  // message neutre réinitialisation
+  document.getElementById('sendReset').addEventListener('click',e=>{
+    e.preventDefault();
+    document.getElementById('neutralMsg').classList.add('show');
+  });
+
+  // compte à rebours du renvoi
+  let cdTimer=null;
+  function startCountdown(){
+    clearInterval(cdTimer);
+    let t=45; const el=document.getElementById('cd'); const line=document.getElementById('resendLine');
+    if(!el) return; el.textContent=t;
+    line.innerHTML='<span class="dis">Rien reçu ? Renvoyer le lien (0:'+String(t).padStart(2,'0')+')</span>';
+    cdTimer=setInterval(()=>{
+      t--;
+      if(t<=0){clearInterval(cdTimer);line.innerHTML='Rien reçu ? <a class="link" id="doResend">Renvoyer le lien</a>';
+        document.getElementById('doResend').addEventListener('click',()=>startCountdown());return;}
+      line.innerHTML='<span class="dis">Rien reçu ? Renvoyer le lien (0:'+String(t).padStart(2,'0')+')</span>';
+    },1000);
+  }
+</script>
+</body>
+</html>

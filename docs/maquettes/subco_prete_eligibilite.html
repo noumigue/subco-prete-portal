@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test d'éligibilité — SUBCO-PRETE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white:     #FFFFFF;
+  --off:       #F7F6F3;
+  --surface:   #EEECEA;
+  --border:    #DDDBD7;
+  --text:      #1A1917;
+  --muted:     #6B6965;
+  --accent:    #1B5E3B;
+  --accent-l:  #E8F2EC;
+  --accent-b:  #C2DDD0;
+  --amber:     #7A4A0A;
+  --amber-l:   #FDF3E3;
+  --amber-b:   #F0C97A;
+  --success:   #1B5E3B;
+  --success-l: #EAF3DE;
+  --success-b: #A8D48A;
+  --warning:   #7A4A0A;
+  --warning-l: #FDF3E3;
+  --warning-b: #F0C97A;
+  --danger:    #8B1A1A;
+  --danger-l:  #FDF0F0;
+  --danger-b:  #ECBDBD;
+  --r: 6px;
+  --r-lg: 12px;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--off);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+}
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+}
+.logo-mark svg { width: 18px; height: 18px; fill: #fff; }
+.logo-name { font-size: 14px; font-weight: 600; color: var(--text); display: block; }
+.logo-sub  { font-size: 11px; color: var(--muted); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+  font-size: 13px; color: var(--muted); text-decoration: none;
+  padding: 5px 10px; border-radius: var(--r); transition: color .15s, background .15s;
+}
+.nav-links a:hover { color: var(--text); background: var(--off); }
+.nav-links a.active { color: var(--accent); font-weight: 500; }
+.nav-links a.page { color: var(--accent); }
+.nav-links a.page:hover { background: var(--accent-l); }
+.nav-lang {
+  font-size: 12px; padding: 4px 12px; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--muted);
+  background: var(--white); cursor: pointer; margin: 0 4px;
+}
+.nav-cta {
+  font-size: 13px; font-weight: 500; padding: 7px 18px;
+  border-radius: var(--r); background: var(--accent); color: #fff;
+  border: none; cursor: pointer; transition: opacity .15s;
+}
+.nav-cta:hover { opacity: .88; }
+
+/* HEADER PAGE */
+.page-header {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 36px 40px 28px;
+}
+.page-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+.page-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 32px; font-weight: 400; color: var(--text);
+  margin-bottom: 10px; line-height: 1.2;
+}
+.page-desc { font-size: 14px; color: var(--muted); max-width: 520px; line-height: 1.7; margin-bottom: 16px; }
+.page-meta { display: flex; gap: 20px; font-size: 12px; color: var(--muted); }
+.page-meta span { display: flex; align-items: center; gap: 5px; }
+.page-meta svg { width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 1.5; }
+
+/* PROGRESS */
+.progress-bar-wrap {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 14px 40px;
+}
+.progress-track { display: flex; gap: 6px; margin-bottom: 6px; }
+.progress-seg {
+  flex: 1; height: 4px; border-radius: 2px;
+  background: var(--border); transition: background .3s;
+}
+.progress-seg.done { background: var(--accent); }
+.progress-labels { display: flex; justify-content: space-between; font-size: 12px; }
+.progress-labels span { color: var(--muted); }
+.progress-labels span.active { color: var(--accent); font-weight: 500; }
+
+/* FORM LAYOUT */
+.form-wrap { max-width: 680px; margin: 0 auto; padding: 32px 40px 60px; }
+
+/* BLOC */
+.bloc {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r-lg); margin-bottom: 20px; overflow: hidden;
+}
+.bloc-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 20px; border-bottom: 1px solid var(--border);
+  background: var(--off);
+}
+.bloc-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 500; flex-shrink: 0;
+}
+.bloc-num.active { background: var(--accent); color: #fff; }
+.bloc-num.inactive { background: var(--white); border: 1px solid var(--border); color: var(--muted); }
+.bloc-title { font-size: 15px; font-weight: 500; color: var(--text); }
+.bloc-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.bloc-body { padding: 20px; }
+
+/* FIELD */
+.field { margin-bottom: 20px; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  font-size: 13px; font-weight: 500; color: var(--text);
+  margin-bottom: 4px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+}
+.field-label .req { color: #C0392B; font-size: 11px; }
+.field-label .hint { font-size: 11px; font-weight: 400; color: var(--muted); }
+.field-hint { font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+/* OPTIONS */
+.opts-col { display: flex; flex-direction: column; gap: 6px; }
+.opts-row { display: grid; gap: 6px; }
+.opts-row-2 { grid-template-columns: 1fr 1fr; }
+.opts-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: var(--r); background: var(--white);
+  cursor: pointer; transition: border-color .15s, background .15s;
+  user-select: none;
+}
+.opt:hover { border-color: var(--accent); background: var(--accent-l); }
+.opt.selected { border-color: var(--accent); background: var(--accent-l); }
+.opt.neutral { color: var(--muted); }
+
+.radio-mark, .check-mark {
+  flex-shrink: 0; width: 16px; height: 16px;
+  border: 1.5px solid var(--border); transition: all .15s;
+}
+.radio-mark { border-radius: 50%; }
+.check-mark { border-radius: 3px; }
+.opt.selected .radio-mark { border-color: var(--accent); background: var(--accent); }
+.opt.selected .check-mark {
+  border-color: var(--accent); background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.opt.selected .check-mark::after {
+  content: ''; width: 8px; height: 5px;
+  border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+.opt-label { font-size: 13px; color: var(--text); line-height: 1.3; }
+.opt.neutral .opt-label { color: var(--muted); }
+
+.opt.transversal {
+  border-style: dashed; background: var(--off);
+}
+.opt.transversal:hover { background: var(--accent-l); border-style: dashed; }
+.opt.transversal.selected { background: var(--accent-l); border-style: dashed; border-color: var(--accent); }
+
+/* SUBMIT */
+.submit-row {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 28px;
+}
+.submit-note { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.submit-note svg { width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 1.5; flex-shrink: 0; }
+.btn-submit {
+  font-size: 14px; font-weight: 500; padding: 10px 24px;
+  border-radius: var(--r); background: var(--accent); color: #fff;
+  border: none; cursor: pointer; transition: opacity .15s; white-space: nowrap;
+}
+.btn-submit:hover { opacity: .88; }
+.btn-submit:disabled { opacity: .4; cursor: not-allowed; }
+
+/* RESULT */
+.result-wrap { display: none; }
+.result-wrap.visible { display: block; }
+
+.result-card {
+  border-radius: var(--r-lg); padding: 24px; margin-bottom: 16px;
+}
+.result-card.eligible  { border: 2px solid var(--success-b); background: var(--success-l); }
+.result-card.reserve   { border: 2px solid var(--warning-b); background: var(--warning-l); }
+.result-card.rejected  { border: 2px solid var(--danger-b);  background: var(--danger-l);  }
+
+.result-icon-wrap {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.eligible  .result-icon-wrap { background: #D0ECBC; }
+.reserve   .result-icon-wrap { background: #FAE0A0; }
+.rejected  .result-icon-wrap { background: #F5C6C6; }
+
+.result-icon-wrap svg { width: 24px; height: 24px; }
+.eligible  .result-icon-wrap svg { fill: none; stroke: var(--success); stroke-width: 2; }
+.reserve   .result-icon-wrap svg { fill: none; stroke: var(--warning); stroke-width: 2; }
+.rejected  .result-icon-wrap svg { fill: none; stroke: var(--danger);  stroke-width: 2; }
+
+.result-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 22px; font-weight: 400; margin-bottom: 6px; }
+.eligible  .result-title { color: var(--success); }
+.reserve   .result-title { color: var(--warning); }
+.rejected  .result-title { color: var(--danger);  }
+
+.result-desc { font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+.eligible  .result-desc { color: #2D5A1B; }
+.reserve   .result-desc { color: var(--amber); }
+.rejected  .result-desc { color: var(--danger); }
+
+.criteria-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.criteria-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 12px; border-radius: var(--r);
+  background: rgba(255,255,255,.7); font-size: 13px; color: var(--text);
+}
+.criteria-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 4px;
+}
+.dot-ok   { background: var(--success); }
+.dot-warn { background: #D97706; }
+.dot-ko   { background: var(--danger);  }
+
+.result-ctas { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-cta-primary {
+  font-size: 13px; font-weight: 500; padding: 9px 20px;
+  border-radius: var(--r); color: #fff; border: none;
+  cursor: pointer; transition: opacity .15s;
+}
+.eligible  .btn-cta-primary { background: var(--success); }
+.reserve   .btn-cta-primary { background: var(--amber); }
+.rejected  .btn-cta-primary { background: var(--danger); }
+.btn-cta-primary:hover { opacity: .88; }
+.btn-cta-secondary {
+  font-size: 13px; padding: 9px 20px; border-radius: var(--r);
+  background: var(--white); color: var(--text);
+  border: 1px solid var(--border); cursor: pointer; transition: background .15s;
+}
+.btn-cta-secondary:hover { background: var(--off); }
+.btn-reset {
+  font-size: 13px; color: var(--muted); background: none; border: none;
+  cursor: pointer; text-decoration: underline; padding: 0; margin-top: 12px;
+  display: inline-block;
+}
+.btn-reset:hover { color: var(--text); }
+
+/* Missing fields alert */
+.alert-missing {
+  display: none; background: #FDF0F0; border: 1px solid var(--danger-b);
+  border-radius: var(--r); padding: 10px 14px;
+  font-size: 13px; color: var(--danger); margin-bottom: 12px;
+  align-items: center; gap: 8px;
+}
+.alert-missing.visible { display: flex; }
+.alert-missing svg { width: 16px; height: 16px; fill: none; stroke: var(--danger); stroke-width: 1.8; flex-shrink: 0; }
+
+@media (max-width: 700px) {
+  nav { padding: 0 16px; }
+  .nav-links { display: none; }
+  .page-header { padding: 24px 16px 20px; }
+  .progress-bar-wrap { padding: 12px 16px; }
+  .form-wrap { padding: 20px 16px 40px; }
+  .opts-row-3 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="subco_prete_accueil.html" class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div>
+      <span class="logo-name">SUBCO-PRETE</span>
+      <span class="logo-sub">Programme de subventions</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="subco_prete_accueil.html">Accueil</a>
+    <a href="#" class="active page">Éligibilité</a>
+    <a href="subco_prete_accueil.html#processus">Processus</a>
+    <a href="#" class="page">Documents</a>
+    <a href="#">FAQ</a>
+    <button class="nav-lang">FR / Kirundi</button>
+    <button class="nav-cta">Candidater</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <p class="page-eyebrow">Test d'éligibilité</p>
+  <h1 class="page-title">Vérifiez si votre projet est éligible</h1>
+  <p class="page-desc">Répondez aux 10 questions ci-dessous pour obtenir un résultat immédiat. Aucun compte requis — vos réponses ne sont pas enregistrées.</p>
+  <div class="page-meta">
+    <span>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      3 minutes
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Anonyme — aucune donnée enregistrée
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Disponible sur mobile
+    </span>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-track">
+    <div class="progress-seg" id="seg1"></div>
+    <div class="progress-seg" id="seg2"></div>
+  </div>
+  <div class="progress-labels">
+    <span class="active" id="lbl1">1 — Votre organisation</span>
+    <span id="lbl2">2 — Votre projet</span>
+  </div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- BLOC 1 -->
+  <div class="bloc" id="bloc1">
+    <div class="bloc-head">
+      <div class="bloc-num active">1</div>
+      <div>
+        <div class="bloc-title">Votre organisation</div>
+        <div class="bloc-sub">Statut juridique, conformité et capacité financière</div>
+      </div>
+    </div>
+    <div class="bloc-body">
+
+      <!-- Q1 -->
+      <div class="field">
+        <div class="field-label">Statut juridique de votre organisation <span class="req">*</span></div>
+        <div class="opts-col" id="q1">
+          <div class="opt" data-q="q1" data-v="societe" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Société (SARL, SA, coopérative d'investissement…)</span></div>
+          <div class="opt" data-q="q1" data-v="cooperative" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Coopérative agricole ou de services</span></div>
+          <div class="opt" data-q="q1" data-v="association" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Association professionnelle ou ONG à vocation économique</span></div>
+          <div class="opt" data-q="q1" data-v="numerique" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Fournisseur de services numériques ou plateforme e-commerce</span></div>
+          <div class="opt neutral" data-q="q1" data-v="autre" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Autre — mon organisation n'entre dans aucune de ces catégories</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q2 -->
+      <div class="field">
+        <div class="field-label">Votre organisation est-elle légalement enregistrée au Burundi ? <span class="req">*</span></div>
+        <div class="field-hint">NIF (Numéro d'Identification Fiscale) et RC (Registre de Commerce) valides requis.</div>
+        <div class="opts-row opts-row-3" id="q2">
+          <div class="opt" data-q="q2" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q2" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+          <div class="opt" data-q="q2" data-v="encours" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">En cours d'enregistrement</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q3 -->
+      <div class="field">
+        <div class="field-label">Votre organisation est-elle en règle vis-à-vis de ses obligations fiscales ? <span class="req">*</span></div>
+        <div class="opts-row opts-row-3" id="q3">
+          <div class="opt" data-q="q3" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q3" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+          <div class="opt" data-q="q3" data-v="nesaispas" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Je ne sais pas</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q4 -->
+      <div class="field">
+        <div class="field-label">Votre organisation est-elle engagée dans un contentieux majeur en cours ? <span class="req">*</span></div>
+        <div class="field-hint">Un contentieux susceptible de compromettre la mise en œuvre du projet.</div>
+        <div class="opts-row opts-row-2" id="q4">
+          <div class="opt" data-q="q4" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q4" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q5 -->
+      <div class="field">
+        <div class="field-label">Pouvez-vous mobiliser au minimum 20% du coût total du projet en contrepartie ? <span class="req">*</span></div>
+        <div class="field-hint">La contrepartie peut être apportée en numéraire, en nature, en équipements existants ou en travaux préparatoires.</div>
+        <div class="opts-row opts-row-3" id="q5">
+          <div class="opt" data-q="q5" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q5" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+          <div class="opt" data-q="q5" data-v="aevaluer" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">À évaluer</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BLOC 2 -->
+  <div class="bloc" id="bloc2">
+    <div class="bloc-head">
+      <div class="bloc-num inactive" id="bloc2-num">2</div>
+      <div>
+        <div class="bloc-title">Votre projet</div>
+        <div class="bloc-sub">Filière, région, nature de l'infrastructure et impact social</div>
+      </div>
+    </div>
+    <div class="bloc-body">
+
+      <!-- Q6 -->
+      <div class="field">
+        <div class="field-label">Dans quelle(s) filière(s) s'inscrit votre projet ? <span class="req">*</span></div>
+        <div class="field-hint">Plusieurs sélections possibles pour un projet transversal couvrant plusieurs filières.</div>
+        <div class="opts-row opts-row-2" id="q6">
+          <div class="opt" data-q="q6" data-v="fruits" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Fruits tropicaux</span></div>
+          <div class="opt" data-q="q6" data-v="volaille" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Volaille</span></div>
+          <div class="opt" data-q="q6" data-v="pisciculture" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Pisciculture</span></div>
+          <div class="opt" data-q="q6" data-v="lait" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Lait</span></div>
+          <div class="opt" data-q="q6" data-v="mines" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Mines</span></div>
+          <div class="opt transversal" data-q="q6" data-v="transversal" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Projet transversal (plusieurs filières)</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q7 -->
+      <div class="field">
+        <div class="field-label">Région(s) d'intervention de votre projet <span class="req">*</span></div>
+        <div class="opts-row opts-row-3" id="q7">
+          <div class="opt" data-q="q7" data-v="ngozi" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Ngozi</span></div>
+          <div class="opt" data-q="q7" data-v="kayanza" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Kayanza</span></div>
+          <div class="opt" data-q="q7" data-v="muyinga" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Muyinga</span></div>
+          <div class="opt" data-q="q7" data-v="gitega" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Gitega</span></div>
+          <div class="opt" data-q="q7" data-v="ruyigi" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Ruyigi</span></div>
+          <div class="opt neutral" data-q="q7" data-v="autre" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Autre région</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q8 -->
+      <div class="field">
+        <div class="field-label">Votre infrastructure bénéficiera-t-elle à plusieurs MPME (usage collectif ou partagé) ? <span class="req">*</span></div>
+        <div class="field-hint">Le programme finance en priorité les infrastructures à usage collectif bénéficiant à plusieurs acteurs économiques.</div>
+        <div class="opts-row opts-row-3" id="q8">
+          <div class="opt" data-q="q8" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q8" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+          <div class="opt" data-q="q8" data-v="enpartie" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">En partie</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q9 -->
+      <div class="field">
+        <div class="field-label">Disposez-vous d'un site disponible ou sécurisé pour le projet ? <span class="req">*</span></div>
+        <div class="field-hint">Répondre "En cours" ne bloque pas votre candidature — point à clarifier lors de l'instruction.</div>
+        <div class="opts-row opts-row-3" id="q9">
+          <div class="opt" data-q="q9" data-v="oui" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Oui</span></div>
+          <div class="opt" data-q="q9" data-v="non" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">Non</span></div>
+          <div class="opt" data-q="q9" data-v="encours" onclick="selectRadio(this)"><div class="radio-mark"></div><span class="opt-label">En cours</span></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Q10 -->
+      <div class="field">
+        <div class="field-label">Votre projet intègre-t-il des objectifs d'inclusion sociale ? <span class="hint">optionnel — améliore votre score de notation</span></div>
+        <div class="field-hint">Ces éléments pèsent 10 points dans la grille de sélection. Ne conditionne pas l'éligibilité.</div>
+        <div class="opts-row opts-row-2" id="q10">
+          <div class="opt" data-q="q10" data-v="femmes" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Emplois ou services pour des femmes</span></div>
+          <div class="opt" data-q="q10" data-v="refugies" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Bénéficiaires réfugiés ou rapatriés</span></div>
+          <div class="opt" data-q="q10" data-v="jeunes" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Emplois pour des jeunes</span></div>
+          <div class="opt neutral" data-q="q10" data-v="aucun" data-type="check" onclick="selectCheck(this)"><div class="check-mark"></div><span class="opt-label">Aucun objectif d'inclusion spécifique</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-row">
+    <div class="submit-note">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Vos réponses ne sont pas enregistrées — résultat instantané et anonyme
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="evaluate()">Voir mon résultat →</button>
+  </div>
+
+  <!-- ALERT MISSING -->
+  <div class="alert-missing" id="alert-missing">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span id="alert-msg">Répondez à toutes les questions obligatoires avant de voir votre résultat.</span>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-card" id="result-card">
+      <div class="result-icon-wrap">
+        <svg id="result-icon" viewBox="0 0 24 24"></svg>
+      </div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-desc" id="result-desc"></div>
+      <div class="criteria-list" id="criteria-list"></div>
+      <div class="result-ctas" id="result-ctas"></div>
+      <button class="btn-reset" onclick="reset()">← Recommencer le test</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const answers = {};
+const checkAnswers = {};
+
+const ELIGIBLE_STATUTS = ['societe','cooperative','association','numerique'];
+const ELIGIBLE_REGIONS = ['ngozi','kayanza','muyinga','gitega','ruyigi'];
+const ELIGIBLE_FILIERES = ['fruits','volaille','pisciculture','lait','mines','transversal'];
+
+function selectRadio(el) {
+  const q = el.dataset.q;
+  document.querySelectorAll('[data-q="'+q+'"]').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[q] = el.dataset.v;
+  updateProgress();
+}
+
+function selectCheck(el) {
+  const q = el.dataset.q;
+  if(!checkAnswers[q]) checkAnswers[q] = new Set();
+  if(el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    checkAnswers[q].delete(el.dataset.v);
+  } else {
+    el.classList.add('selected');
+    checkAnswers[q].add(el.dataset.v);
+  }
+  answers[q] = checkAnswers[q].size > 0 ? [...checkAnswers[q]] : null;
+  updateProgress();
+}
+
+function updateProgress() {
+  const b1 = ['q1','q2','q3','q4','q5'].every(q => answers[q]);
+  const b2 = ['q6','q7','q8','q9'].every(q => answers[q]);
+  document.getElementById('seg1').classList.toggle('done', b1);
+  document.getElementById('seg2').classList.toggle('done', b2);
+  document.getElementById('lbl1').className = b1 ? 'active' : '';
+  document.getElementById('lbl2').className = b2 ? 'active' : '';
+  document.getElementById('bloc2-num').className = 'bloc-num ' + (b1 ? 'active' : 'inactive');
+}
+
+function getMissingRequired() {
+  const required = ['q1','q2','q3','q4','q5','q6','q7','q8','q9'];
+  return required.filter(q => !answers[q] || (Array.isArray(answers[q]) && answers[q].length === 0));
+}
+
+function evaluate() {
+  const missing = getMissingRequired();
+  const alert = document.getElementById('alert-missing');
+  const msg = document.getElementById('alert-msg');
+
+  if(missing.length > 0) {
+    const labels = {q1:'statut juridique',q2:'enregistrement légal',q3:'conformité fiscale',q4:'contentieux',q5:'cofinancement',q6:'filière',q7:'région',q8:'usage collectif',q9:'site'};
+    msg.textContent = 'Réponses manquantes : ' + missing.map(q => labels[q]).join(', ') + '.';
+    alert.classList.add('visible');
+    alert.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  alert.classList.remove('visible');
+
+  const blockers = [];
+  const reserves = [];
+  const oks = [];
+  const inclusion = answers['q10'] || [];
+
+  if(!ELIGIBLE_STATUTS.includes(answers['q1'])) blockers.push('Statut juridique non conforme au programme');
+  else oks.push('Statut juridique conforme');
+
+  if(answers['q2'] === 'non') blockers.push('Organisation non enregistrée légalement au Burundi');
+  else if(answers['q2'] === 'encours') reserves.push('Enregistrement légal en cours — à finaliser avant soumission');
+  else oks.push('Enregistrement légal valide (NIF + RC)');
+
+  if(answers['q3'] === 'non') blockers.push('Non-conformité fiscale déclarée');
+  else if(answers['q3'] === 'nesaispas') reserves.push('Conformité fiscale à vérifier avant soumission');
+  else oks.push('Conformité fiscale confirmée');
+
+  if(answers['q4'] === 'oui') blockers.push('Contentieux majeur en cours — incompatible avec le programme');
+  else oks.push('Absence de contentieux majeur');
+
+  if(answers['q5'] === 'non') blockers.push('Incapacité à mobiliser 20% de contrepartie');
+  else if(answers['q5'] === 'aevaluer') reserves.push('Capacité de cofinancement (≥20%) à confirmer');
+  else oks.push('Capacité de cofinancement ≥ 20% confirmée');
+
+  const filieres = Array.isArray(answers['q6']) ? answers['q6'] : [];
+  const hasEligibleFiliere = filieres.some(f => ELIGIBLE_FILIERES.includes(f));
+  if(!hasEligibleFiliere) blockers.push('Aucune filière prioritaire sélectionnée');
+  else oks.push('Filière(s) éligible(s) ciblée(s)');
+
+  const regions = Array.isArray(answers['q7']) ? answers['q7'] : [];
+  const hasEligibleRegion = regions.some(r => ELIGIBLE_REGIONS.includes(r));
+  const hasAutreOnly = regions.every(r => r === 'autre');
+  if(hasAutreOnly || regions.length === 0) blockers.push('Région d\'intervention hors zone du programme (Ngozi, Kayanza, Muyinga, Gitega, Ruyigi)');
+  else oks.push('Région(s) d\'intervention éligible(s)');
+
+  if(answers['q8'] === 'non') blockers.push('Infrastructure à usage exclusivement privé — programme réservé aux usages collectifs');
+  else if(answers['q8'] === 'enpartie') reserves.push('Usage collectif partiel — à préciser et renforcer dans le dossier');
+  else oks.push('Infrastructure à usage collectif ou partagé');
+
+  if(answers['q9'] === 'non') reserves.push('Site non encore disponible — point à régulariser avant instruction');
+  else if(answers['q9'] === 'encours') reserves.push('Site en cours de sécurisation — acceptable à ce stade');
+  else oks.push('Site disponible ou sécurisé');
+
+  if(Array.isArray(inclusion) && inclusion.length > 0 && !inclusion.includes('aucun')) {
+    oks.push('Objectifs d\'inclusion sociale identifiés (+points de notation)');
+  }
+
+  const wrap = document.getElementById('result-wrap');
+  const card = document.getElementById('result-card');
+  const title = document.getElementById('result-title');
+  const desc = document.getElementById('result-desc');
+  const clist = document.getElementById('criteria-list');
+  const ctas = document.getElementById('result-ctas');
+  const icon = document.getElementById('result-icon');
+
+  card.className = 'result-card';
+  clist.innerHTML = '';
+  ctas.innerHTML = '';
+
+  if(blockers.length > 0) {
+    card.classList.add('rejected');
+    icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+    title.textContent = 'Votre projet n\'est pas éligible';
+    desc.textContent = blockers.length === 1
+      ? 'Une condition rédhibitoire n\'est pas remplie. Le dossier sera rejeté à la présélection sans passer à l\'évaluation technique.'
+      : blockers.length + ' conditions rédhibitoires ne sont pas remplies. Le dossier sera rejeté à la présélection.';
+    [...blockers].forEach(t => clist.insertAdjacentHTML('beforeend', '<div class="criteria-row"><div class="criteria-dot dot-ko"></div>'+t+'</div>'));
+    [...oks].forEach(t => clist.insertAdjacentHTML('beforeend', '<div class="criteria-row"><div class="criteria-dot dot-ok"></div>'+t+'</div>'));
+    ctas.innerHTML = '<button class="btn-cta-secondary" onclick="reset()">Recommencer le test</button><a href="subco_prete_accueil.html#eligibilite" style="font-size:13px;color:var(--danger);text-decoration:underline;padding:9px 0;display:inline-flex;align-items:center">Voir les critères complets</a>';
+
+  } else if(reserves.length > 0) {
+    card.classList.add('reserve');
+    icon.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+    title.textContent = 'Éligible sous réserve';
+    desc.textContent = 'Votre profil correspond globalement aux critères du programme. Certains points nécessitent une clarification avant ou pendant l\'instruction du dossier.';
+    [...oks].forEach(t => clist.insertAdjacentHTML('beforeend', '<div class="criteria-row"><div class="criteria-dot dot-ok"></div>'+t+'</div>'));
+    [...reserves].forEach(t => clist.insertAdjacentHTML('beforeend', '<div class="criteria-row"><div class="criteria-dot dot-warn"></div>'+t+'</div>'));
+    ctas.innerHTML = '<button class="btn-cta-primary" onclick="alert(\'Redirection vers le formulaire de contact du cabinet\')">Contacter le cabinet →</button><button class="btn-cta-secondary" onclick="reset()">Modifier mes réponses</button>';
+
+  } else {
+    card.classList.add('eligible');
+    icon.innerHTML = '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+    title.textContent = 'Votre projet semble éligible';
+    desc.textContent = 'Toutes vos réponses correspondent aux critères du programme SUBCO-PRETE. Vous pouvez créer votre compte et déposer un dossier de candidature lors de l\'AMI en cours.';
+    [...oks].forEach(t => clist.insertAdjacentHTML('beforeend', '<div class="criteria-row"><div class="criteria-dot dot-ok"></div>'+t+'</div>'));
+    ctas.innerHTML = '<button class="btn-cta-primary" onclick="alert(\'Redirection vers la création de compte\')">Créer mon compte et candidater →</button><button class="btn-cta-secondary" onclick="reset()">Modifier mes réponses</button>';
+  }
+
+  wrap.classList.add('visible');
+  setTimeout(() => wrap.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+}
+
+function reset() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  Object.keys(checkAnswers).forEach(k => { checkAnswers[k] = new Set(); });
+  document.querySelectorAll('.opt.selected').forEach(o => o.classList.remove('selected'));
+  document.getElementById('result-wrap').classList.remove('visible');
+  document.getElementById('alert-missing').classList.remove('visible');
+  ['seg1','seg2'].forEach(id => document.getElementById(id).classList.remove('done'));
+  document.getElementById('lbl1').className = '';
+  document.getElementById('lbl2').className = '';
+  document.getElementById('bloc2-num').className = 'bloc-num inactive';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
