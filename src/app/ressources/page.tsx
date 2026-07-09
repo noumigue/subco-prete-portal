@@ -234,17 +234,19 @@ export default async function ResourcesPage() {
                                     href={url}
                                     target="_blank"
                                     rel="noreferrer"
+                                    aria-label={`Consulter : ${title}`}
+                                    title="Consulter"
                                   >
                                     <ViewIcon />
-                                    <span>Consulter</span>
                                   </a>
                                   {doc.documentId ? (
                                     <a
                                       className="docs-action docs-action-dl"
                                       href={`/ressources/telecharger/${doc.documentId}`}
+                                      aria-label={`Télécharger : ${title}`}
+                                      title="Télécharger"
                                     >
                                       <DownloadIcon />
-                                      <span>Télécharger</span>
                                     </a>
                                   ) : null}
                                 </span>

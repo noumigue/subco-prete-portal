@@ -6415,10 +6415,11 @@ a.docs-item:focus-visible {
   color: var(--ink-soft);
 }
 
-/* Deux actions par document : Consulter (contour) + Télécharger (plein) */
+/* Deux actions par document, en icônes seules : Consulter (contour) + Télécharger (plein) */
 .docs-item-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 0.4rem;
   flex: 0 0 auto;
 }
@@ -6426,20 +6427,18 @@ a.docs-item:focus-visible {
 .docs-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.34rem 0.7rem;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
   border: 1px solid var(--sage-border);
-  font-size: 0.82rem;
-  font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .docs-action svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   fill: none;
   stroke-width: 1.7;
   stroke-linecap: round;
@@ -6478,17 +6477,6 @@ a.docs-item:focus-visible {
 .docs-action:focus-visible {
   outline: 2px solid var(--brand-deep);
   outline-offset: 2px;
-}
-
-@media (max-width: 560px) {
-  .docs-item {
-    grid-template-columns: 38px minmax(0, 1fr);
-  }
-  .docs-item-actions {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
 }
 
 /* Affordance de téléchargement (pastille flèche) */
