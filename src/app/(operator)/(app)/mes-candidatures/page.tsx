@@ -60,8 +60,8 @@ export default async function MyApplicationsPage({
                 <div className="operator-candidature-info">
                   <span className={`operator-status-pill ${getStatusMeta(item.statut?.groupe).className}`}>{getStatusMeta(item.statut?.groupe).label}</span>
                   <span>{item.appel?.nom || 'Appel en cours'}</span>
-                  <span className="operator-candidature-num">{item.numeroDossier || 'Numéro attribué à la soumission'}</span>
-                  <span>{item.statut?.groupe === 'brouillon' ? `modifié le ${formatDate(item.dateDepot)}` : `déposé le ${formatDate(item.dateDepot)}`}</span>
+                  {item.numeroDossier ? <span className="operator-candidature-num">{item.numeroDossier}</span> : null}
+                  <span>{item.statut?.groupe === 'brouillon' ? 'brouillon en cours' : `déposé le ${formatDate(item.dateDepot)}`}</span>
                 </div>
                 {getStatusMeta(item.statut?.groupe).note ? <div className="operator-candidature-note">{getStatusMeta(item.statut?.groupe).note}</div> : null}
               </div>

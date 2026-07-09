@@ -1,4 +1,4 @@
-import { resendConfirmationAction } from '../../actions';
+import { OperatorResendLink } from '@/components/operator-resend-link';
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -24,10 +24,7 @@ export default async function VerifyEmailPage({
           </div>
           {error ? <p className="operator-auth-error">{error}</p> : null}
           {resent ? <p className="operator-auth-note">Un nouveau lien vient d&apos;être demandé.</p> : null}
-          <form action={resendConfirmationAction}>
-            <input type="hidden" name="email" value={email} />
-            <button type="submit" className="operator-secondary-btn">Renvoyer le lien</button>
-          </form>
+          <OperatorResendLink email={email} justResent={Boolean(resent)} />
         </div>
         <p className="operator-auth-annot"><b>D2.</b> Cette page reste une porte dure tant que le compte n&apos;est pas confirmé.</p>
       </section>

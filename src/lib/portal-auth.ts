@@ -46,8 +46,10 @@ export async function setPortalJwt(jwt: string) {
   const store = await cookies();
   store.set(COOKIE_NAME, jwt, {
     httpOnly: true,
+    // sameSite 'lax' : compatible avec la redirection ?next= (navigation top-level en GET).
     sameSite: 'lax',
-    secure: false,
+    // secure en production (HTTPS) — remediation 2.2. En dev (http://localhost) reste false.
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
   });
 }

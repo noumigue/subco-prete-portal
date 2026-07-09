@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import type { PortalRole, PortalSession } from '@/lib/portal-types';
+import type { PortalSession } from '@/lib/portal-types';
 import { OperatorNavIcon } from '@/components/operator-nav-icon';
 
 type OperatorShellProps = {
@@ -12,11 +12,14 @@ type OperatorShellProps = {
   unreadCount: number;
 };
 
+// `lockedUnlessBeneficiaire` : « Ma subvention » reste verrouillee tant que role !== 'beneficiaire'
+// (remediation 2.3) — ainsi les roles internes futurs ne voient jamais la section deverrouillee.
+// NB : le Lot 2 fera evoluer ce verrou vers « deverrouille des qu'une subvention existe ».
 const navItems = [
   { href: '/tableau-de-bord', label: 'Tableau de bord', icon: 'dashboard' },
   { href: '/mon-organisation', label: 'Mon organisation', icon: 'organisation' },
   { href: '/mes-candidatures', label: 'Mes candidatures', icon: 'candidatures' },
-  { href: '/ma-subvention', label: 'Ma subvention', icon: 'subvention', lockedFor: 'candidat' as PortalRole },
+  { href: '/ma-subvention', label: 'Ma subvention', icon: 'subvention', lockedUnlessBeneficiaire: true },
   { href: '/notifications', label: 'Notifications', icon: 'notifications' },
   { href: '/faq-documents', label: 'FAQ & documents', icon: 'faq' },
   { href: '/assistance', label: 'Assistance', icon: 'assistance' },
@@ -59,7 +62,7 @@ export function OperatorShell({ children, session, unreadCount }: OperatorShellP
           <div className="operator-sidebar-scroll">
             {navItems.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              const locked = item.lockedFor && session.role === item.lockedFor;
+              const locked = item.lockedUnlessBeneficiaire && session.role !== 'beneficiaire';
 
               return locked ? (
                 <div key={item.href} className="operator-nav-item is-locked" aria-disabled="true" title="Disponible après sélection et signature de la convention">
