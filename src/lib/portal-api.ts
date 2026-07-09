@@ -1,11 +1,15 @@
 import type {
   PortalAppel,
   PortalCandidature,
+  PortalContenuAide,
+  PortalFiliere,
   PortalNotification,
   PortalOrganisation,
   PortalProvince,
   PortalResourceDocument,
   PortalSession,
+  PortalStatutJuridique,
+  PortalTypeContrepartie,
   PortalTypePiece,
 } from './portal-types';
 import { getPortalJwt } from './portal-auth';
@@ -111,6 +115,39 @@ export async function getPortalProvinces() {
   return response?.data || [];
 }
 
+export async function getPortalStatutJuridiques() {
+  const response = await publicFetch<StrapiCollection<PortalStatutJuridique>>(
+    '/api/statut-juridiques?sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.statutJuridique],
+  );
+  return response?.data || [];
+}
+
+export async function getPortalFilieres() {
+  const response = await publicFetch<StrapiCollection<PortalFiliere>>(
+    '/api/filieres?sort[0]=nom:asc',
+    [REFERENTIEL_TAGS.filiere],
+  );
+  return response?.data || [];
+}
+
+export async function getPortalTypeContreparties() {
+  const response = await publicFetch<StrapiCollection<PortalTypeContrepartie>>(
+    '/api/type-contreparties?sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.typeContrepartie],
+  );
+  return response?.data || [];
+}
+
+// Contenu d'aide editorial (ex. exemples de types d'infrastructure — cle `exemples-infrastructure`).
+export async function getPortalContenuAide(cle: string) {
+  const response = await publicFetch<StrapiCollection<PortalContenuAide>>(
+    `/api/contenus-aide?filters[cle][$eq]=${encodeURIComponent(cle)}`,
+    [REFERENTIEL_TAGS.contenuAide],
+  );
+  return response?.data?.[0] || null;
+}
+
 export async function getPortalResourceDocuments() {
   const response = await publicFetch<StrapiCollection<PortalResourceDocument>>(
     '/api/resource-documents?populate=file&sort[0]=title:asc',
@@ -143,8 +180,56 @@ export async function markNotificationRead(documentId: string) {
   });
 }
 
-// Upload authentifie (multipart) vers Strapi. Retourne l'id du media cree, ou null.
-export async function uploadPortalFile(file: File): Promise<number | null> {
+// Sauvegarde d'une etape du brouillon (3.0) : seuls titreProjet et donneesProjet
+// sont acceptes cote serveur (whitelist du controleur).
+export async function updatePortalDraft(documentId: string, data: { titreProjet?: string; donneesProjet?: unknown }) {
+  return portalFetch<StrapiItem<PortalCandidature>>(`/api/candidatures/${documentId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ data }),
+  });
+}
+
+// Consolidation etape 1 (J1/J2) : identite & siege ecrivent le profil maitre `organisation`.
+// Les relations sont passees par documentId (`set`).
+export async function upsertPortalOrganisation(data: Record<string, unknown>) {
+  return portalFetch<StrapiItem<PortalOrganisation>>('/api/organisations', {
+    method: 'POST',
+    body: JSON.stringify({ data }),
+  });
+}
+
+// Soumission (3.0) : effets serveur atomiques (numeroDossier, dateDepot, PDF permanent, statut soumis, accuse).
+export async function submitPortalCandidature(documentId: string): Promise<{ data?: PortalCandidature; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { error: 'Session expiree.' };
+
+  const response = await fetch(`${STRAPI_URL}/api/candidatures/${documentId}/soumettre`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    cache: 'no-store',
+  });
+
+  const payload = (await response.json().catch(() => null)) as
+    | { data?: PortalCandidature; error?: { message?: string } }
+    | null;
+
+  if (!response.ok) {
+    return { error: payload?.error?.message || 'La soumission a echoue.' };
+  }
+
+  return { data: payload?.data };
+}
+
+// Telephone de notification (D1) : capte a la 1re candidature, remonte au compte.
+export async function updatePortalPhone(phone: string) {
+  return portalFetch<{ ok: boolean }>(`/api/portal-compte/telephone`, {
+    method: 'PUT',
+    body: JSON.stringify({ phone }),
+  });
+}
+
+// Upload authentifie (multipart) vers Strapi. Retourne { id, name } du media cree, ou null.
+export async function uploadPortalFile(file: File): Promise<{ id: number; name: string } | null> {
   const jwt = await getPortalJwt();
   if (!jwt || !file || file.size === 0) return null;
 
@@ -161,8 +246,9 @@ export async function uploadPortalFile(file: File): Promise<number | null> {
 
   if (!response.ok) return null;
 
-  const payload = (await response.json()) as Array<{ id: number }>;
-  return payload?.[0]?.id ?? null;
+  const payload = (await response.json()) as Array<{ id: number; name?: string }>;
+  if (!payload?.[0]?.id) return null;
+  return { id: payload[0].id, name: payload[0].name || file.name };
 }
 
 // Depot d'un complement (remediation 1.7) : rattache le media au complement demande.

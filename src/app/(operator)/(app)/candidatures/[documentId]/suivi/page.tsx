@@ -1,13 +1,7 @@
 import Link from 'next/link';
 import { getPortalCandidature } from '@/lib/portal-api';
+import { portalMediaUrl as mediaUrl } from '@/lib/portal-media';
 import { depositComplementAction } from '../../../../actions';
-
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
-
-function mediaUrl(url?: string | null) {
-  if (!url) return null;
-  return url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
-}
 
 const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
 const labels: Record<(typeof phases)[number], string> = {
@@ -139,7 +133,11 @@ export default async function FollowUpPage({
       </section>
 
       <div className="operator-pdf-bar">
-        <button type="button" className="operator-secondary-btn inline">⤓ PDF du dossier (permanent)</button>
+        {mediaUrl(candidature?.pdfPermanent?.url) ? (
+          <a href={mediaUrl(candidature?.pdfPermanent?.url) || '#'} target="_blank" rel="noopener" className="operator-secondary-btn inline">
+            ⤓ PDF du dossier (permanent)
+          </a>
+        ) : null}
       </div>
     </div>
   );

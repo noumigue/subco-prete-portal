@@ -2,8 +2,20 @@
 
 import { redirect } from 'next/navigation';
 import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset, resendConfirmation, resetPassword } from '@/lib/portal-auth';
-import { createPortalDraft, deletePortalDraft, depositComplement, markNotificationRead, uploadPortalFile } from '@/lib/portal-api';
+import {
+  createPortalDraft,
+  deletePortalDraft,
+  depositComplement,
+  markNotificationRead,
+  submitPortalCandidature,
+  updatePortalDraft,
+  updatePortalPhone,
+  uploadPortalFile,
+  upsertPortalOrganisation,
+} from '@/lib/portal-api';
+import { portalMediaUrl } from '@/lib/portal-media';
 import { requirePortalSession } from '@/lib/portal-auth';
+import type { PortalDonneesProjet } from '@/lib/portal-types';
 
 function readString(formData: FormData, key: string) {
   return String(formData.get(key) || '').trim();
@@ -126,6 +138,97 @@ export async function markNotificationReadAction(formData: FormData) {
   redirect('/notifications');
 }
 
+// ——— Module 3 : persistance serveur du parcours (remediation 3.0) ———
+
+export type SaveStepInput = {
+  documentId: string;
+  titreProjet?: string;
+  donneesProjet: PortalDonneesProjet;
+  // Consolidation etape 1 (J1/J2) : identite & siege ecrivent le profil maitre.
+  organisation?: {
+    nom?: string;
+    contact?: string;
+    telephone?: string;
+    statutJuridiqueId?: string | null;
+    provinceId?: string | null;
+    communeId?: string | null;
+    filierePrincipaleId?: string | null;
+  };
+  // Telephone de notification (D1) : 1re saisie remontee au compte.
+  phone?: string;
+};
+
+function setRelation(documentId?: string | null) {
+  return documentId ? { set: [documentId] } : undefined;
+}
+
+export async function saveCandidatureStepAction(input: SaveStepInput): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+
+  try {
+    if (input.organisation) {
+      const org = input.organisation;
+      await upsertPortalOrganisation({
+        ...(org.nom ? { nom: org.nom } : {}),
+        ...(org.contact !== undefined ? { contact: org.contact } : {}),
+        ...(org.telephone ? { telephone: org.telephone } : {}),
+        ...(setRelation(org.statutJuridiqueId) ? { statutJuridique: setRelation(org.statutJuridiqueId) } : {}),
+        ...(setRelation(org.provinceId) ? { province: setRelation(org.provinceId) } : {}),
+        ...(setRelation(org.communeId) ? { commune: setRelation(org.communeId) } : {}),
+        ...(setRelation(org.filierePrincipaleId) ? { filierePrincipale: setRelation(org.filierePrincipaleId) } : {}),
+      });
+    }
+
+    if (input.phone) {
+      await updatePortalPhone(input.phone);
+    }
+
+    const result = await updatePortalDraft(input.documentId, {
+      ...(input.titreProjet ? { titreProjet: input.titreProjet } : {}),
+      donneesProjet: input.donneesProjet,
+    });
+
+    if (!result?.data) {
+      return { ok: false, error: "L'enregistrement du brouillon a echoue." };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "L'enregistrement du brouillon a echoue." };
+  }
+}
+
+export async function uploadPieceAction(formData: FormData): Promise<{ id: number; name: string } | null> {
+  await requirePortalSession();
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) return null;
+  return uploadPortalFile(file);
+}
+
+export type SubmitResult = {
+  ok: boolean;
+  error?: string;
+  numeroDossier?: string;
+  dateDepot?: string;
+  pdfUrl?: string | null;
+};
+
+export async function submitCandidatureAction(documentId: string): Promise<SubmitResult> {
+  await requirePortalSession();
+  const result = await submitPortalCandidature(documentId);
+
+  if (!result.data) {
+    return { ok: false, error: result.error };
+  }
+
+  return {
+    ok: true,
+    numeroDossier: result.data.numeroDossier || undefined,
+    dateDepot: result.data.dateDepot || undefined,
+    pdfUrl: portalMediaUrl(result.data.pdfPermanent?.url),
+  };
+}
+
 // Depot reel d'un complement demande (remediation 1.7) : upload authentifie du fichier
 // puis rattachement au complement. Le CMS passe le statut a `fourni`, emet la notification,
 // et laisse le pdfPermanent intact (depot en ajout).
@@ -141,11 +244,11 @@ export async function depositComplementAction(formData: FormData) {
     redirect(`${backTo}?error=complement`);
   }
 
-  const fileId = await uploadPortalFile(file as File);
-  if (!fileId) {
+  const uploaded = await uploadPortalFile(file as File);
+  if (!uploaded) {
     redirect(`${backTo}?error=upload`);
   }
 
-  const result = await depositComplement(complementId, fileId as number);
+  const result = await depositComplement(complementId, (uploaded as { id: number }).id);
   redirect(`${backTo}?${result ? 'complement=depose' : 'error=depot'}`);
 }

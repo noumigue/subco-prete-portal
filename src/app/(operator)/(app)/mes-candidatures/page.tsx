@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getPortalCandidatures, getPortalOpenCalls } from '@/lib/portal-api';
+import { portalMediaUrl } from '@/lib/portal-media';
 import { OperatorDeleteDraftButton } from '@/components/operator-delete-draft-button';
 
 function formatDate(value?: string | null) {
@@ -69,13 +70,15 @@ export default async function MyApplicationsPage({
                 {item.statut?.code === 'brouillon' ? (
                   <>
                     <Link href={`/candidatures/${item.documentId}/formulaire`} className="operator-primary-btn operator-btn-sm">Reprendre</Link>
-                    <button type="button" className="operator-secondary-btn operator-btn-sm">⤓ PDF brouillon</button>
+                    <a href={`/candidatures/${item.documentId}/pdf-brouillon`} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ PDF brouillon</a>
                     <OperatorDeleteDraftButton documentId={item.documentId} />
                   </>
                 ) : (
                   <>
                     <Link href={`/candidatures/${item.documentId}/suivi`} className="operator-secondary-btn operator-btn-sm">Voir le suivi</Link>
-                    <button type="button" className="operator-secondary-btn operator-btn-sm">⤓ PDF du dossier</button>
+                    {portalMediaUrl(item.pdfPermanent?.url) ? (
+                      <a href={portalMediaUrl(item.pdfPermanent?.url) || '#'} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ PDF du dossier</a>
+                    ) : null}
                   </>
                 )}
               </div>
