@@ -1,5 +1,13 @@
 import Link from 'next/link';
 import { getPortalCandidature } from '@/lib/portal-api';
+import { depositComplementAction } from '../../../../actions';
+
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
+
+function mediaUrl(url?: string | null) {
+  if (!url) return null;
+  return url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+}
 
 const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
 const labels: Record<(typeof phases)[number], string> = {
@@ -19,10 +27,15 @@ function getPill(group?: string, hasComplement?: boolean) {
 
 export default async function FollowUpPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ documentId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { documentId } = await params;
+  const query = await searchParams;
+  const flag = Array.isArray(query.complement) ? query.complement[0] : query.complement;
+  const errorFlag = Array.isArray(query.error) ? query.error[0] : query.error;
   const candidature = await getPortalCandidature(documentId);
   const currentPhase = candidature?.statut?.phase || 'recu';
   const currentIndex = phases.indexOf(currentPhase);
@@ -30,6 +43,7 @@ export default async function FollowUpPage({
   const isSelected = candidature?.statut?.groupe === 'selectionne';
   const isRejected = candidature?.statut?.groupe === 'non_retenu';
   const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
+  const decisionUrl = mediaUrl(candidature?.notificationDecision?.url);
 
   return (
     <div className="operator-page">
@@ -43,6 +57,9 @@ export default async function FollowUpPage({
           <span className={`operator-status-pill ${pill.className}`}>{pill.label}</span>
         </div>
       </div>
+
+      {flag === 'depose' ? <p className="operator-auth-note">Pièce complémentaire déposée et ajoutée à votre dossier.</p> : null}
+      {errorFlag ? <p className="operator-auth-error">Le dépôt de la pièce n’a pas abouti. Réessayez avec un fichier PDF ou image.</p> : null}
 
       <div className="operator-block-title">Avancement du dossier</div>
       <section className="operator-card">
@@ -63,14 +80,18 @@ export default async function FollowUpPage({
         <section className="operator-action-card">
           <div className="operator-action-head">⚠ Une pièce complémentaire est demandée</div>
           <p>L&apos;UGP a besoin de <strong>{complement.pieceDemandee}</strong> pour poursuivre la vérification de votre dossier. À fournir avant le <strong>{complement.echeance || 'À confirmer'}</strong>.</p>
-          <div className="operator-action-drop">
-            Déposez ici la pièce demandée (PDF ou image)
-            <span className="operator-action-file">Choisir un fichier</span>
-          </div>
-          <div className="operator-action-foot">
-            <span className="operator-action-hint">Ce dépôt s&apos;ajoute au dossier ; il ne modifie pas votre candidature déjà déposée.</span>
-            <button type="button" className="operator-amber-btn">Envoyer la pièce</button>
-          </div>
+          <form action={depositComplementAction} className="operator-action-form">
+            <input type="hidden" name="complementId" value={complement.documentId} />
+            <input type="hidden" name="candidatureId" value={documentId} />
+            <label className="operator-action-drop">
+              Déposez ici la pièce demandée (PDF ou image)
+              <input type="file" name="fichier" accept=".pdf,image/*" required />
+            </label>
+            <div className="operator-action-foot">
+              <span className="operator-action-hint">Ce dépôt s&apos;ajoute au dossier ; il ne modifie pas votre candidature déjà déposée.</span>
+              <button type="submit" className="operator-amber-btn">Envoyer la pièce</button>
+            </div>
+          </form>
         </section>
       ) : null}
 
@@ -78,6 +99,12 @@ export default async function FollowUpPage({
         <section className="operator-result-card is-selected">
           <h2>✓ Votre candidature a été sélectionnée</h2>
           <p>La convention pourra être suivie dans la section <strong>Ma subvention</strong>.</p>
+          {decisionUrl ? (
+            <p className="operator-decision-line">
+              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
+              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
+            </p>
+          ) : null}
           <Link href="/ma-subvention" className="operator-primary-btn inline">Accéder à Ma subvention</Link>
         </section>
       ) : null}
@@ -89,6 +116,12 @@ export default async function FollowUpPage({
             <span className="operator-motif-label">Motif</span>
             {candidature?.motifDecisionCourt || 'Motif officiel court à renseigner par l’UGP.'}
           </div>
+          {decisionUrl ? (
+            <p className="operator-decision-line">
+              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
+              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
+            </p>
+          ) : null}
         </section>
       ) : null}
 

@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { deleteDraftAction } from '../../actions';
 import { getPortalCandidatures, getPortalOpenCalls } from '@/lib/portal-api';
+import { OperatorDeleteDraftButton } from '@/components/operator-delete-draft-button';
 
 function formatDate(value?: string | null) {
   if (!value) return 'Non déposé';
@@ -70,10 +70,7 @@ export default async function MyApplicationsPage({
                   <>
                     <Link href={`/candidatures/${item.documentId}/formulaire`} className="operator-primary-btn operator-btn-sm">Reprendre</Link>
                     <button type="button" className="operator-secondary-btn operator-btn-sm">⤓ PDF brouillon</button>
-                    <form action={deleteDraftAction}>
-                      <input type="hidden" name="documentId" value={item.documentId} />
-                      <button type="submit" className="operator-danger-btn operator-btn-sm">🗑 Supprimer</button>
-                    </form>
+                    <OperatorDeleteDraftButton documentId={item.documentId} />
                   </>
                 ) : (
                   <>

@@ -62,13 +62,16 @@ export async function getPortalJwt() {
   return store.get(COOKIE_NAME)?.value || null;
 }
 
-export async function registerCandidate(email: string, password: string) {
+export async function registerCandidate(email: string, password: string, orgName: string) {
+  // orgName persiste sur le user via `register.allowedFields` (cf. config/plugins.js du CMS).
+  // Alimente ensuite la session (salutation), jamais de repli sur l'e-mail (remediation 1.1).
   const response = await strapiFetch('/api/auth/local/register', {
     method: 'POST',
     body: JSON.stringify({
       username: email,
       email,
       password,
+      orgName,
     }),
   });
 
@@ -149,6 +152,8 @@ async function fetchCurrentUser(jwt: string) {
     id: number;
     email: string;
     username?: string;
+    orgName?: string | null;
+    phone?: string | null;
     confirmed?: boolean;
     role?: {
       type?: string;
@@ -191,10 +196,13 @@ export async function getPortalSession(): Promise<PortalSession | null> {
       : 'candidat');
   return {
     userId: user.id,
-    orgName: organisation?.nom || user.username || user.email,
+    // Priorite au nom persiste a l'inscription, puis au profil organisation consolide.
+    // Jamais de repli sur l'e-mail (remediation 1.1).
+    orgName: user.orgName || organisation?.nom || 'Votre organisation',
     email: user.email,
     emailVerified: Boolean(user.confirmed),
-    phone: organisation?.telephone || null,
+    // Telephone : capte a la 1re candidature (D1). Priorite au champ compte, puis au profil org.
+    phone: user.phone || organisation?.telephone || null,
     role,
   };
 }

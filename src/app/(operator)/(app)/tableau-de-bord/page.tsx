@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getPortalCandidatures, getPortalOpenCalls } from '@/lib/portal-api';
+import { getPortalCandidatures, getPortalOpenCalls, getPortalUpcomingCalls } from '@/lib/portal-api';
 import { requirePortalSession } from '@/lib/portal-auth';
 
 type OpenCall = Awaited<ReturnType<typeof getPortalOpenCalls>>[number];
@@ -31,10 +31,22 @@ function resolveDashboardState(candidatures: Awaited<ReturnType<typeof getPortal
   return { eyebrow: 'État du parcours', label: '', href: '', note: 'Aucun appel ouvert pour le moment.', deadline: '' };
 }
 
+function formatDeadline2(value?: string) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(date);
+}
+
 export default async function DashboardPage() {
   const session = await requirePortalSession();
-  const [candidatures, openCalls] = await Promise.all([getPortalCandidatures(), getPortalOpenCalls()]);
+  const [candidatures, openCalls, upcomingCalls] = await Promise.all([
+    getPortalCandidatures(),
+    getPortalOpenCalls(),
+    getPortalUpcomingCalls(),
+  ]);
   const dashboardState = resolveDashboardState(candidatures, openCalls[0]);
+  const upcoming = upcomingCalls[0];
 
   return (
     <div className="operator-page">
@@ -46,7 +58,13 @@ export default async function DashboardPage() {
         <p className="operator-eyebrow">{dashboardState.eyebrow}</p>
         <h2>{dashboardState.note}</h2>
         {dashboardState.deadline ? <p className="operator-muted">Clôture des dépôts : {dashboardState.deadline}</p> : null}
-        {dashboardState.href ? <Link href={dashboardState.href} className="operator-primary-btn inline">{dashboardState.label}</Link> : <p className="operator-muted">Le prochain appel sera publié depuis le CMS.</p>}
+        {dashboardState.href ? <Link href={dashboardState.href} className="operator-primary-btn inline">{dashboardState.label}</Link> : (
+          upcoming ? (
+            <p className="operator-muted">Prochain appel à venir : <strong>{upcoming.nom}</strong>{upcoming.ouvertLe ? ` — ouverture prévue le ${formatDeadline2(upcoming.ouvertLe)}` : ''}.</p>
+          ) : (
+            <p className="operator-muted">Le prochain appel sera publié depuis le CMS.</p>
+          )
+        )}
       </section>
 
       <div className="operator-grid-2">

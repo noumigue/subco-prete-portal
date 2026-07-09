@@ -77,6 +77,21 @@ export type PortalCandidature = {
   notificationDecision?: { url?: string } | null;
 };
 
+export type PortalCommune = {
+  id: number;
+  documentId: string;
+  nom?: string;
+};
+
+export type PortalProvince = {
+  id: number;
+  documentId: string;
+  nom?: string;
+  code?: string;
+  anciensNoms?: string[] | null;
+  communes?: PortalCommune[];
+};
+
 export type PortalTypePiece = {
   id: number;
   documentId: string;

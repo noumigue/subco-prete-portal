@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset, resendConfirmation, resetPassword } from '@/lib/portal-auth';
-import { createPortalDraft, deletePortalDraft, markNotificationRead } from '@/lib/portal-api';
+import { createPortalDraft, deletePortalDraft, depositComplement, markNotificationRead, uploadPortalFile } from '@/lib/portal-api';
 import { requirePortalSession } from '@/lib/portal-auth';
 
 function readString(formData: FormData, key: string) {
@@ -21,7 +21,7 @@ export async function registerCandidateAction(formData: FormData) {
   let target = `/verifier-email?email=${encodeURIComponent(email)}&org=${encodeURIComponent(organizationName)}`;
 
   try {
-    await registerCandidate(email, password);
+    await registerCandidate(email, password, organizationName);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'inscription';
     target = `/inscription?error=${encodeURIComponent(message)}`;
@@ -124,4 +124,28 @@ export async function markNotificationReadAction(formData: FormData) {
     await markNotificationRead(documentId);
   }
   redirect('/notifications');
+}
+
+// Depot reel d'un complement demande (remediation 1.7) : upload authentifie du fichier
+// puis rattachement au complement. Le CMS passe le statut a `fourni`, emet la notification,
+// et laisse le pdfPermanent intact (depot en ajout).
+export async function depositComplementAction(formData: FormData) {
+  await requirePortalSession();
+  const complementId = readString(formData, 'complementId');
+  const candidatureId = readString(formData, 'candidatureId');
+  const file = formData.get('fichier');
+
+  const backTo = candidatureId ? `/candidatures/${candidatureId}/suivi` : '/mes-candidatures';
+
+  if (!complementId || !(file instanceof File) || file.size === 0) {
+    redirect(`${backTo}?error=complement`);
+  }
+
+  const fileId = await uploadPortalFile(file as File);
+  if (!fileId) {
+    redirect(`${backTo}?error=upload`);
+  }
+
+  const result = await depositComplement(complementId, fileId as number);
+  redirect(`${backTo}?${result ? 'complement=depose' : 'error=depot'}`);
 }
