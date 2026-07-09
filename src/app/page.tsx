@@ -498,7 +498,7 @@ export default async function HomePage() {
       <HomeProgramStepsBand steps={programSteps} />
       <HomeNotificationBand disabled={hasOpenCall} targetCohort={notificationTargetCohort} />
 
-      <section className="section section-band band-faq">
+      <section id="home-faq" className="section section-band band-faq">
         <div className="container">
           <FaqSection items={faqItems} compact />
         </div>

@@ -3725,6 +3725,49 @@ table {
   resize: vertical;
 }
 
+.reclamation-field input[type='file'] {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.reclamation-files {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.reclamation-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  background: #faf8f1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.reclamation-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reclamation-file-remove {
+  border: none;
+  background: transparent;
+  color: #b23f2f;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  flex-shrink: 0;
+}
+
 .reclamation-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -6370,6 +6413,82 @@ a.docs-item:focus-visible {
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--ink-soft);
+}
+
+/* Deux actions par document : Consulter (contour) + Télécharger (plein) */
+.docs-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.docs-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.34rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--sage-border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.docs-action svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-action-view {
+  background: #fff;
+  color: var(--brand-deep);
+}
+
+.docs-action-view svg {
+  stroke: var(--brand-deep);
+}
+
+.docs-action-view:hover {
+  background: var(--sage-tile);
+  border-color: rgba(23, 106, 77, 0.36);
+}
+
+.docs-action-dl {
+  background: var(--brand-deep);
+  color: #fff;
+  border-color: var(--brand-deep);
+}
+
+.docs-action-dl svg {
+  stroke: #fff;
+}
+
+.docs-action-dl:hover {
+  transform: translateY(-1px);
+  background: #0f4e39;
+}
+
+.docs-action:focus-visible {
+  outline: 2px solid var(--brand-deep);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .docs-item {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+  .docs-item-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 /* Affordance de téléchargement (pastille flèche) */

@@ -108,7 +108,7 @@ export default function ReclamationsPage() {
                 retrouverez les réponses de l’UGP dans vos notifications.
               </p>
             </div>
-            <Link className="btn secondary" href="/connexion">
+            <Link className="btn secondary" href="/connexion" target="_blank" rel="noopener">
               Se connecter
             </Link>
           </div>

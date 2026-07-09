@@ -226,6 +226,7 @@ export type SiteNavigation = {
 
 export type ResourceDocument = {
   id: number;
+  documentId?: string;
   title?: string;
   category?: 'appel' | 'tdr' | 'formulaire' | 'modele' | 'guide' | 'grille' | 'manuel' | 'note' | 'rapport' | 'autre';
   description?: string;

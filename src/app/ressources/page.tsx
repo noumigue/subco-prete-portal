@@ -133,6 +133,15 @@ function DownloadIcon() {
   );
 }
 
+function ViewIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
 export default async function ResourcesPage() {
   const documents = await getResourceDocuments();
 
@@ -185,8 +194,8 @@ export default async function ResourcesPage() {
               <div className="docs-band-head">
                 <h2>Tous les documents utiles au programme</h2>
                 <p>
-                  Regroupés par type. Cliquez sur un document pour le télécharger — l’accès est libre et ne nécessite pas
-                  de compte.
+                  Regroupés par type. Consultez un document en ligne ou téléchargez-le — l’accès est libre et ne
+                  nécessite pas de compte.
                 </p>
               </div>
 
@@ -211,13 +220,7 @@ export default async function ResourcesPage() {
                           const title = doc.title || 'Document';
                           if (url) {
                             return (
-                              <a
-                                key={doc.id ?? `${cat}-${index}`}
-                                className="docs-item"
-                                href={url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <div key={doc.id ?? `${cat}-${index}`} className="docs-item">
                                 <span className="docs-file-icon">
                                   <FileIcon />
                                 </span>
@@ -225,10 +228,27 @@ export default async function ResourcesPage() {
                                   <span className="docs-item-title">{title}</span>
                                   {doc.description ? <span className="docs-item-desc">{doc.description}</span> : null}
                                 </span>
-                                <span className="docs-item-dl" aria-hidden="true">
-                                  <DownloadIcon />
+                                <span className="docs-item-actions">
+                                  <a
+                                    className="docs-action docs-action-view"
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <ViewIcon />
+                                    <span>Consulter</span>
+                                  </a>
+                                  {doc.documentId ? (
+                                    <a
+                                      className="docs-action docs-action-dl"
+                                      href={`/ressources/telecharger/${doc.documentId}`}
+                                    >
+                                      <DownloadIcon />
+                                      <span>Télécharger</span>
+                                    </a>
+                                  ) : null}
                                 </span>
-                              </a>
+                              </div>
                             );
                           }
                           return (
