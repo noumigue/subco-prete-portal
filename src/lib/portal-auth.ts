@@ -46,8 +46,10 @@ export async function setPortalJwt(jwt: string) {
   const store = await cookies();
   store.set(COOKIE_NAME, jwt, {
     httpOnly: true,
+    // sameSite 'lax' : compatible avec la redirection ?next= (navigation top-level en GET).
     sameSite: 'lax',
-    secure: false,
+    // secure en production (HTTPS) — remediation 2.2. En dev (http://localhost) reste false.
+    secure: process.env.NODE_ENV === 'production',
     path: '/',
   });
 }
@@ -62,13 +64,16 @@ export async function getPortalJwt() {
   return store.get(COOKIE_NAME)?.value || null;
 }
 
-export async function registerCandidate(email: string, password: string) {
+export async function registerCandidate(email: string, password: string, orgName: string) {
+  // orgName persiste sur le user via `register.allowedFields` (cf. config/plugins.js du CMS).
+  // Alimente ensuite la session (salutation), jamais de repli sur l'e-mail (remediation 1.1).
   const response = await strapiFetch('/api/auth/local/register', {
     method: 'POST',
     body: JSON.stringify({
       username: email,
       email,
       password,
+      orgName,
     }),
   });
 
@@ -134,7 +139,9 @@ export async function resetPassword(code: string, password: string) {
 }
 
 async function fetchCurrentUser(jwt: string) {
-  const response = await fetch(`${STRAPI_URL}/api/users/me?populate=role`, {
+  // /api/users/me ne peuple PAS le role en Strapi 5 : on passe par un endpoint dedie
+  // qui renvoie l'identite AVEC le role (indispensable au verrou « Ma subvention » et aux gardes).
+  const response = await fetch(`${STRAPI_URL}/api/portal-compte/moi`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
     },
@@ -149,6 +156,8 @@ async function fetchCurrentUser(jwt: string) {
     id: number;
     email: string;
     username?: string;
+    orgName?: string | null;
+    phone?: string | null;
     confirmed?: boolean;
     role?: {
       type?: string;
@@ -191,10 +200,13 @@ export async function getPortalSession(): Promise<PortalSession | null> {
       : 'candidat');
   return {
     userId: user.id,
-    orgName: organisation?.nom || user.username || user.email,
+    // Priorite au nom persiste a l'inscription, puis au profil organisation consolide.
+    // Jamais de repli sur l'e-mail (remediation 1.1).
+    orgName: user.orgName || organisation?.nom || 'Votre organisation',
     email: user.email,
     emailVerified: Boolean(user.confirmed),
-    phone: organisation?.telephone || null,
+    // Telephone : capte a la 1re candidature (D1). Priorite au champ compte, puis au profil org.
+    phone: user.phone || organisation?.telephone || null,
     role,
   };
 }

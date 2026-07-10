@@ -14,13 +14,19 @@ export default async function LoginPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const error = Array.isArray(params.error) ? params.error[0] : params.error;
+  const rawError = Array.isArray(params.error) ? params.error[0] : params.error;
+  // Garde d'acces operateur (remediation 2.4) : message lisible pour un role non-operateur.
+  const error = rawError === 'acces-operateur'
+    ? "Cet espace est réservé aux opérateurs (candidats et bénéficiaires). Votre compte n'y a pas accès."
+    : rawError;
   const reset = Array.isArray(params.reset) ? params.reset[0] : params.reset;
   const next = safeNext(Array.isArray(params.next) ? params.next[0] : params.next);
 
-  // Déjà connecté → aller directement à la destination voulue (ou au tableau de bord).
+  // Déjà connecté en tant qu'operateur → aller directement a la destination voulue.
+  // Un role interne (instructeur/ugp/...) n'est PAS redirige vers (app) (evite la boucle
+  // avec la garde d'acces) : il reste sur cette page avec le message d'acces.
   const session = await getPortalSession();
-  if (session) {
+  if (session && (session.role === 'candidat' || session.role === 'beneficiaire')) {
     redirect(next || '/tableau-de-bord');
   }
 

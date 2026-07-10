@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Portail opérateur — garde d'accès par rôle
+
+L'espace opérateur `src/app/(operator)/(app)/*` est réservé aux rôles **`candidat`** et
+**`beneficiaire`** (voir `(app)/layout.tsx`). Les rôles internes (`instructeur`, `ugp`,
+`comite`, `banque`) sont redirigés hors de cet espace ; ils disposeront de leur propre porte
+de connexion et de leur back-office aux Modules 5–7. La section « Ma subvention » reste par
+ailleurs verrouillée tant que le rôle n'est pas `beneficiaire` (`operator-shell.tsx`).
+
 ## Release flow
 
 Use this command to publish current `dev-pilotes` changes to `main`:

@@ -1,29 +1,35 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import type { PortalAppel, PortalCandidature, PortalOrganisation, PortalTypePiece } from '@/lib/portal-types';
+import { useRouter } from 'next/navigation';
+import { useMemo, useRef, useState } from 'react';
+import type {
+  PortalAppel,
+  PortalCandidature,
+  PortalDonneesProjet,
+  PortalFiliere,
+  PortalOrganisation,
+  PortalPieceDepot,
+  PortalProvince,
+  PortalSession,
+  PortalStatutJuridique,
+  PortalTypeContrepartie,
+  PortalTypePiece,
+} from '@/lib/portal-types';
+import { remapProvinceName } from '@/lib/portal-provinces';
+import {
+  saveCandidatureStepAction,
+  submitCandidatureAction,
+  uploadPieceAction,
+  type SaveStepInput,
+} from '@/app/(operator)/actions';
 
-const LEGAL_STATUSES = ['Coopérative', 'Entreprise', 'Association', 'ONG', 'Fournisseur de services numériques'];
-const VALUE_CHAINS = ['Fruits tropicaux', 'Volaille', 'Pisciculture', 'Lait', 'Industrie minière', 'Projet transversal'];
-const SITE_STATUSES = ['Propriété', 'Bail / location', 'Mis à disposition', 'À sécuriser'];
-const MATURITY_LEVELS = ['Mature', 'Semi-mature', 'Embryonnaire'];
-const COUNTERPART_TYPES = ['Numéraire', 'Nature', 'Équipement', 'Travaux préparatoires', 'Infrastructures existantes'];
-const INFRA_EXAMPLES = [
-  'Unité de transformation ou atelier',
-  'Entrepôt, chambre froide ou chaîne du froid',
-  'Centre de collecte, distribution ou logistique',
-  'Laboratoire ou dispositif de contrôle qualité',
-  'Plateforme numérique ou application de mise en relation',
-  'Infrastructure immatérielle ou système de gestion',
-];
-const PROVINCES: Record<string, string[]> = {
-  Buhumuza: ['Butaganzwa', 'Butihinda', 'Cankuzo', 'Gisagara', 'Gisuru', 'Muyinga', 'Ruyigi'],
-  Bujumbura: ['Bubanza', 'Bukinanyana', 'Cibitoke', 'Isare', 'Mpanda', 'Mugere', 'Mugina', 'Muhuta', 'Mukaza', 'Ntahangwa', 'Rwibaga'],
-  Burunga: ['Bururi', 'Makamba', 'Matana', 'Musongati', 'Nyanza', 'Rumonge', 'Rutana'],
-  Butanyerera: ['Busoni', 'Kayanza', 'Kiremba', 'Kirundo', 'Matongo', 'Muhanga', 'Ngozi', 'Tangara'],
-  Gitega: ['Bugendana', 'Gishubi', 'Gitega', 'Karusi', 'Kiganda', 'Muramvya', 'Mwaro', 'Nyabihanga', 'Shombo'],
-};
+// Textes STRUCTURELS du parcours, fixes par le Manuel (pas des referentiels CMS) :
+// - GATES = declarations d'eligibilite §5 (bloquantes, verifiees aussi cote serveur) ;
+// - ES_FIELDS = screening E&S leger ;
+// - SITE_STATUSES / MATURITY_LEVELS = echelles du formulaire (maquette module 3).
+// Les listes METIER (provinces/communes, statuts juridiques, filieres, contreparties,
+// pieces Annexe 9, exemples d'infrastructure) viennent TOUTES des referentiels via props.
 const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impact', 'Pièces et soumission'];
 const GATES = [
   'Structure légalement constituée',
@@ -37,20 +43,20 @@ const ES_FIELDS = [
   'Pollution, déchets ou nuisances',
   'Acquisition foncière ou déplacement',
 ];
-const FALLBACK_PIECES = [
-  { id: 'lettre', libelle: 'Lettre de motivation', groupe: 'administratif', exigence: 'obligatoire' },
-  { id: 'rc', libelle: 'RC / certificat d’enregistrement', groupe: 'administratif', exigence: 'obligatoire' },
-  { id: 'nif', libelle: 'NIF', groupe: 'administratif', exigence: 'obligatoire' },
-  { id: 'etats', libelle: 'États financiers (3 exercices)', groupe: 'financier', exigence: 'obligatoire' },
-  { id: 'business', libelle: 'Plan d’affaires simplifié', groupe: 'financier', exigence: 'obligatoire' },
-  { id: 'site', libelle: 'Preuve de disponibilité du site', groupe: 'technique', exigence: 'obligatoire' },
-];
+const SITE_STATUSES = ['Propriété', 'Bail / location', 'Mis à disposition', 'À sécuriser'];
+const MATURITY_LEVELS = ['Mature', 'Semi-mature', 'Embryonnaire'];
 
 type OperatorCandidatureFormProps = {
   candidature: PortalCandidature | null;
   organisation: PortalOrganisation | null;
   openCall: PortalAppel | null;
   typePieces: PortalTypePiece[];
+  provinces: PortalProvince[];
+  statutJuridiques: PortalStatutJuridique[];
+  filieres: PortalFiliere[];
+  typeContreparties: PortalTypeContrepartie[];
+  infraExemples: string[];
+  session: PortalSession;
 };
 
 function formatAmount(value: string) {
@@ -61,6 +67,13 @@ function formatAmount(value: string) {
 
 function toNumber(value: string) {
   return Number(value.replace(/[^0-9]/g, '')) || 0;
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(date);
 }
 
 function statusBadgeClass(exigence?: string) {
@@ -79,38 +92,120 @@ export function OperatorCandidatureForm({
   organisation,
   openCall,
   typePieces,
+  provinces,
+  statutJuridiques,
+  filieres,
+  typeContreparties,
+  infraExemples,
+  session,
 }: OperatorCandidatureFormProps) {
+  const router = useRouter();
   const resolvedCall = candidature?.appel || openCall;
-  const basePieces = typePieces.length > 0
-    ? typePieces.map((piece) => ({
+  const saved: PortalDonneesProjet = useMemo(
+    () => (candidature?.donneesProjet as PortalDonneesProjet) || {},
+    [candidature?.donneesProjet],
+  );
+
+  // ——— Reprise fidele : etat initialise depuis le brouillon serveur ———
+  const initialStep = Math.min(Math.max(Number(saved.etape) || 1, 1), 4);
+
+  // Garde-fou remap provinces (1.4) : la valeur stockee du profil est remappee vers
+  // le decoupage actuel a la lecture — on n'ecrit jamais une province perimee.
+  const initialProvince = useMemo(() => {
+    const storedSiegeName = organisation?.province?.nom;
+    const { current } = remapProvinceName(provinces, storedSiegeName);
+    const province = provinces.find((item) => item.nom === current) || null;
+    const commune = province?.communes?.find((item) => item.nom === organisation?.commune?.nom) || null;
+    return { provinceId: province?.documentId || '', communeId: commune?.documentId || '' };
+  }, [provinces, organisation]);
+
+  const initialSite = useMemo(() => {
+    const { current } = remapProvinceName(provinces, saved.projet?.siteProvince);
+    const province = provinces.find((item) => item.nom === current) || null;
+    const commune = province?.communes?.find((item) => item.nom === saved.projet?.siteCommune) || null;
+    return { provinceId: province?.documentId || '', communeId: commune?.documentId || '' };
+  }, [provinces, saved.projet?.siteProvince, saved.projet?.siteCommune]);
+
+  const basePieces: PortalPieceDepot[] = useMemo(() => {
+    const savedPieces = saved.pieces || [];
+    return typePieces.map((piece) => {
+      const match = savedPieces.find((item) => item.id === piece.documentId);
+      return {
         id: piece.documentId,
         libelle: piece.libelle || 'Pièce',
         groupe: piece.groupe || 'administratif',
         exigence: piece.exigence || 'obligatoire',
-      }))
-    : FALLBACK_PIECES;
+        depose: Boolean(match?.depose && match?.fileId),
+        fileId: match?.fileId || null,
+        nomFichier: match?.nomFichier || null,
+      };
+    });
+  }, [typePieces, saved.pieces]);
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep);
+  const [maxStepReached, setMaxStepReached] = useState(initialStep);
   const [toast, setToast] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<string>('');
   const [showExamples, setShowExamples] = useState(false);
-  const [eligibility, setEligibility] = useState<boolean[]>(() => GATES.map(() => false));
-  const [sameSite, setSameSite] = useState(false);
-  const [deposits, setDeposits] = useState<Record<string, boolean>>({});
-  const [esAnswers, setEsAnswers] = useState<string[]>(['Oui', 'Non', 'Non']);
-  const [projectTitle, setProjectTitle] = useState(candidature?.titreProjet?.replace(/^Nouvelle candidature - /, '') || '');
-  const [note, setNote] = useState('');
-  const [budget, setBudget] = useState('100 000 000');
-  const [counterpart, setCounterpart] = useState('25 000 000');
-  const [mpme, setMpme] = useState('40');
-  const [women, setWomen] = useState('24');
-  const [youth, setYouth] = useState('10');
-  const [refugees, setRefugees] = useState('8');
-  const [womenLed, setWomenLed] = useState('Oui');
-  const [ruralArea, setRuralArea] = useState('Oui');
-  const [operatorProvince, setOperatorProvince] = useState(organisation?.province?.nom || '');
-  const [operatorCommune, setOperatorCommune] = useState(organisation?.commune?.nom || '');
-  const [siteProvince, setSiteProvince] = useState(organisation?.province?.nom || '');
-  const [siteCommune, setSiteCommune] = useState(organisation?.commune?.nom || '');
+
+  // Etape 1 — eligibilite §5 + identite operateur (consolidation → organisation)
+  const [eligibility, setEligibility] = useState<boolean[]>(() =>
+    GATES.map((gate, index) => Boolean(saved.eligibilite?.[index]?.confirme && saved.eligibilite?.[index]?.libelle === gate)),
+  );
+  const [orgNom, setOrgNom] = useState(organisation?.nom || session.orgName || '');
+  const [statutJuridiqueId, setStatutJuridiqueId] = useState(() =>
+    statutJuridiques.find((item) => item.libelle === organisation?.statutJuridique?.libelle)?.documentId || '',
+  );
+  const [nif, setNif] = useState(saved.operateur?.nif || '');
+  const [rc, setRc] = useState(saved.operateur?.rc || '');
+  const [contact, setContact] = useState(organisation?.contact || '');
+  const [operatorProvinceId, setOperatorProvinceId] = useState(initialProvince.provinceId);
+  const [operatorCommuneId, setOperatorCommuneId] = useState(initialProvince.communeId);
+  const [contactEmail, setContactEmail] = useState(saved.operateur?.email || session.email || '');
+  const [telephone, setTelephone] = useState(saved.operateur?.telephone || organisation?.telephone || session.phone || '');
+
+  // Etape 2 — le projet (→ candidature.donneesProjet)
+  const [projectTitle, setProjectTitle] = useState(candidature?.titreProjet?.replace(/^Nouvelle candidature.*$/, '') || candidature?.titreProjet || '');
+  const [filiereId, setFiliereId] = useState(() =>
+    saved.projet?.filiereId ||
+    filieres.find((item) => item.nom === organisation?.filierePrincipale?.nom)?.documentId ||
+    '',
+  );
+  const [typeInfrastructure, setTypeInfrastructure] = useState(saved.projet?.typeInfrastructure || '');
+  const [sameSite, setSameSite] = useState(Boolean(saved.projet?.memeSiege));
+  const [siteProvinceId, setSiteProvinceId] = useState(initialSite.provinceId);
+  const [siteCommuneId, setSiteCommuneId] = useState(initialSite.communeId);
+  const [statutSite, setStatutSite] = useState(saved.projet?.statutSite || '');
+  const [usageCollectif, setUsageCollectif] = useState(saved.projet?.usageCollectif || 'Oui');
+  const [mpmeDesservies, setMpmeDesservies] = useState(saved.projet?.mpmeDesservies || '');
+  const [maturite, setMaturite] = useState(saved.projet?.maturite || '');
+  const [note, setNote] = useState(saved.projet?.noteConceptuelle || '');
+
+  // Etape 3 — financement & impact
+  const [budget, setBudget] = useState(saved.financement?.budgetTotal ? formatAmount(String(saved.financement.budgetTotal)) : '');
+  const [counterpart, setCounterpart] = useState(saved.financement?.contrepartie ? formatAmount(String(saved.financement.contrepartie)) : '');
+  const [typeContrepartie, setTypeContrepartie] = useState(saved.financement?.typeContrepartie || '');
+  const [modeleEconomique, setModeleEconomique] = useState(saved.financement?.modeleEconomique || '');
+  const [mpme, setMpme] = useState(saved.impact?.mpme || '');
+  const [women, setWomen] = useState(saved.impact?.femmes || '');
+  const [youth, setYouth] = useState(saved.impact?.jeunes || '');
+  const [refugees, setRefugees] = useState(saved.impact?.refugies || '');
+  const [jobs, setJobs] = useState(saved.impact?.emplois || '');
+  const [womenLed, setWomenLed] = useState(saved.impact?.porteParFemme || 'Non');
+  const [ruralArea, setRuralArea] = useState(saved.impact?.zoneRurale || 'Non');
+
+  // Etape 4 — screening E&S + pieces (vrais depots)
+  const [esAnswers, setEsAnswers] = useState<string[]>(() =>
+    ES_FIELDS.map((field, index) => saved.es?.reponses?.[index]?.reponse || 'Non'),
+  );
+  const [pges, setPges] = useState<{ fileId?: number; nomFichier?: string } | null>(saved.es?.pges || null);
+  const [pieces, setPieces] = useState<PortalPieceDepot[]>(basePieces);
+  const [uploadingId, setUploadingId] = useState<string>('');
+
+  // Etape 5 — resultat de soumission (effets serveur reels)
+  const [submitInfo, setSubmitInfo] = useState<{ numeroDossier?: string; dateDepot?: string; pdfUrl?: string | null }>({});
 
   const budgetValue = toNumber(budget);
   const counterpartValue = toNumber(counterpart);
@@ -126,58 +221,225 @@ export function OperatorCandidatureForm({
       (ruralArea === 'Oui' ? 2 : 0),
   );
 
-  const requiredPieceIds = basePieces.filter((piece) => piece.exigence === 'obligatoire').map((piece) => piece.id);
-  if (declaredRisk) {
-    requiredPieceIds.push('pges');
-  }
-  const depositedRequired = requiredPieceIds.filter((pieceId) => deposits[pieceId]).length;
-  const missingPieces = requiredPieceIds.filter((pieceId) => !deposits[pieceId]);
-  const completenessRate = requiredPieceIds.length > 0 ? Math.round((depositedRequired / requiredPieceIds.length) * 100) : 0;
-  const generatedNumber = candidature?.numeroDossier || 'PRETE-AP-C1-2026-00042';
+  const requiredPieces = pieces.filter((piece) => piece.exigence === 'obligatoire');
+  const requiredTotal = requiredPieces.length + (declaredRisk ? 1 : 0);
+  const depositedRequired = requiredPieces.filter((piece) => piece.depose).length + (declaredRisk && pges?.fileId ? 1 : 0);
+  const missingLabels = [
+    ...requiredPieces.filter((piece) => !piece.depose).map((piece) => piece.libelle),
+    ...(declaredRisk && !pges?.fileId ? ['Plan de gestion E&S (PGES)'] : []),
+  ];
+  const completenessRate = requiredTotal > 0 ? Math.round((depositedRequired / requiredTotal) * 100) : 0;
 
   const groupedPieces = ['administratif', 'financier', 'technique'].map((group) => ({
     key: group,
     label: group === 'administratif' ? 'Administratif' : group === 'financier' ? 'Financier' : 'Technique',
-    items: basePieces.filter((piece) => piece.groupe === group),
+    items: pieces.filter((piece) => piece.groupe === group),
   }));
 
+  const operatorProvince = provinces.find((item) => item.documentId === operatorProvinceId) || null;
+  const siteProvince = provinces.find((item) => item.documentId === (sameSite ? operatorProvinceId : siteProvinceId)) || null;
+  const displayedSiteCommuneId = sameSite ? operatorCommuneId : siteCommuneId;
+
+  const toastTimer = useRef<number | undefined>(undefined);
   function showToast(message: string) {
     setToast(message);
-    window.clearTimeout((showToast as typeof showToast & { timer?: number }).timer);
-    (showToast as typeof showToast & { timer?: number }).timer = window.setTimeout(() => setToast(''), 2600);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(''), 3200);
   }
 
-  function goNext() {
+  // ——— Assemblage du contrat donneesProjet (etape = derniere etape atteinte) ———
+  function buildDonnees(reachedStep: number): PortalDonneesProjet {
+    return {
+      etape: Math.max(reachedStep, maxStepReached),
+      eligibilite: GATES.map((gate, index) => ({ libelle: gate, confirme: Boolean(eligibility[index]) })),
+      operateur: { nif, rc, email: contactEmail, telephone },
+      projet: {
+        filiereId: filiereId || null,
+        filiere: filieres.find((item) => item.documentId === filiereId)?.nom || '',
+        typeInfrastructure,
+        memeSiege: sameSite,
+        siteProvinceId: sameSite ? operatorProvinceId || null : siteProvinceId || null,
+        siteProvince: (sameSite ? operatorProvince?.nom : siteProvince?.nom) || '',
+        siteCommuneId: displayedSiteCommuneId || null,
+        siteCommune: siteProvince?.communes?.find((item) => item.documentId === displayedSiteCommuneId)?.nom || '',
+        statutSite,
+        usageCollectif,
+        mpmeDesservies,
+        maturite,
+        noteConceptuelle: note,
+      },
+      financement: {
+        budgetTotal: budgetValue,
+        contrepartie: counterpartValue,
+        typeContrepartie,
+        modeleEconomique,
+      },
+      impact: {
+        mpme,
+        femmes: women,
+        jeunes: youth,
+        refugies: refugees,
+        emplois: jobs,
+        porteParFemme: womenLed,
+        zoneRurale: ruralArea,
+      },
+      es: {
+        reponses: ES_FIELDS.map((field, index) => ({ libelle: field, reponse: esAnswers[index] || 'Non' })),
+        risqueDeclare: declaredRisk,
+        pges,
+      },
+      pieces,
+    };
+  }
+
+  async function saveDraft(reachedStep: number, options?: { silent?: boolean }): Promise<boolean> {
+    if (!candidature?.documentId) return false;
+    setSaving(true);
+
+    const input: SaveStepInput = {
+      documentId: candidature.documentId,
+      titreProjet: projectTitle.trim() || undefined,
+      donneesProjet: buildDonnees(reachedStep),
+      organisation: orgNom.trim()
+        ? {
+            nom: orgNom.trim(),
+            contact: contact.trim(),
+            telephone: telephone.trim() || undefined,
+            statutJuridiqueId: statutJuridiqueId || null,
+            provinceId: operatorProvinceId || null,
+            communeId: operatorCommuneId || null,
+            filierePrincipaleId: filiereId || null,
+          }
+        : undefined,
+      phone: telephone.trim() && telephone.trim() !== (session.phone || '') ? telephone.trim() : undefined,
+    };
+
+    const result = await saveCandidatureStepAction(input);
+    setSaving(false);
+
+    if (!result.ok) {
+      showToast(result.error || "L'enregistrement a échoué. Réessayez.");
+      return false;
+    }
+
+    setLastSavedAt(new Intl.DateTimeFormat('fr-FR', { timeStyle: 'short' }).format(new Date()));
+    if (!options?.silent) showToast('Brouillon enregistré.');
+    return true;
+  }
+
+  async function goNext() {
+    // Eligibilite §5 : BLOQUANTE (3.1.2) — ici comme au serveur.
     if (step === 1 && !allEligibilityChecked) {
       showToast('Confirmez toutes les conditions d’éligibilité pour continuer.');
       return;
     }
 
     if (step === 4) {
-      if (missingPieces.length > 0) {
-        showToast(`Déposez les ${missingPieces.length} pièce(s) obligatoire(s) manquante(s) avant de soumettre.`);
-        return;
-      }
-      setStep(5);
+      await handleSubmit();
       return;
     }
 
-    setStep((current) => current + 1);
+    const nextStep = step + 1;
+    setMaxStepReached((current) => Math.max(current, nextStep));
+    const ok = await saveDraft(nextStep, { silent: true });
+    if (!ok) return;
+    setStep(nextStep);
   }
 
-  function toggleDeposit(id: string) {
-    setDeposits((current) => ({ ...current, [id]: !current[id] }));
+  async function goBack() {
+    await saveDraft(Math.max(step, maxStepReached), { silent: true });
+    setStep((current) => Math.max(1, current - 1));
+  }
+
+  async function saveAndExit() {
+    const ok = await saveDraft(Math.max(step, maxStepReached));
+    if (ok) router.push('/mes-candidatures');
+  }
+
+  async function handleSubmit() {
+    if (!candidature?.documentId) return;
+
+    // §5 bloquant : declarations + contrepartie >= 20 % (verifie aussi cote serveur).
+    if (!allEligibilityChecked) {
+      showToast('Les déclarations d’éligibilité (§5) doivent toutes être confirmées.');
+      return;
+    }
+    if (budgetValue <= 0 || counterpartValue > budgetValue || counterpartRate < 20) {
+      showToast('La contrepartie doit représenter au moins 20 % du budget du projet (§5).');
+      return;
+    }
+
+    // Garde-fou MOU (3.1.8) : on avertit sur l'incomplétude Annexe 11, on ne bloque pas.
+    if (missingLabels.length > 0) {
+      const proceed = window.confirm(
+        `Pièces obligatoires manquantes :\n— ${missingLabels.join('\n— ')}\n\nVous pouvez soumettre malgré tout, mais l’UGP pourra réclamer ces pièces pendant la vérification. Soumettre quand même ?`,
+      );
+      if (!proceed) return;
+    }
+
+    setSubmitting(true);
+    const savedOk = await saveDraft(4, { silent: true });
+    if (!savedOk) {
+      setSubmitting(false);
+      return;
+    }
+
+    const result = await submitCandidatureAction(candidature.documentId);
+    setSubmitting(false);
+
+    if (!result.ok) {
+      showToast(result.error || 'La soumission a échoué.');
+      return;
+    }
+
+    setSubmitInfo({ numeroDossier: result.numeroDossier, dateDepot: result.dateDepot, pdfUrl: result.pdfUrl });
+    setStep(5);
+  }
+
+  async function handleUpload(target: string, file: File | null) {
+    if (!file) return;
+    setUploadingId(target);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploaded = await uploadPieceAction(formData);
+    setUploadingId('');
+
+    if (!uploaded) {
+      showToast('Le dépôt du fichier a échoué. Réessayez.');
+      return;
+    }
+
+    if (target === 'pges') {
+      setPges({ fileId: uploaded.id, nomFichier: uploaded.name });
+    } else {
+      setPieces((current) =>
+        current.map((piece) =>
+          piece.id === target ? { ...piece, depose: true, fileId: uploaded.id, nomFichier: uploaded.name } : piece,
+        ),
+      );
+    }
+
+    showToast(`« ${uploaded.name} » déposé.`);
   }
 
   function handleCopy() {
-    void navigator.clipboard?.writeText(generatedNumber);
+    const numero = submitInfo.numeroDossier || candidature?.numeroDossier || '';
+    if (numero) void navigator.clipboard?.writeText(numero);
     showToast('Numéro de dossier copié.');
   }
 
-  const displayedSiteProvince = sameSite ? operatorProvince : siteProvince;
-  const displayedSiteCommune = sameSite ? operatorCommune : siteCommune;
-  const operatorCommunes = operatorProvince ? PROVINCES[operatorProvince] || [] : [];
-  const siteCommunes = displayedSiteProvince ? PROVINCES[displayedSiteProvince] || [] : [];
+  const operatorCommunes = operatorProvince?.communes || [];
+  const siteCommunes = siteProvince?.communes || [];
+  const displayNumero = submitInfo.numeroDossier || candidature?.numeroDossier || '';
+
+  if (!candidature) {
+    return (
+      <div className="operator-page">
+        <p className="operator-auth-error">Brouillon introuvable. Repartez de <Link href="/mes-candidatures">Mes candidatures</Link>.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="operator-form-shell">
@@ -213,9 +475,8 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-field">
                 <label>Appel à propositions</label>
-                <select value={resolvedCall?.nom || ''} onChange={() => undefined}>
-                  <option>{resolvedCall?.nom || 'Aucun appel ouvert'}</option>
-                </select>
+                {/* Rattachement AAP auto-defini (3.1.1) : affiche, pas choisi. */}
+                <input type="text" value={resolvedCall?.nom || 'Aucun appel ouvert'} readOnly disabled />
               </div>
 
               <div className="operator-form-card">
@@ -242,54 +503,67 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-section-title">
                 Opérateur / promoteur
-                <span>pré-rempli depuis votre compte, modifiable</span>
+                <span>pré-rempli depuis votre compte, modifiable — met à jour votre profil organisation</span>
               </div>
 
               <div className="operator-form-grid">
                 <div className="operator-form-field">
                   <label>Raison sociale</label>
-                  <input type="text" defaultValue={organisation?.nom || candidature?.organisation?.nom || ''} />
+                  <input type="text" value={orgNom} onChange={(event) => setOrgNom(event.target.value)} />
                 </div>
                 <div className="operator-form-field">
                   <label>Statut juridique</label>
-                  <select defaultValue={organisation?.statutJuridique?.libelle || ''}>
+                  <select value={statutJuridiqueId} onChange={(event) => setStatutJuridiqueId(event.target.value)}>
                     <option value="">Sélectionner…</option>
-                    {LEGAL_STATUSES.map((status) => <option key={status}>{status}</option>)}
+                    {statutJuridiques.map((status) => (
+                      <option key={status.documentId} value={status.documentId}>{status.libelle}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>NIF</label>
-                  <input type="text" placeholder="4001234567" />
+                  <input type="text" value={nif} onChange={(event) => setNif(event.target.value)} placeholder="4001234567" />
                 </div>
                 <div className="operator-form-field">
                   <label>RC / enregistrement</label>
-                  <input type="text" placeholder="RC/BJM/2023/1024" />
+                  <input type="text" value={rc} onChange={(event) => setRc(event.target.value)} placeholder="RC/BJM/2023/1024" />
                 </div>
                 <div className="operator-form-field">
                   <label>Représentant légal</label>
-                  <input type="text" defaultValue={organisation?.contact || ''} />
+                  <input type="text" value={contact} onChange={(event) => setContact(event.target.value)} />
                 </div>
                 <div className="operator-form-field">
                   <label>Province</label>
-                  <select value={operatorProvince} onChange={(event) => { setOperatorProvince(event.target.value); setOperatorCommune(''); }}>
+                  <select
+                    value={operatorProvinceId}
+                    onChange={(event) => { setOperatorProvinceId(event.target.value); setOperatorCommuneId(''); }}
+                  >
                     <option value="">Sélectionner une province…</option>
-                    {Object.keys(PROVINCES).map((province) => <option key={province}>{province}</option>)}
+                    {provinces.map((province) => (
+                      <option key={province.documentId} value={province.documentId}>{province.nom}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>Commune</label>
-                  <select value={operatorCommune} onChange={(event) => setOperatorCommune(event.target.value)} disabled={!operatorProvince}>
-                    <option value="">{operatorProvince ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
-                    {operatorCommunes.map((commune) => <option key={commune}>{commune}</option>)}
+                  <select
+                    value={operatorCommuneId}
+                    onChange={(event) => setOperatorCommuneId(event.target.value)}
+                    disabled={!operatorProvinceId}
+                  >
+                    <option value="">{operatorProvinceId ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
+                    {operatorCommunes.map((commune) => (
+                      <option key={commune.documentId} value={commune.documentId}>{commune.nom}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>Email de contact</label>
-                  <input type="email" defaultValue="" placeholder="nom@operateur.bi" />
+                  <input type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} placeholder="nom@operateur.bi" />
                 </div>
                 <div className="operator-form-field">
-                  <label>Téléphone</label>
-                  <input type="tel" defaultValue={organisation?.telephone || ''} placeholder="+257 …" />
+                  <label>Téléphone <span className="operator-form-subtle">· pour l’accusé SMS</span></label>
+                  <input type="tel" value={telephone} onChange={(event) => setTelephone(event.target.value)} placeholder="+257 …" />
                 </div>
               </div>
             </section>
@@ -305,9 +579,11 @@ export function OperatorCandidatureForm({
               <div className="operator-form-grid">
                 <div className="operator-form-field">
                   <label>Chaîne de valeur</label>
-                  <select defaultValue={organisation?.filierePrincipale?.nom || ''}>
+                  <select value={filiereId} onChange={(event) => setFiliereId(event.target.value)}>
                     <option value="">Sélectionner…</option>
-                    {VALUE_CHAINS.map((chain) => <option key={chain}>{chain}</option>)}
+                    {filieres.map((chain) => (
+                      <option key={chain.documentId} value={chain.documentId}>{chain.nom}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -315,17 +591,24 @@ export function OperatorCandidatureForm({
               <div className="operator-form-field">
                 <label>Type d’infrastructure à réaliser</label>
                 <p className="operator-form-subtle">Décrivez librement, avec vos mots, l’infrastructure que vous souhaitez mettre en œuvre.</p>
-                <button type="button" className="operator-form-inline-link" onClick={() => setShowExamples((current) => !current)}>
-                  Voir quelques exemples
-                </button>
+                {infraExemples.length > 0 ? (
+                  <button type="button" className="operator-form-inline-link" onClick={() => setShowExamples((current) => !current)}>
+                    Voir quelques exemples
+                  </button>
+                ) : null}
                 {showExamples ? (
                   <div className="operator-form-examples">
                     <ul>
-                      {INFRA_EXAMPLES.map((example) => <li key={example}>{example}</li>)}
+                      {infraExemples.map((example) => <li key={example}>{example}</li>)}
                     </ul>
                   </div>
                 ) : null}
-                <textarea rows={4} placeholder="Ex. : unité de séchage solaire de mangues d’une capacité de 2 t/jour…" />
+                <textarea
+                  rows={4}
+                  value={typeInfrastructure}
+                  onChange={(event) => setTypeInfrastructure(event.target.value)}
+                  placeholder="Ex. : unité de séchage solaire de mangues d’une capacité de 2 t/jour…"
+                />
               </div>
 
               <div className="operator-form-card">
@@ -341,27 +624,31 @@ export function OperatorCandidatureForm({
                     <div className="operator-form-field">
                       <label>Province</label>
                       <select
-                        value={displayedSiteProvince}
+                        value={sameSite ? operatorProvinceId : siteProvinceId}
                         onChange={(event) => {
                           if (sameSite) return;
-                          setSiteProvince(event.target.value);
-                          setSiteCommune('');
+                          setSiteProvinceId(event.target.value);
+                          setSiteCommuneId('');
                         }}
                         disabled={sameSite}
                       >
                         <option value="">Sélectionner une province…</option>
-                        {Object.keys(PROVINCES).map((province) => <option key={province}>{province}</option>)}
+                        {provinces.map((province) => (
+                          <option key={province.documentId} value={province.documentId}>{province.nom}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="operator-form-field">
                       <label>Commune</label>
                       <select
-                        value={displayedSiteCommune}
-                        onChange={(event) => !sameSite && setSiteCommune(event.target.value)}
-                        disabled={sameSite || !displayedSiteProvince}
+                        value={displayedSiteCommuneId}
+                        onChange={(event) => !sameSite && setSiteCommuneId(event.target.value)}
+                        disabled={sameSite || !siteProvince}
                       >
-                        <option value="">{displayedSiteProvince ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
-                        {siteCommunes.map((commune) => <option key={commune}>{commune}</option>)}
+                        <option value="">{siteProvince ? 'Sélectionner une commune…' : 'Choisir une province d’abord'}</option>
+                        {siteCommunes.map((commune) => (
+                          <option key={commune.documentId} value={commune.documentId}>{commune.nom}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -371,25 +658,25 @@ export function OperatorCandidatureForm({
               <div className="operator-form-grid">
                 <div className="operator-form-field">
                   <label>Statut du site</label>
-                  <select>
+                  <select value={statutSite} onChange={(event) => setStatutSite(event.target.value)}>
                     <option value="">Sélectionner…</option>
                     {SITE_STATUSES.map((status) => <option key={status}>{status}</option>)}
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>Usage collectif ou partagé</label>
-                  <select defaultValue="Oui">
+                  <select value={usageCollectif} onChange={(event) => setUsageCollectif(event.target.value)}>
                     <option>Oui</option>
                     <option>Non</option>
                   </select>
                 </div>
                 <div className="operator-form-field">
                   <label>MPME / acteurs desservis</label>
-                  <input type="number" min="0" defaultValue="40" />
+                  <input type="number" min="0" value={mpmeDesservies} onChange={(event) => setMpmeDesservies(event.target.value)} />
                 </div>
                 <div className="operator-form-field">
                   <label>Niveau de maturité</label>
-                  <select>
+                  <select value={maturite} onChange={(event) => setMaturite(event.target.value)}>
                     <option value="">Sélectionner…</option>
                     {MATURITY_LEVELS.map((level) => <option key={level}>{level}</option>)}
                   </select>
@@ -427,8 +714,9 @@ export function OperatorCandidatureForm({
                 </div>
                 <div className="operator-form-field">
                   <label>Type de contrepartie</label>
-                  <select defaultValue={COUNTERPART_TYPES[0]}>
-                    {COUNTERPART_TYPES.map((type) => <option key={type}>{type}</option>)}
+                  <select value={typeContrepartie} onChange={(event) => setTypeContrepartie(event.target.value)}>
+                    <option value="">Sélectionner…</option>
+                    {typeContreparties.map((type) => <option key={type.documentId}>{type.libelle}</option>)}
                   </select>
                 </div>
               </div>
@@ -451,7 +739,7 @@ export function OperatorCandidatureForm({
 
               <div className="operator-form-field">
                 <label>Modèle économique</label>
-                <textarea rows={2} placeholder="Revenus, coûts, viabilité, exploitation et maintenance…" />
+                <textarea rows={2} value={modeleEconomique} onChange={(event) => setModeleEconomique(event.target.value)} placeholder="Revenus, coûts, viabilité, exploitation et maintenance…" />
               </div>
 
               <div className="operator-form-section-title">Impact et inclusion</div>
@@ -474,7 +762,7 @@ export function OperatorCandidatureForm({
                 </div>
                 <div className="operator-form-field">
                   <label>Emplois créés</label>
-                  <input type="number" min="0" defaultValue="15" />
+                  <input type="number" min="0" value={jobs} onChange={(event) => setJobs(event.target.value)} />
                 </div>
               </div>
 
@@ -527,13 +815,22 @@ export function OperatorCandidatureForm({
               {declaredRisk ? (
                 <div className="operator-form-es-box">
                   <span>Plan de gestion E&S (PGES) · requis vu le risque déclaré</span>
-                  <button type="button" className={`operator-upload-btn${deposits.pges ? ' is-done' : ''}`} onClick={() => toggleDeposit('pges')}>
-                    {deposits.pges ? '✓ Déposé' : 'Choisir un fichier'}
-                  </button>
+                  <label className={`operator-upload-btn${pges?.fileId ? ' is-done' : ''}`}>
+                    {uploadingId === 'pges' ? 'Envoi…' : pges?.fileId ? `✓ ${pges.nomFichier || 'Déposé'}` : 'Choisir un fichier'}
+                    <input
+                      type="file"
+                      hidden
+                      accept=".pdf,image/*"
+                      onChange={(event) => void handleUpload('pges', event.target.files?.[0] || null)}
+                    />
+                  </label>
                 </div>
               ) : null}
 
               <div className="operator-form-section-title">Pièces justificatives</div>
+              {pieces.length === 0 ? (
+                <p className="operator-auth-error">La liste des pièces (Annexe 9) n’est pas disponible — référentiel « type de pièce » vide dans le CMS.</p>
+              ) : null}
               {groupedPieces.map((group) => (
                 <details key={group.key} className="operator-piece-group" open={group.key === 'administratif'}>
                   <summary>{group.label}</summary>
@@ -543,13 +840,15 @@ export function OperatorCandidatureForm({
                         {piece.libelle}
                         <span className={statusBadgeClass(piece.exigence)}>{statusBadgeLabel(piece.exigence)}</span>
                       </span>
-                      <button
-                        type="button"
-                        className={`operator-upload-btn${deposits[piece.id] ? ' is-done' : ''}`}
-                        onClick={() => toggleDeposit(piece.id)}
-                      >
-                        {deposits[piece.id] ? '✓ Déposé' : 'Choisir un fichier'}
-                      </button>
+                      <label className={`operator-upload-btn${piece.depose ? ' is-done' : ''}`}>
+                        {uploadingId === piece.id ? 'Envoi…' : piece.depose ? `✓ ${piece.nomFichier || 'Déposé'}` : 'Choisir un fichier'}
+                        <input
+                          type="file"
+                          hidden
+                          accept=".pdf,image/*"
+                          onChange={(event) => void handleUpload(piece.id, event.target.files?.[0] || null)}
+                        />
+                      </label>
                     </div>
                   ))}
                 </details>
@@ -558,14 +857,14 @@ export function OperatorCandidatureForm({
               <div className="operator-form-complete-box">
                 <div className="operator-form-complete-head">
                   <b>Complétude du dossier</b>
-                  <span>{depositedRequired} / {requiredPieceIds.length} obligatoires</span>
+                  <span>{depositedRequired} / {requiredTotal} obligatoires</span>
                 </div>
                 <div className="operator-form-complete-bar">
                   <i style={{ width: `${completenessRate}%` }} />
                 </div>
                 <p className="operator-form-subtle">
-                  {missingPieces.length > 0
-                    ? `Manquantes : ${missingPieces.join(', ')}`
+                  {missingLabels.length > 0
+                    ? `Manquantes : ${missingLabels.join(', ')}`
                     : 'Toutes les pièces obligatoires sont déposées.'}
                 </p>
               </div>
@@ -587,19 +886,23 @@ export function OperatorCandidatureForm({
               <div className="operator-form-dossier-box">
                 <div>
                   <p>Numéro de dossier</p>
-                  <span>{generatedNumber}</span>
+                  <span>{displayNumero}</span>
                 </div>
                 <button type="button" className="operator-secondary-btn inline" onClick={handleCopy}>Copier</button>
               </div>
 
               <p className="operator-form-confirm-label">Accusé de réception envoyé</p>
-              <div className="operator-form-ack-row">Email — {organisation?.contact || 'nom@operateur.bi'} <span>✓ envoyé</span></div>
-              <div className="operator-form-ack-row">SMS — {organisation?.telephone || '+257 68 •• •• ••'} <span>✓ envoyé</span></div>
-              <p className="operator-form-subtle">Inscrit au registre des dépôts le 04/07/2026 à 14:32.</p>
+              <div className="operator-form-ack-row">Email — {session.email} <span>✓ envoyé</span></div>
+              <div className="operator-form-ack-row">SMS — {telephone || session.phone || 'non renseigné'} <span>{telephone || session.phone ? '✓ envoyé' : '—'}</span></div>
+              {submitInfo.dateDepot ? (
+                <p className="operator-form-subtle">Inscrit au registre des dépôts le {formatDateTime(submitInfo.dateDepot)}.</p>
+              ) : null}
 
-              <button type="button" className="operator-primary-btn operator-form-block-btn" onClick={() => showToast('Le PDF de votre candidature sera généré.')}>
-                Télécharger le PDF de ma candidature
-              </button>
+              {submitInfo.pdfUrl ? (
+                <a href={submitInfo.pdfUrl} target="_blank" rel="noopener" className="operator-primary-btn operator-form-block-btn">
+                  Télécharger le PDF de ma candidature
+                </a>
+              ) : null}
               <p className="operator-form-subtle operator-form-centered">
                 Disponible à tout moment depuis votre compte, dans <strong>Mes candidatures</strong>.
               </p>
@@ -613,22 +916,24 @@ export function OperatorCandidatureForm({
 
         <div className="operator-form-foot">
           <div className="operator-form-foot-left">
-            <span className="operator-form-autosave">Enregistré automatiquement</span>
+            <span className="operator-form-autosave">
+              {saving ? 'Enregistrement…' : lastSavedAt ? `Enregistré à ${lastSavedAt}` : 'Sauvegarde à chaque étape'}
+            </span>
             {step > 1 && step < 5 ? (
-              <button type="button" className="operator-secondary-btn inline" onClick={() => setStep((current) => current - 1)}>
+              <button type="button" className="operator-secondary-btn inline" onClick={() => void goBack()} disabled={saving || submitting}>
                 ← Retour
               </button>
             ) : null}
             {step < 5 ? (
-              <button type="button" className="operator-secondary-btn inline" onClick={() => showToast('Brouillon enregistré. Vous pourrez le reprendre depuis votre compte.')}>
+              <button type="button" className="operator-secondary-btn inline" onClick={() => void saveAndExit()} disabled={saving || submitting}>
                 Enregistrer et reprendre plus tard
               </button>
             ) : null}
           </div>
 
           {step < 5 ? (
-            <button type="button" className="operator-primary-btn inline" onClick={goNext}>
-              {step === 4 ? 'Soumettre le dossier' : 'Continuer →'}
+            <button type="button" className="operator-primary-btn inline" onClick={() => void goNext()} disabled={saving || submitting}>
+              {submitting ? 'Soumission…' : step === 4 ? 'Soumettre le dossier' : 'Continuer →'}
             </button>
           ) : (
             <Link href="/mes-candidatures" className="operator-secondary-btn inline">

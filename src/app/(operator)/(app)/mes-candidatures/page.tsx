@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { deleteDraftAction } from '../../actions';
 import { getPortalCandidatures, getPortalOpenCalls } from '@/lib/portal-api';
+import { portalMediaUrl } from '@/lib/portal-media';
+import { OperatorDeleteDraftButton } from '@/components/operator-delete-draft-button';
 
 function formatDate(value?: string | null) {
   if (!value) return 'Non déposé';
@@ -60,8 +61,8 @@ export default async function MyApplicationsPage({
                 <div className="operator-candidature-info">
                   <span className={`operator-status-pill ${getStatusMeta(item.statut?.groupe).className}`}>{getStatusMeta(item.statut?.groupe).label}</span>
                   <span>{item.appel?.nom || 'Appel en cours'}</span>
-                  <span className="operator-candidature-num">{item.numeroDossier || 'Numéro attribué à la soumission'}</span>
-                  <span>{item.statut?.groupe === 'brouillon' ? `modifié le ${formatDate(item.dateDepot)}` : `déposé le ${formatDate(item.dateDepot)}`}</span>
+                  {item.numeroDossier ? <span className="operator-candidature-num">{item.numeroDossier}</span> : null}
+                  <span>{item.statut?.groupe === 'brouillon' ? 'brouillon en cours' : `déposé le ${formatDate(item.dateDepot)}`}</span>
                 </div>
                 {getStatusMeta(item.statut?.groupe).note ? <div className="operator-candidature-note">{getStatusMeta(item.statut?.groupe).note}</div> : null}
               </div>
@@ -69,16 +70,15 @@ export default async function MyApplicationsPage({
                 {item.statut?.code === 'brouillon' ? (
                   <>
                     <Link href={`/candidatures/${item.documentId}/formulaire`} className="operator-primary-btn operator-btn-sm">Reprendre</Link>
-                    <button type="button" className="operator-secondary-btn operator-btn-sm">⤓ PDF brouillon</button>
-                    <form action={deleteDraftAction}>
-                      <input type="hidden" name="documentId" value={item.documentId} />
-                      <button type="submit" className="operator-danger-btn operator-btn-sm">🗑 Supprimer</button>
-                    </form>
+                    <a href={`/candidatures/${item.documentId}/pdf-brouillon`} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ PDF brouillon</a>
+                    <OperatorDeleteDraftButton documentId={item.documentId} />
                   </>
                 ) : (
                   <>
                     <Link href={`/candidatures/${item.documentId}/suivi`} className="operator-secondary-btn operator-btn-sm">Voir le suivi</Link>
-                    <button type="button" className="operator-secondary-btn operator-btn-sm">⤓ PDF du dossier</button>
+                    {portalMediaUrl(item.pdfPermanent?.url) ? (
+                      <a href={portalMediaUrl(item.pdfPermanent?.url) || '#'} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ PDF du dossier</a>
+                    ) : null}
                   </>
                 )}
               </div>
