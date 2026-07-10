@@ -2,9 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PortalSession } from '@/lib/portal-types';
 import { OperatorNavIcon } from '@/components/operator-nav-icon';
+
+// A6 — destination du « Besoin d'aide ? ». Livre : 'C' (mini-panneau).
+// 'A' => lien direct vers Nouvelle demande, 'B' => lien vers la FAQ. Reversible en une ligne.
+const HELP_DESTINATION: 'A' | 'B' | 'C' = 'C';
 
 type OperatorShellProps = {
   children: React.ReactNode;
@@ -35,8 +39,27 @@ const subventionSubItems = [
 export function OperatorShell({ children, session, unreadCount, subventionStatut }: OperatorShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpRef = useRef<HTMLDivElement>(null);
   const subventionUnlocked = Boolean(subventionStatut);
   const isPreparation = subventionStatut === 'preparation';
+
+  // Mini-panneau « Besoin d'aide ? » (A6, HELP_DESTINATION='C') : fermeture au clic exterieur + Echap.
+  useEffect(() => {
+    if (!helpOpen) return;
+    function onDown(e: MouseEvent) {
+      if (helpRef.current && !helpRef.current.contains(e.target as Node)) setHelpOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setHelpOpen(false);
+    }
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [helpOpen]);
 
   return (
     <div className="operator-shell">
@@ -50,10 +73,31 @@ export function OperatorShell({ children, session, unreadCount, subventionStatut
           <span>SUBCO-PRETE<small>Portail opérateur</small></span>
         </div>
         <div className="operator-topbar-right">
-          <Link href="/assistance" className="operator-help-pill">
-            <OperatorNavIcon name="assistance" />
-            <span>Besoin d&apos;aide ?</span>
-          </Link>
+          {HELP_DESTINATION === 'C' ? (
+            <div className="operator-help-wrap" ref={helpRef}>
+              <button type="button" className="operator-help-pill" onClick={() => setHelpOpen((v) => !v)} aria-expanded={helpOpen} aria-haspopup="menu">
+                <OperatorNavIcon name="assistance" />
+                <span>Besoin d&apos;aide ?</span>
+              </button>
+              {helpOpen ? (
+                <div className="operator-help-pop" role="menu">
+                  <Link href="/faq-documents" className="operator-help-item" role="menuitem" onClick={() => setHelpOpen(false)}>
+                    <span className="operator-help-ic">📚</span>
+                    <span><span className="operator-help-t">Consulter la FAQ</span><span className="operator-help-d">Réponses immédiates aux questions fréquentes</span></span>
+                  </Link>
+                  <Link href="/assistance/nouvelle" className="operator-help-item" role="menuitem" onClick={() => setHelpOpen(false)}>
+                    <span className="operator-help-ic">🛟</span>
+                    <span><span className="operator-help-t">Faire une demande d&apos;assistance</span><span className="operator-help-d">L&apos;équipe du projet vous répond</span></span>
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <Link href={HELP_DESTINATION === 'B' ? '/faq-documents' : '/assistance/nouvelle'} className="operator-help-pill">
+              <OperatorNavIcon name="assistance" />
+              <span>Besoin d&apos;aide ?</span>
+            </Link>
+          )}
           <Link href="/notifications" className="operator-bell" aria-label="Notifications">
             <OperatorNavIcon name="notifications" />
             {unreadCount > 0 ? <span className="operator-bell-dot">{unreadCount}</span> : null}

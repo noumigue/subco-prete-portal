@@ -22,6 +22,7 @@ export const REFERENTIEL_TAGS = {
   typeRapport: 'type-rapport',
   etapeContractuelle: 'etape-contractuelle',
   statutDemande: 'statut-demande',
+  categorieAssistance: 'categorie-assistance',
 } as const;
 
 const KNOWN_TAGS = new Set<string>(Object.values(REFERENTIEL_TAGS));

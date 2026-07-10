@@ -6,7 +6,10 @@ import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset
 import {
   changePortalPassword,
   createDemande,
+  createDemandeAssistance,
   createPortalDraft,
+  repondreAssistance,
+  resoudreAssistance,
   deletePortalDraft,
   deposerCondition,
   deposerMesure,
@@ -378,6 +381,63 @@ export async function justifyAdvanceAction(input: { documentId: string; fileIds:
   if (!input.fileIds.length) return { ok: false, error: 'Au moins une piece est requise.' };
   const result = await justifierDemande(input.documentId, input.fileIds);
   return { ok: Boolean(result) };
+}
+
+// ——— Assistance ———
+
+// La valeur du select « Concerne » est prefixee : "candidature:<id>" | "subvention:<id>" | "".
+function parseConcerne(value: string): { concerneCandidature?: string; concerneSubvention?: string } {
+  if (value.startsWith('candidature:')) return { concerneCandidature: value.slice('candidature:'.length) };
+  if (value.startsWith('subvention:')) return { concerneSubvention: value.slice('subvention:'.length) };
+  return {};
+}
+
+async function uploadOptionalFile(formData: FormData): Promise<number[] | undefined> {
+  const file = formData.get('piece');
+  if (!(file instanceof File) || file.size === 0) return undefined;
+  const uploaded = await uploadPortalFile(file);
+  return uploaded ? [uploaded.id] : undefined;
+}
+
+export async function createDemandeAssistanceAction(formData: FormData) {
+  await requirePortalSession();
+  const objet = readString(formData, 'objet');
+  const corps = readString(formData, 'corps');
+  const categorie = readString(formData, 'categorie');
+  const concerne = parseConcerne(readString(formData, 'concerne'));
+
+  if (!objet || !corps) {
+    redirect('/assistance/nouvelle?error=champs');
+  }
+
+  const pieces = await uploadOptionalFile(formData);
+  const result = await createDemandeAssistance({ objet, corps, categorie: categorie || undefined, ...concerne, pieces });
+  if (result.error) {
+    redirect(`/assistance/nouvelle?error=${encodeURIComponent(result.error)}`);
+  }
+  redirect('/assistance?cree=1');
+}
+
+export async function repondreAssistanceAction(formData: FormData) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  const corps = readString(formData, 'corps');
+  const pieces = await uploadOptionalFile(formData);
+
+  if (!documentId || (!corps && !pieces)) {
+    redirect(`/assistance/${documentId}?error=vide`);
+  }
+  const result = await repondreAssistance(documentId, corps, pieces);
+  redirect(`/assistance/${documentId}${result.ok ? '' : `?error=${encodeURIComponent(result.error || 'envoi')}`}`);
+}
+
+export async function resoudreAssistanceAction(formData: FormData) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  if (documentId) {
+    await resoudreAssistance(documentId);
+  }
+  redirect(`/assistance/${documentId}?resolue=1`);
 }
 
 // Depot reel d'un complement demande (remediation 1.7) : upload authentifie du fichier

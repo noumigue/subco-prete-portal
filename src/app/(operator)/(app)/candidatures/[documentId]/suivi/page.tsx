@@ -138,6 +138,7 @@ export default async function FollowUpPage({
             ⤓ PDF du dossier (permanent)
           </a>
         ) : null}
+        <Link href={`/assistance/nouvelle?candidature=${documentId}`} className="operator-text-link">Besoin d&apos;aide sur ce dossier ?</Link>
       </div>
     </div>
   );
