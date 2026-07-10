@@ -1,4 +1,5 @@
 import {
+  getPortalDocumentsTelechargeables,
   getPortalFaqItems,
   getPortalResourceDocuments,
   getPortalTypePieces,
@@ -22,9 +23,10 @@ const EXIGENCE_LABELS: Record<string, string> = {
 export default async function FaqDocumentsPage() {
   // FAQ et documents = contenu editorial REEL deja gere au CMS (faq-item + resource-document,
   // partages avec le site public). Pieces = referentiel type-piece (Annexe 9).
-  const [faq, documents, typePieces] = await Promise.all([
+  const [faq, documents, candidateDocs, typePieces] = await Promise.all([
     getPortalFaqItems(),
     getPortalResourceDocuments(),
+    getPortalDocumentsTelechargeables(),
     getPortalTypePieces(),
   ]);
 
@@ -52,11 +54,29 @@ export default async function FaqDocumentsPage() {
 
       <div className="operator-block-title">Documents à télécharger</div>
       <section className="operator-card">
-        {documents.length === 0 ? <p className="operator-muted">Aucun document disponible.</p> : documents.map((item) => {
+        <div className="operator-piece-grouptitle">Documents publics</div>
+        {documents.length === 0 ? <p className="operator-muted">Aucun document public.</p> : documents.map((item) => {
           const url = portalMediaUrl(item.file?.url);
           return (
-            <div key={`${item.id}-${item.title}`} className="operator-doc-row">
+            <div key={`pub-${item.id}-${item.title}`} className="operator-doc-row">
               <span className="operator-doc-name">{item.title}</span>
+              {url ? (
+                <a href={url} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ Télécharger</a>
+              ) : (
+                <span className="operator-muted">bientôt disponible</span>
+              )}
+            </div>
+          );
+        })}
+
+        <div className="operator-piece-grouptitle" style={{ marginTop: '1rem' }}>Réservés aux candidats</div>
+        {candidateDocs.length === 0 ? (
+          <p className="operator-muted">Aucun document réservé pour le moment.</p>
+        ) : candidateDocs.map((item) => {
+          const url = portalMediaUrl(item.fichier?.url);
+          return (
+            <div key={`cand-${item.documentId}`} className="operator-doc-row">
+              <span className="operator-doc-name">{item.titre}</span>
               {url ? (
                 <a href={url} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ Télécharger</a>
               ) : (

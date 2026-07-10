@@ -23,6 +23,25 @@ const FLOW = [
   { code: 'payee', label: 'Paiement' },
 ];
 
+// Badge de statut affiche sur CHAQUE demande (2.4).
+const STATUT_PILL: Record<string, { label: string; cls: string }> = {
+  brouillon: { label: 'Brouillon', cls: 'tag-fut' },
+  soumise: { label: 'En instruction', cls: 'tag-due' },
+  avis_technique: { label: 'En instruction', cls: 'tag-due' },
+  avis_fiduciaire: { label: 'En instruction', cls: 'tag-due' },
+  complements_requis: { label: 'Compléments requis', cls: 'tag-due' },
+  payee: { label: 'Payée', cls: 'tag-ok' },
+  rejetee: { label: 'Rejetée', cls: 'tag-no' },
+};
+
+// Repli si le referentiel n'expose pas piecesJustification (sinon liste CMS de la modalite avance).
+const DEFAULT_JUSTIF_PIECES = [
+  'Rapport technique d’avancement',
+  'État des dépenses réalisées',
+  'Factures et preuves de paiement',
+  'PV ou attestations de réception',
+];
+
 type Props = {
   subvention: PortalSubvention;
   modalites: PortalModalite[];
@@ -145,8 +164,10 @@ export function OperatorDecaissements({ subvention, modalites, canNew, blockMess
               <div className="operator-dem-head">
                 <span className="operator-dem-num">Demande N°{String(d.numero || 0).padStart(2, '0')}</span>
                 <span className="operator-dem-meta">{d.modalite?.libelle || 'Modalité'} · {bif(d.montant)}</span>
+                {code && STATUT_PILL[code] ? (
+                  <span className={`operator-tag ${STATUT_PILL[code].cls}`}>{STATUT_PILL[code].label}</span>
+                ) : null}
                 {justified ? <span className="operator-tag tag-ok">✓ Justifiée</span> : null}
-                {code === 'rejetee' ? <span className="operator-tag tag-no">Rejetée</span> : null}
               </div>
               {code && code !== 'brouillon' && code !== 'payee' && code !== 'rejetee' ? flowFor(d) : null}
               {['soumise', 'avis_technique', 'avis_fiduciaire'].includes(code || '') ? (
@@ -160,10 +181,9 @@ export function OperatorDecaissements({ subvention, modalites, canNew, blockMess
                 <div className="operator-justif">
                   <p><strong>Justification de l’avance requise</strong> avant toute nouvelle demande. Pièces attendues :</p>
                   <ul>
-                    <li>Rapport technique d’avancement</li>
-                    <li>État des dépenses réalisées</li>
-                    <li>Factures et preuves de paiement</li>
-                    <li>PV ou attestations de réception</li>
+                    {(d.modalite?.piecesJustification?.length ? d.modalite.piecesJustification : DEFAULT_JUSTIF_PIECES).map((piece) => (
+                      <li key={piece}>{piece}</li>
+                    ))}
                   </ul>
                   {d.justificationStatut === 'soumise' ? (
                     <p className="operator-auth-note">Justification transmise — en cours de validation par l’UGP.</p>

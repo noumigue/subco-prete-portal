@@ -269,6 +269,7 @@ export type PortalModalite = {
   code?: string;
   libelle?: string;
   piecesRequises?: string[];
+  piecesJustification?: string[];
   ordre?: number;
 };
 
