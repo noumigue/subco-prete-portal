@@ -106,7 +106,7 @@ export async function getPortalUpcomingCalls() {
 
 export async function getPortalTypePieces() {
   const response = await publicFetch<StrapiCollection<PortalTypePiece>>(
-    '/api/type-pieces?sort[0]=ordre:asc',
+    '/api/types-piece?sort[0]=ordre:asc',
     [REFERENTIEL_TAGS.typePiece],
   );
   return response?.data || [];
@@ -123,7 +123,7 @@ export async function getPortalProvinces() {
 
 export async function getPortalStatutJuridiques() {
   const response = await publicFetch<StrapiCollection<PortalStatutJuridique>>(
-    '/api/statut-juridiques?sort[0]=ordre:asc',
+    '/api/statuts-juridiques?sort[0]=ordre:asc',
     [REFERENTIEL_TAGS.statutJuridique],
   );
   return response?.data || [];
@@ -139,7 +139,7 @@ export async function getPortalFilieres() {
 
 export async function getPortalTypeContreparties() {
   const response = await publicFetch<StrapiCollection<PortalTypeContrepartie>>(
-    '/api/type-contreparties?sort[0]=ordre:asc',
+    '/api/types-contrepartie?sort[0]=ordre:asc',
     [REFERENTIEL_TAGS.typeContrepartie],
   );
   return response?.data || [];

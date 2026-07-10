@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset, resendConfirmation, resetPassword } from '@/lib/portal-auth';
 import {
   changePortalPassword,
@@ -145,11 +146,14 @@ export async function markNotificationReadAction(formData: FormData) {
   if (documentId) {
     await markNotificationRead(documentId);
   }
+  // Le badge de la cloche vit dans le layout (app) : on invalide tout l'arbre pour le resynchroniser.
+  revalidatePath('/', 'layout');
   redirect(filter === 'unread' ? '/notifications?filtre=non-lues' : '/notifications');
 }
 
 export async function markAllNotificationsReadAction() {
   await markAllNotificationsRead();
+  revalidatePath('/', 'layout');
   redirect('/notifications');
 }
 
@@ -175,10 +179,10 @@ export async function saveOrganisationAction(input: SaveOrganisationInput): Prom
       nom: input.nom.trim(),
       contact: input.contact?.trim() || '',
       adresse: input.adresse?.trim() || '',
-      ...(input.statutJuridiqueId ? { statutJuridique: { set: [input.statutJuridiqueId] } } : {}),
-      ...(input.filierePrincipaleId ? { filierePrincipale: { set: [input.filierePrincipaleId] } } : {}),
-      ...(input.provinceId ? { province: { set: [input.provinceId] } } : {}),
-      ...(input.communeId ? { commune: { set: [input.communeId] } } : {}),
+      ...(input.statutJuridiqueId ? { statutJuridique: { connect: [input.statutJuridiqueId] } } : {}),
+      ...(input.filierePrincipaleId ? { filierePrincipale: { connect: [input.filierePrincipaleId] } } : {}),
+      ...(input.provinceId ? { province: { connect: [input.provinceId] } } : {}),
+      ...(input.communeId ? { commune: { connect: [input.communeId] } } : {}),
     });
     if (!result?.data) return { ok: false, error: "L'enregistrement a echoue." };
     return { ok: true };
@@ -238,7 +242,7 @@ export type SaveStepInput = {
 };
 
 function setRelation(documentId?: string | null) {
-  return documentId ? { set: [documentId] } : undefined;
+  return documentId ? { connect: [documentId] } : undefined;
 }
 
 export async function saveCandidatureStepAction(input: SaveStepInput): Promise<{ ok: boolean; error?: string }> {
