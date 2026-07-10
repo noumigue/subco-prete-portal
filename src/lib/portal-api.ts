@@ -4,6 +4,7 @@ import type {
   PortalContenuAide,
   PortalDocumentTelechargeable,
   PortalFaqEntree,
+  PortalFaqItem,
   PortalFiliere,
   PortalNotification,
   PortalOrganisation,
@@ -165,6 +166,15 @@ export async function getPortalFaqEntrees() {
   const response = await publicFetch<StrapiCollection<PortalFaqEntree>>(
     '/api/faq-entrees?sort[0]=ordre:asc',
     [REFERENTIEL_TAGS.faqEntree],
+  );
+  return response?.data || [];
+}
+
+// FAQ reelle : content-type editorial `faq-item` (partage avec le site public).
+export async function getPortalFaqItems() {
+  const response = await publicFetch<StrapiCollection<PortalFaqItem>>(
+    '/api/faq-items?filters[publie][$eq]=true&sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.faqItem],
   );
   return response?.data || [];
 }

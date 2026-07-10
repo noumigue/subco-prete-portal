@@ -15,6 +15,7 @@ export const REFERENTIEL_TAGS = {
   contenuAide: 'contenu-aide',
   resourceDocument: 'resource-document',
   faqEntree: 'faq-entree',
+  faqItem: 'faq-item',
   documentTelechargeable: 'document-telechargeable',
   // Referentiels « Ma subvention » (Lot 2).
   modaliteDecaissement: 'modalite-decaissement',
