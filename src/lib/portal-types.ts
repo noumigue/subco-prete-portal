@@ -59,6 +59,7 @@ export type PortalNotification = {
   corps?: string;
   envoyeLe?: string;
   lu?: boolean;
+  candidature?: { documentId?: string } | null;
 };
 
 export type PortalCandidature = {
@@ -109,6 +110,22 @@ export type PortalContenuAide = {
   cle?: string;
   titre?: string;
   corps?: PortalBlock[];
+};
+
+export type PortalFaqEntree = {
+  id: number;
+  documentId: string;
+  question?: string;
+  reponse?: PortalBlock[];
+  ordre?: number;
+};
+
+export type PortalDocumentTelechargeable = {
+  id: number;
+  documentId: string;
+  titre?: string;
+  ordre?: number;
+  fichier?: { url?: string } | null;
 };
 
 export type PortalCommune = {

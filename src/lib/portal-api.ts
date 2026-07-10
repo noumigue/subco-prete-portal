@@ -2,6 +2,8 @@ import type {
   PortalAppel,
   PortalCandidature,
   PortalContenuAide,
+  PortalDocumentTelechargeable,
+  PortalFaqEntree,
   PortalFiliere,
   PortalNotification,
   PortalOrganisation,
@@ -156,6 +158,22 @@ export async function getPortalResourceDocuments() {
   return response?.data || [];
 }
 
+export async function getPortalFaqEntrees() {
+  const response = await publicFetch<StrapiCollection<PortalFaqEntree>>(
+    '/api/faq-entrees?sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.faqEntree],
+  );
+  return response?.data || [];
+}
+
+export async function getPortalDocumentsTelechargeables() {
+  const response = await publicFetch<StrapiCollection<PortalDocumentTelechargeable>>(
+    '/api/documents-telechargeables?populate=fichier&sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.documentTelechargeable],
+  );
+  return response?.data || [];
+}
+
 export async function createPortalDraft(session: PortalSession) {
   return portalFetch<StrapiItem<PortalCandidature>>('/api/candidatures', {
     method: 'POST',
@@ -178,6 +196,59 @@ export async function markNotificationRead(documentId: string) {
     method: 'PUT',
     body: JSON.stringify({ data: { lu: true } }),
   });
+}
+
+export async function markAllNotificationsRead() {
+  return portalFetch<{ ok: boolean; count: number }>(`/api/notifications/tout-marquer-lu`, {
+    method: 'PUT',
+  });
+}
+
+// Changement d'e-mail (D2) : declenche l'envoi du lien de verification a la nouvelle adresse.
+export async function requestPortalEmailChange(email: string): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/portal-compte/email`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || 'Le changement a echoue.' };
+  return { ok: true };
+}
+
+// Confirmation du changement d'e-mail via le token du lien (public cote CMS).
+export async function confirmPortalEmailChange(token: string): Promise<{ ok: boolean; email?: string; error?: string }> {
+  const response = await fetch(`${STRAPI_URL}/api/portal-compte/confirmer-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { email?: string; error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || 'Lien invalide ou expire.' };
+  return { ok: true, email: payload?.email };
+}
+
+// Changement de mot de passe (endpoint natif Strapi, requiert le mot de passe actuel).
+export async function changePortalPassword(
+  currentPassword: string,
+  password: string,
+  passwordConfirmation: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/auth/change-password`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword, password, passwordConfirmation }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || 'Mot de passe non modifie.' };
+  return { ok: true };
 }
 
 // Sauvegarde d'une etape du brouillon (3.0) : seuls titreProjet et donneesProjet

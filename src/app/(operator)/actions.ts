@@ -3,10 +3,13 @@
 import { redirect } from 'next/navigation';
 import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset, resendConfirmation, resetPassword } from '@/lib/portal-auth';
 import {
+  changePortalPassword,
   createPortalDraft,
   deletePortalDraft,
   depositComplement,
+  markAllNotificationsRead,
   markNotificationRead,
+  requestPortalEmailChange,
   submitPortalCandidature,
   updatePortalDraft,
   updatePortalPhone,
@@ -132,10 +135,80 @@ export async function deleteDraftAction(formData: FormData) {
 
 export async function markNotificationReadAction(formData: FormData) {
   const documentId = readString(formData, 'documentId');
+  const filter = readString(formData, 'filter');
   if (documentId) {
     await markNotificationRead(documentId);
   }
+  redirect(filter === 'unread' ? '/notifications?filtre=non-lues' : '/notifications');
+}
+
+export async function markAllNotificationsReadAction() {
+  await markAllNotificationsRead();
   redirect('/notifications');
+}
+
+// ——— Lot 1 : Mon organisation (profil maitre J2) ———
+
+export type SaveOrganisationInput = {
+  nom: string;
+  contact?: string;
+  adresse?: string;
+  statutJuridiqueId?: string | null;
+  filierePrincipaleId?: string | null;
+  provinceId?: string | null;
+  communeId?: string | null;
+};
+
+export async function saveOrganisationAction(input: SaveOrganisationInput): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+  if (!input.nom?.trim()) {
+    return { ok: false, error: "Le nom de l'organisation est requis." };
+  }
+  try {
+    const result = await upsertPortalOrganisation({
+      nom: input.nom.trim(),
+      contact: input.contact?.trim() || '',
+      adresse: input.adresse?.trim() || '',
+      ...(input.statutJuridiqueId ? { statutJuridique: { set: [input.statutJuridiqueId] } } : {}),
+      ...(input.filierePrincipaleId ? { filierePrincipale: { set: [input.filierePrincipaleId] } } : {}),
+      ...(input.provinceId ? { province: { set: [input.provinceId] } } : {}),
+      ...(input.communeId ? { commune: { set: [input.communeId] } } : {}),
+    });
+    if (!result?.data) return { ok: false, error: "L'enregistrement a echoue." };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "L'enregistrement a echoue." };
+  }
+}
+
+// ——— Lot 1 : Mon compte ———
+
+export async function changeEmailAction(formData: FormData) {
+  await requirePortalSession();
+  const email = readString(formData, 'email').toLowerCase();
+  const result = await requestPortalEmailChange(email);
+  redirect(result.ok ? '/mon-compte?email=envoye' : `/mon-compte?error=${encodeURIComponent(result.error || 'email')}`);
+}
+
+export async function changePasswordAction(formData: FormData) {
+  await requirePortalSession();
+  const current = readString(formData, 'currentPassword');
+  const next = readString(formData, 'password');
+  const confirm = readString(formData, 'passwordConfirmation');
+  if (!current || !next || next.length < 8 || next !== confirm) {
+    redirect('/mon-compte?error=mot-de-passe');
+  }
+  const result = await changePortalPassword(current, next, confirm);
+  redirect(result.ok ? '/mon-compte?password=modifie' : `/mon-compte?error=${encodeURIComponent(result.error || 'mot-de-passe')}`);
+}
+
+export async function updatePhoneAction(formData: FormData) {
+  await requirePortalSession();
+  const phone = readString(formData, 'phone');
+  if (phone) {
+    await updatePortalPhone(phone);
+  }
+  redirect('/mon-compte?phone=enregistre');
 }
 
 // ——— Module 3 : persistance serveur du parcours (remediation 3.0) ———
