@@ -309,6 +309,37 @@ export type PortalSubvention = {
   demandes?: PortalDemandeDecaissement[];
 };
 
+// ——— Assistance (canal bidirectionnel) ———
+
+export type PortalCategorieAssistance = {
+  documentId: string;
+  code?: string;
+  libelle?: string;
+  ordre?: number;
+};
+
+export type PortalMessageAssistance = {
+  documentId: string;
+  auteur?: 'operateur' | 'equipe';
+  corps?: string;
+  pieces?: { url?: string; name?: string }[];
+  envoyeLe?: string;
+};
+
+export type PortalDemandeAssistance = {
+  documentId: string;
+  objet?: string;
+  categorie?: { libelle?: string; code?: string } | null;
+  concerneCandidature?: { documentId?: string; numeroDossier?: string | null; titreProjet?: string } | null;
+  concerneSubvention?: { documentId?: string; numeroConvention?: string | null } | null;
+  statut?: 'ouverte' | 'en_cours' | 'resolue';
+  origine?: 'operateur' | 'ugp';
+  resolueLe?: string | null;
+  resoluePar?: 'operateur' | 'equipe' | null;
+  messages?: PortalMessageAssistance[];
+  updatedAt?: string;
+};
+
 export type PortalResourceDocument = {
   id: number;
   title?: string;

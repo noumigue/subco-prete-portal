@@ -1,7 +1,9 @@
 import type {
   PortalAppel,
   PortalCandidature,
+  PortalCategorieAssistance,
   PortalContenuAide,
+  PortalDemandeAssistance,
   PortalDocumentTelechargeable,
   PortalFaqEntree,
   PortalFaqItem,
@@ -400,6 +402,87 @@ export async function updatePortalPhone(phone: string) {
     method: 'PUT',
     body: JSON.stringify({ phone }),
   });
+}
+
+// ——— Assistance (canal bidirectionnel) ———
+
+const DEMANDE_ASSISTANCE_POPULATE = [
+  'categorie',
+  'concerneCandidature',
+  'concerneSubvention',
+  'messages.pieces',
+]
+  .map((p, i) => `populate[${i}]=${p}`)
+  .join('&');
+
+export async function getPortalCategoriesAssistance() {
+  const response = await publicFetch<StrapiCollection<PortalCategorieAssistance>>(
+    '/api/categories-assistance?sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.categorieAssistance],
+  );
+  return response?.data || [];
+}
+
+export async function getPortalDemandesAssistance() {
+  const response = await portalFetch<StrapiCollection<PortalDemandeAssistance>>(
+    `/api/demandes-assistance?${DEMANDE_ASSISTANCE_POPULATE}&sort[0]=updatedAt:desc`,
+  );
+  return response?.data || [];
+}
+
+export async function getPortalDemandeAssistance(documentId: string) {
+  const response = await portalFetch<StrapiItem<PortalDemandeAssistance>>(
+    `/api/demandes-assistance/${documentId}?${DEMANDE_ASSISTANCE_POPULATE}`,
+  );
+  return response?.data || null;
+}
+
+export async function createDemandeAssistance(data: {
+  objet: string;
+  categorie?: string;
+  concerneCandidature?: string;
+  concerneSubvention?: string;
+  corps: string;
+  pieces?: number[];
+}): Promise<{ documentId?: string; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/demandes-assistance`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { data?: { documentId?: string }; error?: { message?: string } } | null;
+  if (!response.ok) return { error: payload?.error?.message || "La demande n'a pas pu etre creee." };
+  return { documentId: payload?.data?.documentId };
+}
+
+export async function repondreAssistance(documentId: string, corps: string, pieces?: number[]): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/demandes-assistance/${documentId}/repondre`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: { corps, pieces } }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || "L'envoi a echoue." };
+  return { ok: true };
+}
+
+export async function resoudreAssistance(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/demandes-assistance/${documentId}/resoudre`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || 'La cloture a echoue.' };
+  return { ok: true };
 }
 
 // Upload authentifie (multipart) vers Strapi. Retourne { id, name } du media cree, ou null.
