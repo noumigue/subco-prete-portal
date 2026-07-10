@@ -832,7 +832,7 @@ export function OperatorCandidatureForm({
                 <p className="operator-auth-error">La liste des pièces (Annexe 9) n’est pas disponible — référentiel « type de pièce » vide dans le CMS.</p>
               ) : null}
               {groupedPieces.map((group) => (
-                <details key={group.key} className="operator-piece-group" open={group.key === 'administratif'}>
+                <details key={group.key} className="operator-piece-group" open>
                   <summary>{group.label}</summary>
                   {group.items.map((piece) => (
                     <div key={piece.id} className="operator-piece-row">
