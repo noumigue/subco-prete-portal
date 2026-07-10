@@ -1,6 +1,6 @@
 import {
-  getPortalDocumentsTelechargeables,
-  getPortalFaqEntrees,
+  getPortalFaqItems,
+  getPortalResourceDocuments,
   getPortalTypePieces,
 } from '@/lib/portal-api';
 import { portalMediaUrl } from '@/lib/portal-media';
@@ -20,9 +20,11 @@ const EXIGENCE_LABELS: Record<string, string> = {
 };
 
 export default async function FaqDocumentsPage() {
+  // FAQ et documents = contenu editorial REEL deja gere au CMS (faq-item + resource-document,
+  // partages avec le site public). Pieces = referentiel type-piece (Annexe 9).
   const [faq, documents, typePieces] = await Promise.all([
-    getPortalFaqEntrees(),
-    getPortalDocumentsTelechargeables(),
+    getPortalFaqItems(),
+    getPortalResourceDocuments(),
     getPortalTypePieces(),
   ]);
 
@@ -51,10 +53,10 @@ export default async function FaqDocumentsPage() {
       <div className="operator-block-title">Documents à télécharger</div>
       <section className="operator-card">
         {documents.length === 0 ? <p className="operator-muted">Aucun document disponible.</p> : documents.map((item) => {
-          const url = portalMediaUrl(item.fichier?.url);
+          const url = portalMediaUrl(item.file?.url);
           return (
-            <div key={item.documentId} className="operator-doc-row">
-              <span className="operator-doc-name">{item.titre}</span>
+            <div key={`${item.id}-${item.title}`} className="operator-doc-row">
+              <span className="operator-doc-name">{item.title}</span>
               {url ? (
                 <a href={url} target="_blank" rel="noopener" className="operator-secondary-btn operator-btn-sm">⤓ Télécharger</a>
               ) : (

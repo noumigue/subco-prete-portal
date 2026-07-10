@@ -120,6 +120,16 @@ export type PortalFaqEntree = {
   ordre?: number;
 };
 
+// FAQ editoriale existante (content-type `faq-item`, partagee avec le site public).
+export type PortalFaqItem = {
+  id: number;
+  documentId: string;
+  question?: string;
+  reponse?: PortalBlock[];
+  theme?: string;
+  ordre?: number;
+};
+
 export type PortalDocumentTelechargeable = {
   id: number;
   documentId: string;
