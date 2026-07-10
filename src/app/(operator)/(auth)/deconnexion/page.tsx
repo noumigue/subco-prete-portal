@@ -1,7 +1,5 @@
-import { clearPortalJwt } from '@/lib/portal-auth';
-import { redirect } from 'next/navigation';
+import { OperatorAutoLogout } from '@/components/operator-auto-logout';
 
-export default async function LogoutPage() {
-  await clearPortalJwt();
-  redirect('/connexion');
+export default function LogoutPage() {
+  return <OperatorAutoLogout />;
 }

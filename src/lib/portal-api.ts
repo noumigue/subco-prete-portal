@@ -8,9 +8,12 @@ import type {
   PortalNotification,
   PortalOrganisation,
   PortalProvince,
+  PortalDemandeDecaissement,
+  PortalModalite,
   PortalResourceDocument,
   PortalSession,
   PortalStatutJuridique,
+  PortalSubvention,
   PortalTypeContrepartie,
   PortalTypePiece,
 } from './portal-types';
@@ -249,6 +252,96 @@ export async function changePortalPassword(
   const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
   if (!response.ok) return { ok: false, error: payload?.error?.message || 'Mot de passe non modifie.' };
   return { ok: true };
+}
+
+// ——— Ma subvention (Lot 2) ———
+
+const SUBVENTION_POPULATE = [
+  'candidature',
+  'pdfConvention',
+  'avenants',
+  'documentsContractuels.fichier',
+  'conditionsPrealables.fichierDepose',
+  'jalons.etape',
+  'rapports.type',
+  'rapports.fichier',
+  'mesuresCorrectives.fichierRegularisation',
+  'demandes.modalite',
+  'demandes.statut',
+  'demandes.pieces',
+  'demandes.justificationPieces',
+]
+  .map((path, index) => `populate[${index}]=${path}`)
+  .join('&');
+
+// La subvention de l'operateur (0 ou 1). Transactionnel -> no-store.
+export async function getPortalSubvention(): Promise<PortalSubvention | null> {
+  const response = await portalFetch<StrapiCollection<PortalSubvention>>(`/api/subventions?${SUBVENTION_POPULATE}`);
+  return response?.data?.[0] || null;
+}
+
+// Resume leger pour la coquille : la section « Ma subvention » se deverrouille
+// des qu'une subvention existe (S1), badge « Preparation » tant que statut preparation.
+export async function getPortalSubventionStatut(): Promise<string | null> {
+  const response = await portalFetch<StrapiCollection<{ statut?: string }>>('/api/subventions?fields[0]=statut');
+  return response?.data?.[0]?.statut || null;
+}
+
+export async function getPortalModalites() {
+  const response = await publicFetch<StrapiCollection<PortalModalite>>(
+    '/api/modalites-decaissement?sort[0]=ordre:asc',
+    [REFERENTIEL_TAGS.modaliteDecaissement],
+  );
+  return response?.data || [];
+}
+
+// Depots « Ma subvention » (owner-scoped cote CMS).
+export async function deposerCondition(documentId: string, fileId: number) {
+  return portalFetch(`/api/conditions-prealables/${documentId}/deposer`, {
+    method: 'PUT',
+    body: JSON.stringify({ data: { fichier: fileId } }),
+  });
+}
+
+export async function deposerRapport(documentId: string, fileId: number) {
+  return portalFetch(`/api/rapports-requis/${documentId}/deposer`, {
+    method: 'PUT',
+    body: JSON.stringify({ data: { fichier: fileId } }),
+  });
+}
+
+export async function deposerMesure(documentId: string, fileId: number) {
+  return portalFetch(`/api/mesures-correctives/${documentId}/deposer`, {
+    method: 'PUT',
+    body: JSON.stringify({ data: { fichier: fileId } }),
+  });
+}
+
+export async function createDemande(data: { subvention: string; modalite?: string; montant?: number; objet?: string; pieces?: number[] }) {
+  return portalFetch<StrapiItem<PortalDemandeDecaissement>>('/api/demandes-decaissement', {
+    method: 'POST',
+    body: JSON.stringify({ data }),
+  });
+}
+
+export async function soumettreDemande(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/demandes-decaissement/${documentId}/soumettre`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || 'La soumission a echoue.' };
+  return { ok: true };
+}
+
+export async function justifierDemande(documentId: string, fileIds: number[]) {
+  return portalFetch(`/api/demandes-decaissement/${documentId}/justifier`, {
+    method: 'POST',
+    body: JSON.stringify({ data: { justificationPieces: fileIds } }),
+  });
 }
 
 // Sauvegarde d'une etape du brouillon (3.0) : seuls titreProjet et donneesProjet

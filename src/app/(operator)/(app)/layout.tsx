@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { OperatorShell } from '@/components/operator-shell';
 import { requirePortalSession } from '@/lib/portal-auth';
-import { getPortalNotifications } from '@/lib/portal-api';
+import { getPortalNotifications, getPortalSubventionStatut } from '@/lib/portal-api';
 
 // Garde d'acces (app) par role (remediation 2.4) : seuls les operateurs
 // { candidat, beneficiaire } entrent dans l'espace operateur. Les roles internes
@@ -17,8 +17,15 @@ export default async function OperatorAppLayout({
   if (!OPERATOR_ROLES.has(session.role)) {
     redirect('/connexion?error=acces-operateur');
   }
-  const notifications = await getPortalNotifications();
+  const [notifications, subventionStatut] = await Promise.all([
+    getPortalNotifications(),
+    getPortalSubventionStatut(),
+  ]);
   const unreadCount = notifications.filter((item) => !item.lu).length;
 
-  return <OperatorShell session={session} unreadCount={unreadCount}>{children}</OperatorShell>;
+  return (
+    <OperatorShell session={session} unreadCount={unreadCount} subventionStatut={subventionStatut}>
+      {children}
+    </OperatorShell>
+  );
 }

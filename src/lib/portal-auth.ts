@@ -139,7 +139,9 @@ export async function resetPassword(code: string, password: string) {
 }
 
 async function fetchCurrentUser(jwt: string) {
-  const response = await fetch(`${STRAPI_URL}/api/users/me?populate=role`, {
+  // /api/users/me ne peuple PAS le role en Strapi 5 : on passe par un endpoint dedie
+  // qui renvoie l'identite AVEC le role (indispensable au verrou « Ma subvention » et aux gardes).
+  const response = await fetch(`${STRAPI_URL}/api/portal-compte/moi`, {
     headers: {
       Authorization: `Bearer ${jwt}`,
     },

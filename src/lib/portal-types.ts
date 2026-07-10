@@ -206,6 +206,98 @@ export type PortalDonneesProjet = {
   pieces?: PortalPieceDepot[];
 };
 
+// ——— Ma subvention (Lot 2) ———
+
+export type PortalMedia = { url?: string; name?: string } | null;
+
+export type PortalConditionPrealable = {
+  documentId: string;
+  libelle?: string;
+  statut?: 'validee' | 'en_cours_ugp' | 'action_requise';
+  echeance?: string | null;
+  dateValidation?: string | null;
+  fichierDepose?: PortalMedia;
+  ordre?: number;
+};
+
+export type PortalDocumentContractuel = {
+  documentId: string;
+  lettre?: string;
+  titre?: string;
+  fichier?: PortalMedia;
+};
+
+export type PortalJalonProjet = {
+  documentId: string;
+  etape?: { code?: string; libelle?: string } | null;
+  datePrevue?: string | null;
+  dateReelle?: string | null;
+  ordre?: number;
+};
+
+export type PortalRapportRequis = {
+  documentId: string;
+  type?: { code?: string; libelle?: string } | null;
+  periodeLibelle?: string;
+  echeance?: string | null;
+  statut?: 'a_venir' | 'echu' | 'transmis';
+  fichier?: PortalMedia;
+  dateTransmission?: string | null;
+  ordre?: number;
+};
+
+export type PortalMesureCorrective = {
+  documentId: string;
+  description?: string;
+  echeance?: string | null;
+  statut?: 'en_cours' | 'regularisee';
+  fichierRegularisation?: PortalMedia;
+};
+
+export type PortalModalite = {
+  documentId: string;
+  code?: string;
+  libelle?: string;
+  piecesRequises?: string[];
+  ordre?: number;
+};
+
+export type PortalDemandeDecaissement = {
+  documentId: string;
+  numero?: number;
+  modalite?: PortalModalite | null;
+  montant?: string | number | null;
+  objet?: string;
+  pieces?: PortalMedia[];
+  statut?: { code?: string; libelleBeneficiaire?: string } | null;
+  avisTechnique?: string | null;
+  avisFiduciaire?: string | null;
+  motifRejet?: string | null;
+  aJustifier?: boolean;
+  justificationPieces?: PortalMedia[];
+  justificationStatut?: 'non_requise' | 'attendue' | 'soumise' | 'validee';
+};
+
+export type PortalSubvention = {
+  documentId: string;
+  numeroConvention?: string | null;
+  statut?: 'preparation' | 'active' | 'suspendue' | 'cloturee';
+  dateSignature?: string | null;
+  montantTotal?: string | number | null;
+  montantSubvention?: string | number | null;
+  montantContrepartie?: string | number | null;
+  montantDecaisse?: string | number | null;
+  pdfConvention?: PortalMedia;
+  avenants?: PortalMedia[];
+  candidature?: { documentId?: string; titreProjet?: string; donneesProjet?: unknown } | null;
+  documentsContractuels?: PortalDocumentContractuel[];
+  conditionsPrealables?: PortalConditionPrealable[];
+  jalons?: PortalJalonProjet[];
+  rapports?: PortalRapportRequis[];
+  mesuresCorrectives?: PortalMesureCorrective[];
+  demandes?: PortalDemandeDecaissement[];
+};
+
 export type PortalResourceDocument = {
   id: number;
   title?: string;

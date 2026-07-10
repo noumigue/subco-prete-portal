@@ -4,12 +4,18 @@ import { redirect } from 'next/navigation';
 import { clearPortalJwt, loginCandidate, registerCandidate, requestPasswordReset, resendConfirmation, resetPassword } from '@/lib/portal-auth';
 import {
   changePortalPassword,
+  createDemande,
   createPortalDraft,
   deletePortalDraft,
+  deposerCondition,
+  deposerMesure,
+  deposerRapport,
   depositComplement,
+  justifierDemande,
   markAllNotificationsRead,
   markNotificationRead,
   requestPortalEmailChange,
+  soumettreDemande,
   submitPortalCandidature,
   updatePortalDraft,
   updatePortalPhone,
@@ -300,6 +306,74 @@ export async function submitCandidatureAction(documentId: string): Promise<Submi
     dateDepot: result.data.dateDepot || undefined,
     pdfUrl: portalMediaUrl(result.data.pdfPermanent?.url),
   };
+}
+
+// ——— Lot 2 : Ma subvention ———
+
+// Depot de fichier generique sur un enfant de subvention (condition / rapport / mesure).
+async function uploadThenDeposit(
+  formData: FormData,
+  deposit: (documentId: string, fileId: number) => Promise<unknown>,
+  backTo: string,
+) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  const file = formData.get('fichier');
+  if (!documentId || !(file instanceof File) || file.size === 0) {
+    redirect(`${backTo}?error=fichier`);
+  }
+  const uploaded = await uploadPortalFile(file as File);
+  if (!uploaded) redirect(`${backTo}?error=upload`);
+  const result = await deposit(documentId, (uploaded as { id: number }).id);
+  redirect(`${backTo}?${result ? 'depose=1' : 'error=depot'}`);
+}
+
+export async function deposerConditionAction(formData: FormData) {
+  await uploadThenDeposit(formData, deposerCondition, '/ma-subvention/preparation');
+}
+
+export async function deposerRapportAction(formData: FormData) {
+  await uploadThenDeposit(formData, deposerRapport, '/ma-subvention/suivi');
+}
+
+export async function deposerMesureAction(formData: FormData) {
+  await uploadThenDeposit(formData, deposerMesure, '/ma-subvention/suivi');
+}
+
+export type NewDemandeInput = {
+  subvention: string;
+  modalite: string;
+  montant: number;
+  objet: string;
+  pieceFileIds: number[];
+  submit: boolean;
+};
+
+export async function saveDemandeAction(input: NewDemandeInput): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+  const created = await createDemande({
+    subvention: input.subvention,
+    modalite: input.modalite || undefined,
+    montant: input.montant || undefined,
+    objet: input.objet || undefined,
+    pieces: input.pieceFileIds.length ? input.pieceFileIds : undefined,
+  });
+  const documentId = created?.data?.documentId;
+  if (!documentId) {
+    return { ok: false, error: "La demande n'a pas pu etre creee (regle 11.4 ?)." };
+  }
+  if (input.submit) {
+    const result = await soumettreDemande(documentId);
+    if (!result.ok) return { ok: false, error: result.error };
+  }
+  return { ok: true };
+}
+
+export async function justifyAdvanceAction(input: { documentId: string; fileIds: number[] }): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+  if (!input.fileIds.length) return { ok: false, error: 'Au moins une piece est requise.' };
+  const result = await justifierDemande(input.documentId, input.fileIds);
+  return { ok: Boolean(result) };
 }
 
 // Depot reel d'un complement demande (remediation 1.7) : upload authentifie du fichier
