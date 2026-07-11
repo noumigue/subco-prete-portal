@@ -412,3 +412,95 @@ export type GestionAppel = {
   ouvertLe?: string | null;
   clotureLe?: string | null;
 };
+
+// ——— M5 phase 2 : évaluation & consolidation ———
+
+export type GestionBaremeCritere = {
+  code: string;
+  bloc: 'A' | 'B' | 'bonus';
+  libelle: string;
+  description: string;
+  points: number;
+  type: 'note' | 'eliminatoire';
+};
+
+export type GestionMesEvaluationRow = {
+  documentId: string;
+  numeroDossier: string | null;
+  organisation: { nom: string; filiere: string | null } | null;
+  rang: number;
+  ficheStatut: 'brouillon' | 'soumise' | null;
+};
+
+export type GestionFicheDetail = {
+  documentId: string;
+  numeroDossier: string | null;
+  organisation: { nom: string; filiere: string | null } | null;
+  pdfPermanentUrl: string | null;
+  rang: number;
+  fiche: {
+    coiDeclare: boolean;
+    esConforme: boolean | null;
+    notes: Record<string, { note: number; commentaire?: string }>;
+    bonus: Record<string, number>;
+    statut: 'brouillon' | 'soumise';
+    signeLe: string | null;
+  } | null;
+  bareme: { blocA: GestionBaremeCritere[]; blocB: GestionBaremeCritere[]; bonus: GestionBaremeCritere[]; porteEs: GestionBaremeCritere | null };
+  parametres: { seuilBase: number; bandes: { min: number; label: string }[] };
+};
+
+export type GestionEvaluateurSlot = { evaluateurId: number | null; nom: string | null; ficheStatut: 'brouillon' | 'soumise' | null } | null;
+
+export type GestionEvaluationAssign = {
+  documentId: string;
+  numeroDossier: string | null;
+  organisation: { nom: string; filiere: string | null } | null;
+  evaluateur1: GestionEvaluateurSlot;
+  evaluateur2: GestionEvaluateurSlot;
+  evaluateur3: GestionEvaluateurSlot;
+  evaluateurs: { id: number; nom: string }[];
+  consolidationPrete: boolean;
+  consolidationStatut: 'en_cours' | 'figee' | null;
+};
+
+export type GestionConsolidationRow = {
+  code: string;
+  libelle: string;
+  points: number;
+  n1: number | null;
+  n2: number | null;
+  n3: number | null;
+  seuil: number;
+  ecart: number;
+  gap: boolean;
+  traite: boolean;
+  harmonisee: boolean;
+  retenue: number;
+};
+
+export type GestionConsolidationTotals = {
+  totalA: number;
+  totalB: number;
+  bonus: number;
+  totalHorsBonus: number;
+  totalFinal: number;
+  bande: string;
+};
+
+export type GestionConsolidation = {
+  ready: boolean;
+  documentId?: string;
+  numeroDossier?: string | null;
+  organisation?: { nom: string } | null;
+  evaluateur1Nom?: string;
+  evaluateur2Nom?: string;
+  aTroisieme?: boolean;
+  rows?: { blocA: GestionConsolidationRow[]; blocB: GestionConsolidationRow[] };
+  bonusRows?: GestionConsolidationRow[];
+  totals?: GestionConsolidationTotals;
+  ecartsNonTraites?: { code: string; libelle: string; ecart: number; seuil: number }[];
+  ecartPct?: number;
+  statut?: 'en_cours' | 'figee';
+  evaluateurs?: { id: number; nom: string }[];
+};

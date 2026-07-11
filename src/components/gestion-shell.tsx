@@ -67,7 +67,9 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
             </>
           ) : (
             <>
-              <span className="gx-nav-item disabled"><span className="gx-ic">📝</span><span>Mes évaluations<span className="gx-phase-note">Phase 2</span></span></span>
+              <Link className={`gx-nav-item${pathname.startsWith('/gestion/evaluations') ? ' active' : ''}`} href="/gestion/evaluations">
+                <span className="gx-ic">📝</span>Mes évaluations
+              </Link>
               <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
             </>
           )}
