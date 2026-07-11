@@ -7334,3 +7334,57 @@ a.docs-item:hover .docs-item-dl {
   .gx-content { padding: 18px 14px; }
   .gx-inline2 { grid-template-columns: 1fr; }
 }
+
+/* ===== M5 phase 2 — fiche de scoring & consolidation (scoped .gx) ===== */
+.gx-block-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gx-block-title .gx-tot { margin-left: auto; color: var(--pine); font-size: 13px; font-weight: 700; text-transform: none; letter-spacing: 0; }
+
+/* conflit d'intérêts */
+.gx-coi { background: var(--gx-amber-bg); border: 1px solid var(--gx-amber-bd); border-radius: 10px; padding: 15px; margin-bottom: 14px; }
+.gx-coi h3 { margin: 0 0 8px; font-size: 14.5px; color: var(--gx-amber-tx); }
+
+/* porte E&S */
+.gx-es { border: 1px solid var(--sage-border); border-radius: 10px; padding: 14px; margin-bottom: 14px; background: #fff; }
+.gx-es.ko { background: var(--gx-red-bg); border-color: var(--gx-red-bd); }
+.gx-es .gx-esh { font-weight: 700; font-size: 14px; color: var(--pine); margin-bottom: 6px; }
+.gx-es.ko .gx-esh { color: var(--gx-red-tx); }
+
+/* critères scoring */
+.gx-crit { padding: 12px 0; border-bottom: 1px solid var(--line-warm); }
+.gx-crit:last-child { border-bottom: 0; }
+.gx-crit .gx-ch { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.gx-crit .gx-cn { font-size: 14px; font-weight: 600; }
+.gx-crit .gx-cd { font-size: 12px; color: var(--muted-warm); margin: 2px 0 8px; }
+.gx-crit .gx-ch > div:first-child { flex: 1; min-width: 200px; }
+.gx-noteinput { display: flex; align-items: center; gap: 8px; }
+.gx-noteinput input { width: 74px; padding: 8px 10px; font-size: 14px; border: 1px solid var(--sage-border); border-radius: 8px; text-align: right; font-family: inherit; background: #fcfdfc; color: var(--ink-warm); }
+.gx-noteinput input:focus { border-color: var(--emerald); outline: none; }
+.gx-noteinput .gx-max { font-size: 13px; color: var(--muted-warm); }
+.gx-cmt { width: 100%; margin-top: 8px; }
+.gx-cmt textarea { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--sage-border); border-radius: 8px; font-family: inherit; resize: vertical; background: #fcfdfc; color: var(--ink-warm); }
+.gx-cmt textarea:focus { border-color: var(--emerald); outline: none; }
+.gx-cmt.req textarea { border-color: var(--gx-amber-bd); background: #fffdf6; }
+.gx-cmt .gx-cmt-lbl { font-size: 11.5px; color: var(--muted-warm); margin-bottom: 3px; }
+.gx-cmt .gx-cmt-lbl b { color: var(--gx-amber-tx); }
+
+/* totaux + bande */
+.gx-totbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #fbfaf4; border: 1px solid var(--line-warm); border-radius: 10px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; }
+.gx-totbar .gx-big { font-size: 20px; font-weight: 800; color: var(--pine); }
+.gx-band { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 10px; border: 1px solid; white-space: nowrap; }
+.gx-band-a { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-band-b { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-band-c { background: #fbeee0; border-color: #e6cfa8; color: #9a6a1f; }
+.gx-band-d { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+
+.gx-signbox { background: var(--sage-tile); border: 1px solid var(--sage-border); border-radius: 10px; padding: 13px 15px; font-size: 13px; margin-bottom: 14px; }
+
+/* consolidation */
+.gx-constable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.gx-constable th, .gx-constable td { padding: 9px 10px; border-bottom: 1px solid var(--line-warm); text-align: left; }
+.gx-constable th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted-warm); font-weight: 700; }
+.gx-constable td.n { text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+.gx-constable .gx-cregle { font-weight: 600; }
+.gx-constable tr.gap { background: var(--gx-red-bg); }
+.gx-constable tr.gap td { color: var(--gx-red-tx); }
+.gx-gapflag { font-size: 11px; font-weight: 700; color: var(--gx-red-tx); background: #fff; border: 1px solid var(--gx-red-bd); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.gx-constable tfoot td { border-top: 2px solid var(--sage-border); font-weight: 800; color: var(--pine); font-size: 14px; }

@@ -5,14 +5,22 @@ import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset } from '@/lib/portal-auth';
 import { uploadPortalFile } from '@/lib/portal-api';
 import {
+  assignerEvaluateur,
   cloreAppel,
+  declarerCoi,
+  enregistrerFiche,
+  figerConsolidation,
+  harmoniser,
   ouvrirAppel,
   priseEnCharge,
   proposerCompletude,
   proposerEligibilite,
   reassigner,
+  recuser,
   renvoyerCompletude,
   renvoyerEligibilite,
+  soumettreFiche,
+  troisiemeEvaluateur,
   validerCompletude,
   validerEligibilite,
 } from '@/lib/gestion-api';
@@ -153,4 +161,48 @@ export async function cloreAppelAction(formData: FormData) {
   await cloreAppel(documentId);
   revalidatePath('/gestion/appels');
   redirect('/gestion/appels?clos=1');
+}
+
+// ——— M5 phase 2 : évaluation (fiche de scoring, évaluateur) ———
+type FichePayload = { esConforme?: boolean | null; notes?: unknown; bonus?: unknown };
+
+export async function declarerCoiAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const r = await declarerCoi(documentId);
+  revalidatePath(`/gestion/evaluations/${documentId}`);
+  return r;
+}
+export async function recuserAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const r = await recuser(documentId);
+  revalidatePath('/gestion/evaluations');
+  return r;
+}
+export async function enregistrerFicheAction(documentId: string, data: FichePayload): Promise<{ ok: boolean; error?: string }> {
+  return enregistrerFiche(documentId, data);
+}
+export async function soumettreFicheAction(documentId: string, data: FichePayload): Promise<{ ok: boolean; error?: string }> {
+  const r = await soumettreFiche(documentId, data);
+  revalidatePath('/gestion/evaluations');
+  return r;
+}
+
+// ——— M5 phase 2 : assignation & consolidation (UGP) ———
+export async function assignerEvaluateurAction(input: { documentId: string; evaluateurId: number; rang: number }): Promise<{ ok: boolean; error?: string }> {
+  const r = await assignerEvaluateur(input.documentId, input.evaluateurId, input.rang);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  return r;
+}
+export async function harmoniserAction(input: { documentId: string; critereCode: string; noteRetenue: number }): Promise<{ ok: boolean; error?: string }> {
+  const r = await harmoniser(input.documentId, input.critereCode, input.noteRetenue);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/consolidation`);
+  return r;
+}
+export async function troisiemeEvaluateurAction(input: { documentId: string; evaluateurId: number }): Promise<{ ok: boolean; error?: string }> {
+  const r = await troisiemeEvaluateur(input.documentId, input.evaluateurId);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/consolidation`);
+  return r;
+}
+export async function figerConsolidationAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const r = await figerConsolidation(documentId);
+  revalidatePath(`/gestion/dossiers/${documentId}/consolidation`);
+  return r;
 }

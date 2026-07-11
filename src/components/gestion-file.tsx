@@ -129,7 +129,10 @@ export function GestionFile({
                   </>
                 ) : null}
 
-                {phase === 'evaluation' ? <span className="gx-pill gx-pill-comp">Évaluation · phase 2</span> : null}
+                {phase === 'evaluation' && role === 'ugp' ? (
+                  <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/evaluation`}>Évaluation</Link>
+                ) : null}
+                {phase === 'evaluation' && role === 'instructeur' ? <span className="gx-pill gx-pill-comp">Voir « Mes évaluations »</span> : null}
                 {phase === 'clos' ? (
                   <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/completude`}>Consulter</Link>
                 ) : null}

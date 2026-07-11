@@ -3,7 +3,15 @@
 // jamais owner-scopes. Meme cookie JWT que le portail operateur (primitive de login commune).
 
 import { getPortalJwt } from './portal-auth';
-import type { GestionAppel, GestionDossierDetail, GestionDossierRow } from './portal-types';
+import type {
+  GestionAppel,
+  GestionConsolidation,
+  GestionDossierDetail,
+  GestionDossierRow,
+  GestionEvaluationAssign,
+  GestionFicheDetail,
+  GestionMesEvaluationRow,
+} from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
 
@@ -80,3 +88,36 @@ export const renvoyerEligibilite = (documentId: string, commentaire: string) =>
 
 export const ouvrirAppel = (documentId: string) => gestionPost(`/api/gestion/appels/${documentId}/ouvrir`);
 export const cloreAppel = (documentId: string) => gestionPost(`/api/gestion/appels/${documentId}/clore`);
+
+// ——— M5 phase 2 : évaluation & consolidation ———
+export async function getMesEvaluations(): Promise<GestionMesEvaluationRow[]> {
+  const res = await gestionGet<{ data: GestionMesEvaluationRow[] }>('/api/gestion/evaluations');
+  return res?.data || [];
+}
+export async function getFicheDetail(documentId: string): Promise<GestionFicheDetail | null> {
+  const res = await gestionGet<{ data: GestionFicheDetail }>(`/api/gestion/evaluations/${documentId}`);
+  return res?.data || null;
+}
+export async function getEvaluationAssign(documentId: string): Promise<GestionEvaluationAssign | null> {
+  const res = await gestionGet<{ data: GestionEvaluationAssign }>(`/api/gestion/dossiers/${documentId}/evaluation`);
+  return res?.data || null;
+}
+export async function getConsolidation(documentId: string): Promise<GestionConsolidation | null> {
+  const res = await gestionGet<{ data: GestionConsolidation }>(`/api/gestion/dossiers/${documentId}/consolidation`);
+  return res?.data || null;
+}
+
+export const declarerCoi = (documentId: string) => gestionPost(`/api/gestion/evaluations/${documentId}/coi`);
+export const recuser = (documentId: string) => gestionPost(`/api/gestion/evaluations/${documentId}/recuser`);
+export const enregistrerFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown }) =>
+  gestionPost(`/api/gestion/evaluations/${documentId}/enregistrer`, data);
+export const soumettreFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown }) =>
+  gestionPost(`/api/gestion/evaluations/${documentId}/soumettre`, data);
+
+export const assignerEvaluateur = (documentId: string, evaluateurId: number, rang: number) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/assigner`, { evaluateurId, rang });
+export const harmoniser = (documentId: string, critereCode: string, noteRetenue: number) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/harmoniser`, { critereCode, noteRetenue });
+export const troisiemeEvaluateur = (documentId: string, evaluateurId: number) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/troisieme`, { evaluateurId });
+export const figerConsolidation = (documentId: string) => gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/figer`);
