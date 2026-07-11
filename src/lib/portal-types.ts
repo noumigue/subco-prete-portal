@@ -347,3 +347,68 @@ export type PortalResourceDocument = {
   category?: string;
   file?: { url?: string } | null;
 };
+
+// ——— Socle back-office M5 (espace de gestion) ———
+
+export type GestionDossierRow = {
+  documentId: string;
+  numeroDossier: string | null;
+  titreProjet: string;
+  dateDepot: string | null;
+  organisation: { nom: string; filiere: string | null } | null;
+  statut: { code?: string; phase?: string; groupe?: string; libelle?: string } | null;
+  prisEnChargePar: { id: number; nom: string } | null;
+  enValidation: boolean;
+  enValidationPhase: 'completude' | 'eligibilite' | null;
+  complementEnCours: boolean;
+  statutClos: string | null;
+};
+
+export type GestionInstructionCompletude = {
+  documentId: string;
+  verdictsPieces: Record<string, { etat: 'presente' | 'absente' | 'non_conforme'; note?: string }>;
+  verdictGlobal: 'complet' | 'complements' | 'rejet' | null;
+  complementsProposes: { pieces?: string[]; echeance?: string; message?: string } | null;
+  motifRejet: string | null;
+  workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye';
+  proposePar: string | null;
+  commentaireRenvoi: string | null;
+};
+
+export type GestionInstructionEligibilite = {
+  documentId: string;
+  verdictsCriteres: Record<string, { etat: 'conforme' | 'non_conforme'; justification?: string }>;
+  verdictGlobal: 'eligible' | 'rejet' | null;
+  motifRejet: string | null;
+  workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye';
+  proposePar: string | null;
+  commentaireRenvoi: string | null;
+};
+
+export type GestionReferentiels = {
+  typePieces: { id: string; libelle: string; groupe: string; exigence: string }[];
+  criteres: { id: string; libelle: string; refManuel: string | null }[];
+  delaiComplementsJours: number;
+};
+
+export type GestionActe = { date: string | null; auteur: string; texte: string };
+
+export type GestionDossierDetail = GestionDossierRow & {
+  donneesProjet: unknown;
+  motifDecisionCourt: string | null;
+  pdfPermanentUrl: string | null;
+  notificationDecisionUrl: string | null;
+  instructionCompletude: GestionInstructionCompletude | null;
+  instructionEligibilite: GestionInstructionEligibilite | null;
+  referentiels: GestionReferentiels;
+  journal: GestionActe[];
+};
+
+export type GestionAppel = {
+  documentId: string;
+  nom?: string;
+  codeCohorte?: string;
+  statut?: 'ouvert' | 'ferme' | 'a_venir';
+  ouvertLe?: string | null;
+  clotureLe?: string | null;
+};
