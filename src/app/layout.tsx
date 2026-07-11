@@ -56,6 +56,8 @@ export default async function RootLayout({
     '/mon-compte',
     '/ma-subvention',
     '/deconnexion',
+    // Espace de gestion (back-office M5) : identité visuelle propre, sans chrome public.
+    '/gestion',
   ];
   const isOperatorRoute = operatorRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const cookieStore = await cookies();
