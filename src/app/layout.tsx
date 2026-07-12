@@ -88,6 +88,9 @@ export default async function RootLayout({
                 <span>Programme PRETE · Subventions de contrepartie</span>
                 <div className="topbar-links">
                   {supportLabel && supportUrl ? <Link href={supportUrl}>{supportLabel}</Link> : null}
+                  {/* Porte operateur (G1) : petit bouton dans la top bar, apres « Support / Contact ».
+                      Info-bulle « Operateur » pour distinguer de la porte gestion. */}
+                  <Link href="/connexion" className="topbar-login" title="Opérateur">Se connecter</Link>
                   {/* Bascule FR/KI masquee tant que le Kirundi n'est pas operationnel (section 17). */}
                   {LANG_TOGGLE_ENABLED ? (
                     <span className="language-switch" aria-label="Choix de langue">
@@ -114,8 +117,6 @@ export default async function RootLayout({
                       </Link>
                     )
                   ))}
-                  {/* Porte operateur : lien texte secondaire, a gauche du CTA primaire « Candidater » (G1). */}
-                  <Link href="/connexion" className="nav-login">Se connecter</Link>
                   <Link href="/candidature" className="btn primary nav-cta">Candidater</Link>
                 </nav>
               </div>
@@ -170,9 +171,13 @@ export default async function RootLayout({
                         </Link>
                       );
                     })}
-                  {/* Porte gestion (G2) : lien sobre en fin de colonne « Le programme », pres du lien UGP. */}
+                  {/* Porte gestion (G2) : lien sobre en fin de colonne « Le programme », pres du lien UGP.
+                      Ouvre un nouvel onglet, comme « Espace operateur ». */}
                   {column.key === 'programme' ? (
-                    <Link href="/gestion/connexion">Espace de gestion</Link>
+                    <Link href="/gestion/connexion" target="_blank" rel="noopener">
+                      Espace de gestion
+                      <span className="footer-newtab" aria-hidden="true">↗</span>
+                    </Link>
                   ) : null}
                 </div>
               ))}

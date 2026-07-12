@@ -283,14 +283,17 @@ table {
   color: #fff;
 }
 
-/* Porte operateur (G1) : lien texte secondaire, subordonne au CTA « Candidater ». */
-.main-nav .nav-login {
-  color: var(--brand-deep);
-  font-weight: 600;
-  padding: 0.3rem 0.15rem;
+/* Porte operateur (G1) : petit bouton dans la top bar, apres « Support / Contact ». */
+.topbar-links a.topbar-login {
+  border: 1px solid rgba(214, 222, 234, 0.42);
+  border-radius: 999px;
+  padding: 0.1rem 0.72rem;
+  line-height: 1.5;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-.main-nav .nav-login:hover {
-  text-decoration: underline;
+.topbar-links a.topbar-login:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(214, 222, 234, 0.7);
 }
 
 #home-mechanism-band,
