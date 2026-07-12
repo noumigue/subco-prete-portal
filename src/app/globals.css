@@ -7299,8 +7299,16 @@ a.docs-item:hover .docs-item-dl {
 .gx-biseg button { padding: 5px 12px; }
 .gx-biseg button.c { background: var(--emerald); color: #fff; }
 .gx-biseg button.n { background: var(--gx-red-tx); color: #fff; }
+/* Sélecteur de cohorte (temps 2, affiché uniquement si plusieurs cohortes). */
+.gx-cohorte-select { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; color: var(--muted-warm); }
+.gx-cohorte-select label { margin: 0; font-weight: 600; }
+.gx-cohorte-select select { width: auto; padding: 6px 10px; font-size: 13px; }
+
 .gx-pnote { width: 100%; margin-top: 7px; }
 .gx-pnote input { font-size: 13px; padding: 8px 10px; }
+/* Champ obligatoire vide (note/justif) — meme signalement que la fiche de scoring (.gx-cmt.req). */
+.gx-pnote.req input { border-color: var(--gx-amber-bd); background: #fffdf6; }
+.gx-pnote.req input::placeholder { color: var(--gx-amber-tx); opacity: .8; }
 
 .gx-verdict .gx-vopt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--sage-border); border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; cursor: pointer; font-size: 13.5px; }
 .gx-verdict .gx-vopt.on { background: var(--sage-tile); border-color: var(--pine); }

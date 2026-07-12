@@ -124,7 +124,7 @@ export function GestionEligibilite({ dossier, role }: { dossier: GestionDossierD
                 <button type="button" className={st === 'non_conforme' ? 'n' : ''} disabled={disabled} onClick={() => setCrit(c.id, 'non_conforme')}>Non conforme</button>
               </span>
               {st === 'non_conforme' ? (
-                <div className="gx-pnote"><input type="text" placeholder="Justification (obligatoire)…" value={etats[c.id]?.justification || ''} disabled={disabled} onChange={(e) => setJust(c.id, e.target.value)} /></div>
+                <div className={`gx-pnote${!disabled && !(etats[c.id]?.justification || '').trim() ? ' req' : ''}`}><input type="text" placeholder="Justification (obligatoire)…" value={etats[c.id]?.justification || ''} disabled={disabled} onChange={(e) => setJust(c.id, e.target.value)} /></div>
               ) : null}
             </div>
           );
@@ -161,7 +161,7 @@ export function GestionEligibilite({ dossier, role }: { dossier: GestionDossierD
           {validationMode ? (
             <>
               {instr.verdictGlobal === 'rejet' ? (
-                <div style={{ marginTop: 12 }}><label>Notification de décision signée (optionnel)</label><input ref={fileRef} type="file" accept="application/pdf,image/*" /></div>
+                <div style={{ marginTop: 12 }}><label>Notification de décision signée (optionnel)</label><input ref={fileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,application/pdf,image/*" /></div>
               ) : null}
               <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="button" className="gx-btn gx-btn-primary" disabled={pending} onClick={onValider}>{pending ? 'Validation…' : 'Valider & notifier'}</button>

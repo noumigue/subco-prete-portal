@@ -142,7 +142,7 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
                   <button type="button" className={st === 'non_conforme' ? 'nc' : ''} disabled={disabled} onClick={() => setPiece(p.id, 'non_conforme')}>⚠ Non conforme</button>
                 </span>
                 {(st === 'absente' || st === 'non_conforme') ? (
-                  <div className="gx-pnote"><input type="text" placeholder="Note (motif)…" value={etats[p.id]?.note || ''} disabled={disabled} onChange={(e) => setNote(p.id, e.target.value)} /></div>
+                  <div className={`gx-pnote${!disabled && !(etats[p.id]?.note || '').trim() ? ' req' : ''}`}><input type="text" placeholder="Note (motif)…" value={etats[p.id]?.note || ''} disabled={disabled} onChange={(e) => setNote(p.id, e.target.value)} /></div>
                 ) : null}
               </div>
             </div>
@@ -206,7 +206,7 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
           {validationMode ? (
             <>
               {instr.verdictGlobal === 'rejet' ? (
-                <div style={{ marginTop: 12 }}><label>Notification de décision signée (optionnel)</label><input ref={fileRef} type="file" accept="application/pdf,image/*" /></div>
+                <div style={{ marginTop: 12 }}><label>Notification de décision signée (optionnel)</label><input ref={fileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,application/pdf,image/*" /></div>
               ) : null}
               <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="button" className="gx-btn gx-btn-primary" disabled={pending} onClick={onValider}>{pending ? 'Validation…' : 'Valider & notifier'}</button>

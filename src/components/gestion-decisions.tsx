@@ -106,7 +106,7 @@ export function GestionDecisionsView({ decisions, appelId }: { decisions: Gestio
           {decisions.pvGenereUrl ? <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(decisions.pvGenereUrl) || '#'} target="_blank" rel="noopener">Voir le PV généré</a> : null}
           <label className="gx-btn gx-btn-ghost gx-btn-sm" style={{ cursor: 'pointer' }}>
             📎 Joindre le PV signé
-            <input type="file" accept="application/pdf,image/*" style={{ display: 'none' }} disabled={pending} onChange={(e) => { const f = e.target.files?.[0]; if (f) onPvSigne(f); }} />
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,application/pdf,image/*" style={{ display: 'none' }} disabled={pending} onChange={(e) => { const f = e.target.files?.[0]; if (f) onPvSigne(f); }} />
           </label>
           {decisions.pvSigneUrl ? <span style={{ fontSize: 12.5, color: 'var(--emerald-dark)', fontWeight: 600 }}>✓ PV signé joint</span> : null}
         </div>
