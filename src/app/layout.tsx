@@ -88,9 +88,9 @@ export default async function RootLayout({
                 <span>Programme PRETE · Subventions de contrepartie</span>
                 <div className="topbar-links">
                   {supportLabel && supportUrl ? <Link href={supportUrl}>{supportLabel}</Link> : null}
-                  {/* Porte operateur (G1) : petit bouton dans la top bar, apres « Support / Contact ».
-                      Info-bulle « Operateur » pour distinguer de la porte gestion. */}
-                  <Link href="/connexion" className="topbar-login" title="Opérateur">Se connecter</Link>
+                  {/* Porte operateur (G1) : lien texte plat dans la top bar, apres « Support / Contact ».
+                      Crochets + info-bulle « Operateur » ; ouvre un nouvel onglet (comme la porte gestion). */}
+                  <Link href="/connexion" className="topbar-login" title="Opérateur" target="_blank" rel="noopener">[Se connecter]</Link>
                   {/* Bascule FR/KI masquee tant que le Kirundi n'est pas operationnel (section 17). */}
                   {LANG_TOGGLE_ENABLED ? (
                     <span className="language-switch" aria-label="Choix de langue">

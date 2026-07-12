@@ -283,17 +283,9 @@ table {
   color: #fff;
 }
 
-/* Porte operateur (G1) : petit bouton dans la top bar, apres « Support / Contact ». */
-.topbar-links a.topbar-login {
-  border: 1px solid rgba(214, 222, 234, 0.42);
-  border-radius: 999px;
-  padding: 0.1rem 0.72rem;
-  line-height: 1.5;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
+/* Porte operateur (G1) : lien texte plat dans la top bar (pas de contour). */
 .topbar-links a.topbar-login:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(214, 222, 234, 0.7);
+  text-decoration: underline;
 }
 
 #home-mechanism-band,
