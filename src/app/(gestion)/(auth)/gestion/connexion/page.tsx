@@ -18,10 +18,13 @@ export default async function GestionLoginPage({
   const rawError = Array.isArray(params.error) ? params.error[0] : params.error;
   const error = rawError ? ERROR_LABELS[rawError] || rawError : null;
 
-  // Deja connecte comme role interne -> aller directement a la file.
+  // Deja connecte comme role interne -> aller directement a son espace.
   const session = await getPortalSession();
   if (session && (session.role === 'instructeur' || session.role === 'ugp')) {
     redirect('/gestion/dossiers');
+  }
+  if (session && session.role === 'comite') {
+    redirect('/gestion/seance');
   }
 
   return (

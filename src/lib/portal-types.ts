@@ -504,3 +504,74 @@ export type GestionConsolidation = {
   statut?: 'en_cours' | 'figee';
   evaluateurs?: { id: number; nom: string }[];
 };
+
+// ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———
+
+export type GestionCondition = { texte: string; type?: 'plan_affaires' | 'site' | 'es' | 'autre' };
+
+export type GestionRapportDossier = {
+  candidatureId: string;
+  rang: number;
+  num: string | null;
+  op: string;
+  proj: string;
+  totalA: number;
+  totalB: number;
+  bonus: number;
+  totalHorsBonus: number;
+  totalFinal: number;
+  bande: string;
+  hasHarmon: boolean;
+  reco: 'selection' | 'conditionnelle' | 'attente' | 'rejet';
+  motifReco: string | null;
+  conditions: GestionCondition[];
+  forces: string[];
+  faiblesses: string[];
+  decisionComite: 'retenu' | 'conditions' | 'rejete' | 'attente' | null;
+};
+
+export type GestionRapport = {
+  appel: { documentId: string; nom?: string; codeCohorte?: string };
+  statut: 'brouillon' | 'soumis' | 'valide';
+  commentaireRenvoi: string | null;
+  pdfUrl: string | null;
+  dossiers: GestionRapportDossier[];
+};
+
+export type GestionSeance = {
+  ready: boolean;
+  appel?: { documentId: string; nom?: string; codeCohorte?: string };
+  rapportPdfUrl?: string | null;
+  dossiers?: { rang: number; op: string; proj: string; totalFinal: number; totalA: number; totalB: number; bonus: number; bande: string; reco: string; forces: string[]; faiblesses: string[]; conditions: GestionCondition[] }[];
+};
+
+export type GestionDecisionsDossier = {
+  candidatureId: string;
+  num: string | null;
+  op: string;
+  proj: string;
+  totalFinal: number;
+  reco: 'selection' | 'conditionnelle' | 'attente' | 'rejet';
+  decisionComite: 'retenu' | 'conditions' | 'rejete' | 'attente' | null;
+  motifAjustement: string | null;
+};
+
+export type GestionDecisions = {
+  ready: boolean;
+  appel?: { documentId: string; nom?: string; codeCohorte?: string };
+  parametres?: { nbMembres: number; quorumSeuil: number };
+  presents?: number;
+  statut?: 'ouverte' | 'close';
+  pvGenereUrl?: string | null;
+  pvSigneUrl?: string | null;
+  dossiers?: GestionDecisionsDossier[];
+};
+
+export type GestionPublication = {
+  seanceClose: boolean;
+  publiee: boolean;
+  nonObjection: { requise: boolean; statut: 'a_demander' | 'transmise' | 'accordee'; dateAccord: string | null };
+  pvSigne: boolean;
+  appel: { documentId: string; nom?: string; codeCohorte?: string };
+  dossiers: { op: string; decisionComite: string | null }[];
+};

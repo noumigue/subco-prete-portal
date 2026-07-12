@@ -16,6 +16,7 @@ type GestionShellProps = {
 const ROLE_META: Record<string, { tag: string; rtag: string }> = {
   instructeur: { tag: 'instructeur', rtag: 'INSTRUCTEUR · Cabinet' },
   ugp: { tag: 'ugp', rtag: 'UGP · Validation' },
+  comite: { tag: 'comite', rtag: 'COMITÉ · Lecture' },
 };
 
 function initials(nom: string) {
@@ -28,6 +29,8 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
   const isFileActive = pathname.startsWith('/gestion/dossiers');
   const meta = ROLE_META[session.role] || ROLE_META.instructeur;
   const isUgp = session.role === 'ugp';
+  const isComite = session.role === 'comite';
+  const active = (p: string) => (pathname.startsWith(p) ? ' active' : '');
 
   return (
     <div className="gx gx-app">
@@ -49,28 +52,33 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
 
       <nav className="gx-side">
         <div className="gx-nav-scroll">
-          <Link className={`gx-nav-item${isFileActive ? ' active' : ''}`} href="/gestion/dossiers">
-            <span className="gx-ic">🗂️</span>File des dossiers
-            {isUgp && pendingCount > 0 ? <span className="gx-nav-badge">{pendingCount}</span> : null}
-          </Link>
-          {isUgp ? (
-            <Link className={`gx-nav-item${pathname.startsWith('/gestion/appels') ? ' active' : ''}`} href="/gestion/appels">
-              <span className="gx-ic">📢</span>Appels
+          {isComite ? (
+            /* Comité : accès réduit au dossier de séance (F2, lecture). */
+            <Link className={`gx-nav-item${active('/gestion/seance')}`} href="/gestion/seance">
+              <span className="gx-ic">🏛️</span>Dossier de séance
             </Link>
-          ) : null}
-          {isUgp ? (
-            <>
-              <span className="gx-nav-item disabled"><span className="gx-ic">🏛️</span><span>Comité<span className="gx-phase-note">Phase 2</span></span></span>
-              <span className="gx-nav-item disabled"><span className="gx-ic">🎯</span><span>Subventions<span className="gx-phase-note">Phase 3</span></span></span>
-              <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
-              <span className="gx-nav-item disabled"><span className="gx-ic">🏦</span><span>Non-objection<span className="gx-phase-note">Phase 5</span></span></span>
-            </>
           ) : (
             <>
-              <Link className={`gx-nav-item${pathname.startsWith('/gestion/evaluations') ? ' active' : ''}`} href="/gestion/evaluations">
-                <span className="gx-ic">📝</span>Mes évaluations
+              <Link className={`gx-nav-item${isFileActive ? ' active' : ''}`} href="/gestion/dossiers">
+                <span className="gx-ic">🗂️</span>File des dossiers
+                {isUgp && pendingCount > 0 ? <span className="gx-nav-badge">{pendingCount}</span> : null}
               </Link>
-              <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+              {isUgp ? (
+                <>
+                  <Link className={`gx-nav-item${active('/gestion/appels')}`} href="/gestion/appels"><span className="gx-ic">📢</span>Appels</Link>
+                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic">📊</span>Rapport &amp; classement</Link>
+                  <Link className={`gx-nav-item${active('/gestion/decisions')}`} href="/gestion/decisions"><span className="gx-ic">🗳️</span>Décisions du Comité</Link>
+                  <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic">📣</span>Publication</Link>
+                  <span className="gx-nav-item disabled"><span className="gx-ic">🎯</span><span>Subventions<span className="gx-phase-note">Phase 3</span></span></span>
+                  <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                </>
+              ) : (
+                <>
+                  <Link className={`gx-nav-item${active('/gestion/evaluations')}`} href="/gestion/evaluations"><span className="gx-ic">📝</span>Mes évaluations</Link>
+                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic">📊</span>Rapport &amp; classement</Link>
+                  <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                </>
+              )}
             </>
           )}
         </div>
