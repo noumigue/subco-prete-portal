@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { getFooterLinks, getSiteNavigation } from '@/lib/strapi-public';
+import { LANG_TOGGLE_ENABLED } from '@/lib/site-config';
 import './globals.css';
 
 const appFont = Inter({
@@ -87,11 +88,14 @@ export default async function RootLayout({
                 <span>Programme PRETE · Subventions de contrepartie</span>
                 <div className="topbar-links">
                   {supportLabel && supportUrl ? <Link href={supportUrl}>{supportLabel}</Link> : null}
-                  <span className="language-switch" aria-label="Choix de langue">
-                    <Link href="/lang/fr" hrefLang="fr" aria-current={language === 'fr' ? 'true' : undefined}>FR</Link>
-                    <span aria-hidden="true">|</span>
-                    <Link href="/lang/rn" hrefLang="rn" aria-current={language === 'rn' ? 'true' : undefined}>KI</Link>
-                  </span>
+                  {/* Bascule FR/KI masquee tant que le Kirundi n'est pas operationnel (section 17). */}
+                  {LANG_TOGGLE_ENABLED ? (
+                    <span className="language-switch" aria-label="Choix de langue">
+                      <Link href="/lang/fr" hrefLang="fr" aria-current={language === 'fr' ? 'true' : undefined}>FR</Link>
+                      <span aria-hidden="true">|</span>
+                      <Link href="/lang/rn" hrefLang="rn" aria-current={language === 'rn' ? 'true' : undefined}>KI</Link>
+                    </span>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -110,6 +114,8 @@ export default async function RootLayout({
                       </Link>
                     )
                   ))}
+                  {/* Porte operateur : lien texte secondaire, a gauche du CTA primaire « Candidater » (G1). */}
+                  <Link href="/connexion" className="nav-login">Se connecter</Link>
                   <Link href="/candidature" className="btn primary nav-cta">Candidater</Link>
                 </nav>
               </div>
@@ -164,6 +170,10 @@ export default async function RootLayout({
                         </Link>
                       );
                     })}
+                  {/* Porte gestion (G2) : lien sobre en fin de colonne « Le programme », pres du lien UGP. */}
+                  {column.key === 'programme' ? (
+                    <Link href="/gestion/connexion">Espace de gestion</Link>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -182,11 +192,13 @@ export default async function RootLayout({
                         {item.label}
                       </Link>
                     ))}
-                  <span className="footer-lang">
-                    <Link href="/lang/fr">FR</Link>
-                    <span aria-hidden="true">·</span>
-                    <Link href="/lang/rn">KI</Link>
-                  </span>
+                  {LANG_TOGGLE_ENABLED ? (
+                    <span className="footer-lang">
+                      <Link href="/lang/fr">FR</Link>
+                      <span aria-hidden="true">·</span>
+                      <Link href="/lang/rn">KI</Link>
+                    </span>
+                  ) : null}
                 </div>
               </div>
             </div>

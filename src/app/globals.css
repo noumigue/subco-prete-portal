@@ -283,6 +283,16 @@ table {
   color: #fff;
 }
 
+/* Porte operateur (G1) : lien texte secondaire, subordonne au CTA « Candidater ». */
+.main-nav .nav-login {
+  color: var(--brand-deep);
+  font-weight: 600;
+  padding: 0.3rem 0.15rem;
+}
+.main-nav .nav-login:hover {
+  text-decoration: underline;
+}
+
 #home-mechanism-band,
 #home-value-chains,
 #home-infrastructure-band {
