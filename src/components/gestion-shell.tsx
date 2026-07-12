@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { PortalSession } from '@/lib/portal-types';
 import { logoutGestionAction } from '@/app/(gestion)/actions';
+import { GestionNavIcon } from '@/components/gestion-nav-icon';
 
 type GestionShellProps = {
   children: React.ReactNode;
@@ -55,28 +56,28 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
           {isComite ? (
             /* Comité : accès réduit au dossier de séance (F2, lecture). */
             <Link className={`gx-nav-item${active('/gestion/seance')}`} href="/gestion/seance">
-              <span className="gx-ic">🏛️</span>Dossier de séance
+              <span className="gx-ic"><GestionNavIcon name="seance" /></span>Dossier de séance
             </Link>
           ) : (
             <>
               <Link className={`gx-nav-item${isFileActive ? ' active' : ''}`} href="/gestion/dossiers">
-                <span className="gx-ic">🗂️</span>File des dossiers
+                <span className="gx-ic"><GestionNavIcon name="dossiers" /></span>File des dossiers
                 {isUgp && pendingCount > 0 ? <span className="gx-nav-badge">{pendingCount}</span> : null}
               </Link>
               {isUgp ? (
                 <>
-                  <Link className={`gx-nav-item${active('/gestion/appels')}`} href="/gestion/appels"><span className="gx-ic">📢</span>Appels</Link>
-                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic">📊</span>Rapport &amp; classement</Link>
-                  <Link className={`gx-nav-item${active('/gestion/decisions')}`} href="/gestion/decisions"><span className="gx-ic">🗳️</span>Décisions du Comité</Link>
-                  <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic">📣</span>Publication</Link>
-                  <span className="gx-nav-item disabled"><span className="gx-ic">🎯</span><span>Subventions<span className="gx-phase-note">Phase 3</span></span></span>
-                  <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                  <Link className={`gx-nav-item${active('/gestion/appels')}`} href="/gestion/appels"><span className="gx-ic"><GestionNavIcon name="appels" /></span>Appels</Link>
+                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
+                  <Link className={`gx-nav-item${active('/gestion/decisions')}`} href="/gestion/decisions"><span className="gx-ic"><GestionNavIcon name="decisions" /></span>Décisions du Comité</Link>
+                  <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic"><GestionNavIcon name="publication" /></span>Publication</Link>
+                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="subventions" /></span><span>Subventions<span className="gx-phase-note">Phase 3</span></span></span>
+                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
                 </>
               ) : (
                 <>
-                  <Link className={`gx-nav-item${active('/gestion/evaluations')}`} href="/gestion/evaluations"><span className="gx-ic">📝</span>Mes évaluations</Link>
-                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic">📊</span>Rapport &amp; classement</Link>
-                  <span className="gx-nav-item disabled"><span className="gx-ic">🛟</span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                  <Link className={`gx-nav-item${active('/gestion/evaluations')}`} href="/gestion/evaluations"><span className="gx-ic"><GestionNavIcon name="evaluations" /></span>Mes évaluations</Link>
+                  <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
+                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
                 </>
               )}
             </>
@@ -84,7 +85,7 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
         </div>
         <div className="gx-nav-footer">
           <Link className="gx-nav-item" style={{ fontSize: 13, color: 'var(--muted-warm)' }} href="/gestion/mon-compte">
-            <span className="gx-ic">⚙️</span>Mon compte
+            <span className="gx-ic"><GestionNavIcon name="account" /></span>Mon compte
           </Link>
         </div>
       </nav>

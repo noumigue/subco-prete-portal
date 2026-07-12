@@ -7207,11 +7207,14 @@ a.docs-item:hover .docs-item-dl {
 .gx-nav-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; }
 .gx-nav-footer { flex-shrink: 0; padding: 8px 10px 12px; border-top: 1px solid var(--line-warm); }
 .gx-nav-item { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; color: var(--ink-warm); text-decoration: none; font-size: 14.5px; cursor: pointer; border: 1px solid transparent; }
-.gx-nav-item .gx-ic { width: 20px; text-align: center; opacity: .75; font-size: 15px; }
+/* Icônes SVG à trait, identiques à la coquille opérateur (.operator-nav-icon svg). */
+.gx-nav-item .gx-ic { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; color: var(--muted-warm); }
+.gx-nav-item .gx-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.gx-nav-item.active .gx-ic { color: var(--pine); }
 .gx-nav-item:hover { background: #f6f8f5; }
 .gx-nav-item.active { background: var(--sage-tile); color: var(--pine); font-weight: 600; border-color: var(--sage-border); }
 .gx-nav-item.disabled { color: var(--gx-lock); cursor: not-allowed; }
-.gx-nav-item.disabled .gx-ic { opacity: .5; }
+.gx-nav-item.disabled .gx-ic { color: var(--gx-lock); }
 .gx-phase-note { display: block; font-size: 10.5px; color: var(--gx-lock); }
 .gx-nav-badge { margin-left: auto; min-width: 18px; height: 18px; padding: 0 6px; background: var(--gold); color: #3a2c10; border-radius: 999px; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
 
