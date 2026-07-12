@@ -29,6 +29,10 @@ import {
 type Role = 'ugp' | 'cabinet';
 type AvisTech = 'favorable' | 'reserve' | 'defavorable';
 
+// Liste large (mêmes formats que le reste du back-office) : sur Mac, un accept
+// limité au seul PDF grise toutes les autres pièces dans le sélecteur de fichiers.
+const ACCEPT_DOCS = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.heic,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*';
+
 function fmtMontant(v: string | null) {
   if (!v) return '—';
   try { return Number(BigInt(v)).toLocaleString('fr-FR'); } catch { return v; }
@@ -217,7 +221,7 @@ function PreparationView({ detail, isUgp, run, busy, notify }: ViewProps) {
                   <label className="gx-label">Convention signée (PDF)</label>
                   <label className="gx-btn gx-btn-ghost gx-btn-sm" style={{ cursor: 'pointer' }}>
                     📎 {pdf ? pdf.name : (uploading ? 'Téléversement…' : 'Joindre le PDF signé')}
-                    <input type="file" accept=".pdf,application/pdf" hidden onChange={(e) => onPdf(e.target.files?.[0])} />
+                    <input type="file" accept={ACCEPT_DOCS} hidden onChange={(e) => onPdf(e.target.files?.[0])} />
                   </label>
                 </div>
               </div>
@@ -348,7 +352,7 @@ function DemandeRow({ subId, d, isUgp, run, busy, notify }: { subId: string; d: 
           <div className="gx-acd-note">⚠ ACD (Attestation de Conformité préalable au Décaissement) — <b>établie par l’UGP</b>, jointe à l’instruction. Jamais produite par le bénéficiaire.</div>
           <label className="gx-btn gx-btn-ghost gx-btn-sm" style={{ cursor: 'pointer', marginBottom: 8 }}>
             📎 {acd ? acd.name : (uploading ? 'Téléversement…' : 'Joindre l’ACD (PDF)')}
-            <input type="file" accept=".pdf,application/pdf" hidden onChange={(e) => onAcd(e.target.files?.[0])} />
+            <input type="file" accept={ACCEPT_DOCS} hidden onChange={(e) => onAcd(e.target.files?.[0])} />
           </label>
           <div className="gx-row3">Décision :
             <span className="gx-triseg">

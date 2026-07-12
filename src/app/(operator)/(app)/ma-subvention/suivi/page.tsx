@@ -69,7 +69,7 @@ export default async function SuiviPage({
                 <form action={deposerRapportAction} className="operator-rap-deposit">
                   <span className="operator-tag tag-due">Échu</span>
                   <input type="hidden" name="documentId" value={r.documentId} />
-                  <input type="file" name="fichier" accept=".pdf" required className="operator-rap-file" />
+                  <input type="file" name="fichier" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required className="operator-rap-file" />
                   <button type="submit" className="operator-upload-btn">Déposer</button>
                 </form>
               ) : (
