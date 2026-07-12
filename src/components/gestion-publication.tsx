@@ -61,7 +61,7 @@ export function GestionPublicationView({ publication, appelId }: { publication: 
             {nobj.statut !== 'accordee' ? (
               <label className="gx-btn gx-btn-primary gx-btn-sm" style={{ cursor: 'pointer' }}>
                 Enregistrer l&apos;accord reçu (document)
-                <input type="file" accept="application/pdf,image/*" style={{ display: 'none' }} disabled={pending} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAccord(f); }} />
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,application/pdf,image/*" style={{ display: 'none' }} disabled={pending} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAccord(f); }} />
               </label>
             ) : <span style={{ fontSize: 12.5, color: 'var(--emerald-dark)', fontWeight: 600 }}>Accord enregistré{nobj.dateAccord ? ` le ${new Date(nobj.dateAccord).toLocaleDateString('fr-FR')}` : ''} · document joint</span>}
           </div>

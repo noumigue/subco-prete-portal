@@ -135,6 +135,16 @@ export async function getCurrentAppelId(): Promise<string | null> {
   return (ouvert || appels[0])?.documentId || null;
 }
 
+// Résout la cohorte à afficher : celle demandée en query (si valide) sinon la cohorte
+// courante (ouverte). Permet de consulter une cohorte passée quand il y en a plusieurs.
+export async function resolveAppelId(preferId?: string): Promise<string | null> {
+  if (preferId) {
+    const appels = await getGestionAppels();
+    if (appels.some((a) => a.documentId === preferId)) return preferId;
+  }
+  return getCurrentAppelId();
+}
+
 export async function getRapport(appelId: string): Promise<GestionRapport | null> {
   const res = await gestionGet<{ data: GestionRapport }>(`/api/gestion/appels/${appelId}/rapport`);
   return res?.data || null;
