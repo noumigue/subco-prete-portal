@@ -7442,3 +7442,93 @@ a.docs-item:hover .docs-item-dl {
 .gx-eff-rej { color: var(--gx-red-tx); font-weight: 600; }
 .gx-eff-att { color: var(--gx-amber-tx); font-weight: 600; }
 .gx-blocked { opacity: .5; }
+
+/* ============================================================
+   M5 phase 3 — Actes de subvention (côté UGP/Cabinet)
+   ============================================================ */
+.gx-sc-prep { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-sc-active { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-sc-susp { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+
+/* liste des subventions */
+.gx-srow { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); box-shadow: var(--shadow-soft); padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; text-decoration: none; color: inherit; }
+.gx-srow:hover { border-color: var(--sage-border); }
+.gx-srow-main { flex: 1; min-width: 230px; }
+.gx-srow-num { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: var(--pine); font-size: 13px; }
+.gx-srow-who { font-size: 14.5px; font-weight: 600; margin: 1px 0 2px; }
+.gx-srow-meta { font-size: 12.5px; color: var(--muted-warm); display: flex; gap: 5px 12px; flex-wrap: wrap; }
+
+/* en-tête dossier */
+.gx-shead { border-bottom: 1px solid var(--line-warm); padding-bottom: 13px; margin-bottom: 14px; }
+.gx-shead h1 { font-size: 19px; color: var(--pine); margin: 0 0 3px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gx-shead-sub { font-size: 13px; color: var(--muted-warm); }
+
+/* sous-onglets */
+.gx-subtabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--line-warm); }
+.gx-subtab { padding: 8px 14px; font-size: 13.5px; color: var(--muted-warm); cursor: pointer; border: 0; background: none; border-bottom: 2px solid transparent; font-weight: 600; font-family: inherit; }
+.gx-subtab.on { color: var(--pine); border-bottom-color: var(--gold); }
+
+/* conditions préalables */
+.gx-cond { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line-warm); flex-wrap: wrap; }
+.gx-cond:last-child { border-bottom: 0; }
+.gx-cond-main { flex: 1; min-width: 220px; }
+.gx-cond-n { font-size: 14px; font-weight: 600; }
+.gx-cond-t { font-size: 12px; color: var(--muted-warm); margin-top: 2px; }
+.gx-cstate { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 2px 10px; border: 1px solid; white-space: nowrap; }
+.gx-cs-val { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-cs-cours { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-cs-action { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+.gx-avis-tech { font-size: 11.5px; color: var(--muted-warm); background: #f4f8f4; border: 1px solid var(--sage-border); border-radius: 8px; padding: 6px 9px; margin-top: 6px; }
+.gx-avis-tech b { color: var(--pine); }
+
+/* barre de signature */
+.gx-signbar { background: var(--sage-tile); border: 1px solid var(--sage-border); border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+.gx-signbar.ready { background: #dff1e6; border-color: #bfe3cd; }
+.gx-signbar h3 { margin: 0 0 6px; font-size: 14.5px; color: var(--pine); }
+.gx-signform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+
+/* décaissements */
+.gx-decrow { background: #fff; border: 1px solid var(--line-warm); border-radius: 11px; padding: 13px 15px; margin-bottom: 10px; }
+.gx-decrow-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.gx-dnum { font-weight: 700; color: var(--pine); }
+.gx-dmeta { font-size: 12.5px; color: var(--muted-warm); flex: 1; }
+.gx-circuit { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; }
+.gx-cstep { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--sage-border); border-radius: 999px; padding: 3px 10px; color: var(--muted-warm); background: #fff; }
+.gx-cstep.done { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); font-weight: 600; }
+.gx-cstep.cur { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); font-weight: 700; }
+.gx-cstep.ko { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); font-weight: 700; }
+.gx-carrow { color: var(--lock, #9aa9a2); }
+.gx-pill-just { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+
+.gx-avis-form { background: #fbfaf4; border: 1px solid var(--line-warm); border-radius: 10px; padding: 13px; margin-top: 11px; }
+.gx-row3 { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 9px; font-size: 13px; }
+.gx-triseg button.ok { background: var(--emerald); color: #fff; }
+.gx-triseg button.res { background: var(--gold); color: #3a2c10; }
+.gx-triseg button.ko { background: var(--gx-red-tx); color: #fff; }
+.gx-pieces-list { font-size: 12.5px; color: var(--muted-warm); margin: 6px 0; }
+.gx-pc { display: inline-flex; align-items: center; gap: 5px; background: #f4f8f4; border: 1px solid var(--sage-border); border-radius: 7px; padding: 3px 8px; margin: 2px 4px 2px 0; text-decoration: none; color: inherit; }
+a.gx-pc:hover { border-color: var(--emerald); }
+.gx-acd-note { font-size: 12px; color: var(--gx-amber-tx); background: var(--gx-amber-bg); border: 1px solid var(--gx-amber-bd); border-radius: 8px; padding: 8px 11px; margin: 8px 0; }
+
+/* jalons */
+.gx-jrow { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line-warm); flex-wrap: wrap; }
+.gx-jrow:last-child { border-bottom: 0; }
+.gx-jdot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.gx-jdot.done { background: var(--emerald); }
+.gx-jdot.cur { background: var(--gold); }
+.gx-jdot.todo { background: var(--sage-border); }
+.gx-jname { flex: 1; min-width: 180px; font-size: 13.5px; font-weight: 600; }
+.gx-jdate { font-size: 12.5px; color: var(--muted-warm); }
+
+/* mesures correctives */
+.gx-mrow { background: var(--gx-red-bg); border: 1px solid var(--gx-red-bd); border-radius: 10px; padding: 13px 15px; margin-bottom: 10px; }
+.gx-mrow.reg { background: #dff1e6; border-color: #bfe3cd; }
+.gx-mt { font-weight: 600; font-size: 13.5px; }
+.gx-mm { font-size: 12.5px; color: var(--muted-warm); margin-top: 3px; }
+
+/* toast */
+.gx-toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); background: var(--bo-darker, #06201b); color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 13.5px; box-shadow: var(--shadow-soft); z-index: 60; max-width: 90%; text-align: center; }
+
+@media (max-width: 860px) {
+  .gx-signform { grid-template-columns: 1fr; }
+}

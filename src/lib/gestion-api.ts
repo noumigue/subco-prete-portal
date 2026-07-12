@@ -15,6 +15,8 @@ import type {
   GestionPublication,
   GestionRapport,
   GestionSeance,
+  GestionSubventionDetail,
+  GestionSubventionRow,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -180,3 +182,35 @@ export const cloreSeance = (appelId: string) => gestionPost(`/api/gestion/appels
 
 export const setNonObjection = (appelId: string, data: { requise?: boolean; action?: 'transmise' | 'accordee'; documentFileId?: number }) => gestionPost(`/api/gestion/appels/${appelId}/publication/non-objection`, data);
 export const publierDecisions = (appelId: string) => gestionPost(`/api/gestion/appels/${appelId}/publication/publier`);
+
+// ——— M5 phase 3 : actes de subvention (côté UGP/Cabinet) ———
+export async function getGestionSubventions(): Promise<GestionSubventionRow[]> {
+  const res = await gestionGet<{ data: GestionSubventionRow[] }>('/api/gestion/subventions');
+  return res?.data || [];
+}
+export async function getGestionSubvention(documentId: string): Promise<GestionSubventionDetail | null> {
+  const res = await gestionGet<{ data: GestionSubventionDetail }>(`/api/gestion/subventions/${documentId}`);
+  return res?.data || null;
+}
+// Conditions (G1)
+export const conditionAvisTechnique = (id: string, avisTechnique: string, commentaire?: string) =>
+  gestionPost(`/api/gestion/conditions/${id}/avis-technique`, { avisTechnique, commentaire });
+export const conditionValider = (id: string) => gestionPost(`/api/gestion/conditions/${id}/valider`, {});
+export const conditionActionRequise = (id: string, echeance?: string) => gestionPost(`/api/gestion/conditions/${id}/action-requise`, { echeance });
+// Signature (G2)
+export const signerConvention = (id: string, data: { numeroConvention?: string; dateSignature?: string; pdfConventionFileId?: number }) =>
+  gestionPost(`/api/gestion/subventions/${id}/signer`, data);
+// Décaissements (G3/G4)
+export const decaissementAvisTechnique = (id: string, avisTechnique: string, commentaire?: string) =>
+  gestionPost(`/api/gestion/decaissements/${id}/avis-technique`, { avisTechnique, commentaire });
+export const decaissementAvisFiduciaire = (id: string, data: { decision: string; commentaire?: string; acdFileId?: number }) =>
+  gestionPost(`/api/gestion/decaissements/${id}/avis-fiduciaire`, data);
+export const validerJustification = (id: string) => gestionPost(`/api/gestion/decaissements/${id}/valider-justification`, {});
+export const demanderComplementJustif = (id: string) => gestionPost(`/api/gestion/decaissements/${id}/demander-complement`, {});
+// Jalons (G5)
+export const jalonDateReelle = (id: string, dateReelle: string) => gestionPost(`/api/gestion/jalons/${id}/date-reelle`, { dateReelle });
+// Mesures + suspension (G6)
+export const mesureEmettre = (subventionId: string, data: { description: string; echeance?: string }) => gestionPost(`/api/gestion/subventions/${subventionId}/mesures`, data);
+export const mesureValider = (id: string) => gestionPost(`/api/gestion/mesures/${id}/valider`, {});
+export const suspendreSubvention = (id: string, motif?: string) => gestionPost(`/api/gestion/subventions/${id}/suspendre`, { motif });
+export const leverSubvention = (id: string) => gestionPost(`/api/gestion/subventions/${id}/lever`, {});
