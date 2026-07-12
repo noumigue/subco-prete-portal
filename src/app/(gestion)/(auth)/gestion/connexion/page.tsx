@@ -51,6 +51,8 @@ export default async function GestionLoginPage({
             <span>demo-ugp@subco-prete.bi · UGP</span>
             <span>SubcoDemo2026!</span>
           </div>
+          {/* Couture G3 : rattrape une erreur d'aiguillage vers la porte opérateur. */}
+          <p className="gx-login-note">Vous êtes candidat ou bénéficiaire ? <Link className="gx-back" style={{ margin: 0 }} href="/connexion">Portail opérateur</Link></p>
         </div>
         <p className="gx-annot" style={{ maxWidth: 410 }}>
           <b>Porte interne.</b> Route dédiée, même socle d&apos;identité (Users &amp; Permissions), rôles internes uniquement
