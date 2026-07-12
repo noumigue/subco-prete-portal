@@ -6,11 +6,15 @@ import { getPortalJwt } from './portal-auth';
 import type {
   GestionAppel,
   GestionConsolidation,
+  GestionDecisions,
   GestionDossierDetail,
   GestionDossierRow,
   GestionEvaluationAssign,
   GestionFicheDetail,
   GestionMesEvaluationRow,
+  GestionPublication,
+  GestionRapport,
+  GestionSeance,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -121,3 +125,48 @@ export const harmoniser = (documentId: string, critereCode: string, noteRetenue:
 export const troisiemeEvaluateur = (documentId: string, evaluateurId: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/troisieme`, { evaluateurId });
 export const figerConsolidation = (documentId: string) => gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/figer`);
+
+// ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———
+
+// Résout l'appel « courant » (ouvert, sinon le premier) pour les écrans par cohorte.
+export async function getCurrentAppelId(): Promise<string | null> {
+  const appels = await getGestionAppels();
+  const ouvert = appels.find((a) => a.statut === 'ouvert');
+  return (ouvert || appels[0])?.documentId || null;
+}
+
+export async function getRapport(appelId: string): Promise<GestionRapport | null> {
+  const res = await gestionGet<{ data: GestionRapport }>(`/api/gestion/appels/${appelId}/rapport`);
+  return res?.data || null;
+}
+export async function getSeance(appelId: string): Promise<GestionSeance | null> {
+  const res = await gestionGet<{ data: GestionSeance }>(`/api/gestion/appels/${appelId}/seance`);
+  return res?.data || null;
+}
+// Séance « courante » — résolue côté serveur (le Comité n'a pas accès à la liste des appels, F2).
+export async function getSeanceCourante(): Promise<GestionSeance | null> {
+  const res = await gestionGet<{ data: GestionSeance }>('/api/gestion/seance-courante');
+  return res?.data || null;
+}
+export async function getDecisions(appelId: string): Promise<GestionDecisions | null> {
+  const res = await gestionGet<{ data: GestionDecisions }>(`/api/gestion/appels/${appelId}/decisions`);
+  return res?.data || null;
+}
+export async function getPublication(appelId: string): Promise<GestionPublication | null> {
+  const res = await gestionGet<{ data: GestionPublication }>(`/api/gestion/appels/${appelId}/publication`);
+  return res?.data || null;
+}
+
+export const saveRapportDossier = (appelId: string, data: unknown) => gestionPost(`/api/gestion/appels/${appelId}/rapport/dossier`, data);
+export const soumettreRapport = (appelId: string) => gestionPost(`/api/gestion/appels/${appelId}/rapport/soumettre`);
+export const validerRapport = (appelId: string) => gestionPost(`/api/gestion/appels/${appelId}/rapport/valider`);
+export const renvoyerRapport = (appelId: string, commentaire: string) => gestionPost(`/api/gestion/appels/${appelId}/rapport/renvoyer`, { commentaire });
+
+export const saveDecision = (appelId: string, data: { candidatureId: string; decisionComite: string; motifAjustement?: string }) => gestionPost(`/api/gestion/appels/${appelId}/decisions/dossier`, data);
+export const setPresents = (appelId: string, presents: number) => gestionPost(`/api/gestion/appels/${appelId}/decisions/presents`, { presents });
+export const genererPv = (appelId: string, data: { president?: string; lieu?: string; dateSeance?: string; reserves?: string }) => gestionPost(`/api/gestion/appels/${appelId}/decisions/pv`, data);
+export const joindrePvSigne = (appelId: string, pvSigneFileId: number) => gestionPost(`/api/gestion/appels/${appelId}/decisions/pv-signe`, { pvSigneFileId });
+export const cloreSeance = (appelId: string) => gestionPost(`/api/gestion/appels/${appelId}/decisions/clore`);
+
+export const setNonObjection = (appelId: string, data: { requise?: boolean; action?: 'transmise' | 'accordee'; documentFileId?: number }) => gestionPost(`/api/gestion/appels/${appelId}/publication/non-objection`, data);
+export const publierDecisions = (appelId: string) => gestionPost(`/api/gestion/appels/${appelId}/publication/publier`);

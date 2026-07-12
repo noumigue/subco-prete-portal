@@ -7,25 +7,36 @@ import { uploadPortalFile } from '@/lib/portal-api';
 import {
   assignerEvaluateur,
   cloreAppel,
+  cloreSeance,
   declarerCoi,
   enregistrerFiche,
   figerConsolidation,
+  genererPv,
   harmoniser,
+  joindrePvSigne,
   ouvrirAppel,
   priseEnCharge,
   proposerCompletude,
   proposerEligibilite,
+  publierDecisions,
   reassigner,
   recuser,
   renvoyerCompletude,
   renvoyerEligibilite,
+  renvoyerRapport,
+  saveDecision,
+  saveRapportDossier,
+  setNonObjection,
+  setPresents,
   soumettreFiche,
+  soumettreRapport,
   troisiemeEvaluateur,
   validerCompletude,
   validerEligibilite,
+  validerRapport,
 } from '@/lib/gestion-api';
 
-const INTERNAL_ROLES = new Set(['instructeur', 'ugp']);
+const INTERNAL_ROLES = new Set(['instructeur', 'ugp', 'comite']);
 
 function readString(formData: FormData, key: string) {
   return String(formData.get(key) || '').trim();
@@ -49,7 +60,8 @@ export async function loginGestionAction(formData: FormData) {
     await clearPortalJwt();
     redirect('/gestion/connexion?error=acces-gestion');
   }
-  redirect('/gestion/dossiers');
+  // Le Comité (lecture cloisonnée) atterrit sur son dossier de séance, pas la file.
+  redirect(session.role === 'comite' ? '/gestion/seance' : '/gestion/dossiers');
 }
 
 export async function logoutGestionAction() {
@@ -204,5 +216,70 @@ export async function troisiemeEvaluateurAction(input: { documentId: string; eva
 export async function figerConsolidationAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
   const r = await figerConsolidation(documentId);
   revalidatePath(`/gestion/dossiers/${documentId}/consolidation`);
+  return r;
+}
+
+// ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———
+type Res = Promise<{ ok: boolean; error?: string }>;
+
+export async function saveRapportDossierAction(appelId: string, data: unknown): Res {
+  const r = await saveRapportDossier(appelId, data);
+  revalidatePath('/gestion/rapport');
+  return r;
+}
+export async function soumettreRapportAction(appelId: string): Res {
+  const r = await soumettreRapport(appelId);
+  revalidatePath('/gestion/rapport');
+  return r;
+}
+export async function validerRapportAction(appelId: string): Res {
+  const r = await validerRapport(appelId);
+  revalidatePath('/gestion/rapport');
+  return r;
+}
+export async function renvoyerRapportAction(appelId: string, commentaire: string): Res {
+  const r = await renvoyerRapport(appelId, commentaire);
+  revalidatePath('/gestion/rapport');
+  return r;
+}
+export async function saveDecisionAction(appelId: string, data: { candidatureId: string; decisionComite: string; motifAjustement?: string }): Res {
+  const r = await saveDecision(appelId, data);
+  revalidatePath('/gestion/decisions');
+  return r;
+}
+export async function setPresentsAction(appelId: string, presents: number): Res {
+  const r = await setPresents(appelId, presents);
+  revalidatePath('/gestion/decisions');
+  return r;
+}
+export async function genererPvAction(appelId: string, data: { president?: string; lieu?: string; dateSeance?: string; reserves?: string }): Res {
+  const r = await genererPv(appelId, data);
+  revalidatePath('/gestion/decisions');
+  return r;
+}
+export async function uploadFileAction(formData: FormData): Promise<{ id: number; name: string } | null> {
+  const file = formData.get('fichier');
+  if (!(file instanceof File) || file.size === 0) return null;
+  return uploadPortalFile(file);
+}
+export async function joindrePvSigneAction(appelId: string, fileId: number): Res {
+  const r = await joindrePvSigne(appelId, fileId);
+  revalidatePath('/gestion/decisions');
+  return r;
+}
+export async function cloreSeanceAction(appelId: string): Res {
+  const r = await cloreSeance(appelId);
+  revalidatePath('/gestion/decisions');
+  revalidatePath('/gestion/publication');
+  return r;
+}
+export async function setNonObjectionAction(appelId: string, data: { requise?: boolean; action?: 'transmise' | 'accordee'; documentFileId?: number }): Res {
+  const r = await setNonObjection(appelId, data);
+  revalidatePath('/gestion/publication');
+  return r;
+}
+export async function publierDecisionsAction(appelId: string): Res {
+  const r = await publierDecisions(appelId);
+  revalidatePath('/gestion/publication');
   return r;
 }
