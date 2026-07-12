@@ -575,3 +575,70 @@ export type GestionPublication = {
   appel: { documentId: string; nom?: string; codeCohorte?: string };
   dossiers: { op: string; decisionComite: string | null }[];
 };
+
+// ——— M5 phase 3 : actes de subvention (côté UGP/Cabinet) ———
+
+export type GestionSubventionStatut = 'preparation' | 'active' | 'suspendue' | 'cloturee';
+
+export type GestionSubventionRow = {
+  documentId: string;
+  numeroConvention: string | null;
+  op: string;
+  proj: string;
+  statut: GestionSubventionStatut;
+  montantSubvention: string | null;
+  montantTotal: string | null;
+};
+
+export type GestionSubCondition = {
+  documentId: string;
+  libelle: string;
+  statut: 'validee' | 'en_cours_ugp' | 'action_requise';
+  echeance: string | null;
+  ordre: number;
+  technique: boolean;
+  avisTechnique: 'favorable' | 'reserve' | 'defavorable' | null;
+  avisTechniqueCommentaire: string | null;
+  avisTechniquePar: string | null;
+  valideePar: string | null;
+  valideeLe: string | null;
+};
+
+export type GestionPiece = { name?: string; url?: string };
+
+export type GestionDemande = {
+  documentId: string;
+  numero: number;
+  montant: string | null;
+  objet: string | null;
+  modalite: string | null;
+  modaliteCode: string | null;
+  statut: string | null;
+  statutLibelle: string | null;
+  avisTechnique: string | null;
+  avisTechniqueCommentaire: string | null;
+  avisFiduciaire: string | null;
+  motifRejet: string | null;
+  aJustifier: boolean;
+  justificationStatut: 'non_requise' | 'attendue' | 'soumise' | 'validee';
+  pieces: GestionPiece[];
+  justificationPieces: GestionPiece[];
+  acdUrl: string | null;
+};
+
+export type GestionJalon = { documentId: string; libelle: string; datePrevue: string | null; dateReelle: string | null };
+export type GestionMesure = { documentId: string; description: string; echeance: string | null; statut: 'en_cours' | 'regularisee' };
+export type GestionRapportRecu = { type: string; periode: string | null; statut: string; dateTransmission: string | null };
+
+export type GestionSubventionDetail = GestionSubventionRow & {
+  dateSignature: string | null;
+  montantContrepartie: string | null;
+  montantDecaisse: string | null;
+  motifSuspension: string | null;
+  pdfConventionUrl: string | null;
+  conditions: GestionSubCondition[];
+  demandes: GestionDemande[];
+  jalons: GestionJalon[];
+  mesures: GestionMesure[];
+  rapports: GestionRapportRecu[];
+};

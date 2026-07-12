@@ -70,13 +70,14 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
                   <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
                   <Link className={`gx-nav-item${active('/gestion/decisions')}`} href="/gestion/decisions"><span className="gx-ic"><GestionNavIcon name="decisions" /></span>Décisions du Comité</Link>
                   <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic"><GestionNavIcon name="publication" /></span>Publication</Link>
-                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="subventions" /></span><span>Subventions<span className="gx-phase-note">Phase 3</span></span></span>
+                  <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions</Link>
                   <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
                 </>
               ) : (
                 <>
                   <Link className={`gx-nav-item${active('/gestion/evaluations')}`} href="/gestion/evaluations"><span className="gx-ic"><GestionNavIcon name="evaluations" /></span>Mes évaluations</Link>
                   <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
+                  <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions<span className="gx-phase-note" style={{ marginLeft: 6 }}>Suivi technique</span></Link>
                   <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
                 </>
               )}

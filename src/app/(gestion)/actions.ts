@@ -8,12 +8,22 @@ import {
   assignerEvaluateur,
   cloreAppel,
   cloreSeance,
+  conditionActionRequise,
+  conditionAvisTechnique,
+  conditionValider,
+  decaissementAvisFiduciaire,
+  decaissementAvisTechnique,
   declarerCoi,
+  demanderComplementJustif,
   enregistrerFiche,
   figerConsolidation,
   genererPv,
   harmoniser,
+  jalonDateReelle,
   joindrePvSigne,
+  leverSubvention,
+  mesureEmettre,
+  mesureValider,
   ouvrirAppel,
   priseEnCharge,
   proposerCompletude,
@@ -28,11 +38,14 @@ import {
   saveRapportDossier,
   setNonObjection,
   setPresents,
+  signerConvention,
   soumettreFiche,
   soumettreRapport,
+  suspendreSubvention,
   troisiemeEvaluateur,
   validerCompletude,
   validerEligibilite,
+  validerJustification,
   validerRapport,
 } from '@/lib/gestion-api';
 
@@ -282,4 +295,47 @@ export async function publierDecisionsAction(appelId: string): Res {
   const r = await publierDecisions(appelId);
   revalidatePath('/gestion/publication');
   return r;
+}
+
+// ——— M5 phase 3 : actes de subvention ———
+function revalSub(id: string) { revalidatePath(`/gestion/subventions/${id}`); revalidatePath('/gestion/subventions'); }
+
+export async function conditionAvisTechniqueAction(subId: string, condId: string, avisTechnique: string, commentaire: string): Res {
+  const r = await conditionAvisTechnique(condId, avisTechnique, commentaire); revalSub(subId); return r;
+}
+export async function conditionValiderAction(subId: string, condId: string): Res {
+  const r = await conditionValider(condId); revalSub(subId); return r;
+}
+export async function conditionActionRequiseAction(subId: string, condId: string, echeance?: string): Res {
+  const r = await conditionActionRequise(condId, echeance); revalSub(subId); return r;
+}
+export async function signerConventionAction(subId: string, data: { numeroConvention?: string; dateSignature?: string; pdfConventionFileId?: number }): Res {
+  const r = await signerConvention(subId, data); revalSub(subId); return r;
+}
+export async function decaissementAvisTechniqueAction(subId: string, decId: string, avisTechnique: string, commentaire: string): Res {
+  const r = await decaissementAvisTechnique(decId, avisTechnique, commentaire); revalSub(subId); return r;
+}
+export async function decaissementAvisFiduciaireAction(subId: string, decId: string, data: { decision: string; commentaire?: string; acdFileId?: number }): Res {
+  const r = await decaissementAvisFiduciaire(decId, data); revalSub(subId); return r;
+}
+export async function validerJustificationAction(subId: string, decId: string): Res {
+  const r = await validerJustification(decId); revalSub(subId); return r;
+}
+export async function demanderComplementJustifAction(subId: string, decId: string): Res {
+  const r = await demanderComplementJustif(decId); revalSub(subId); return r;
+}
+export async function jalonDateReelleAction(subId: string, jalonId: string, dateReelle: string): Res {
+  const r = await jalonDateReelle(jalonId, dateReelle); revalSub(subId); return r;
+}
+export async function mesureEmettreAction(subId: string, data: { description: string; echeance?: string }): Res {
+  const r = await mesureEmettre(subId, data); revalSub(subId); return r;
+}
+export async function mesureValiderAction(subId: string, mesureId: string): Res {
+  const r = await mesureValider(mesureId); revalSub(subId); return r;
+}
+export async function suspendreSubventionAction(subId: string, motif: string): Res {
+  const r = await suspendreSubvention(subId, motif); revalSub(subId); return r;
+}
+export async function leverSubventionAction(subId: string): Res {
+  const r = await leverSubvention(subId); revalSub(subId); return r;
 }
