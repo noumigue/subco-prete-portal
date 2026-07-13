@@ -725,3 +725,44 @@ export type GestionNoDetail = GestionNoRow & {
 };
 
 export type GestionNoPaquet = { files: { label: string; url: string }[] };
+
+// ——— M6 : suivi-évaluation (§14) ———
+
+export type GestionSeEntonnoir = { label: string; v: number };
+export type GestionSeExecution = { engage: number; decaisse: number; justifie: number };
+export type GestionSeDelais = { completude: number | null; eligibilite: number | null; evaluation: number | null; paiement: number | null };
+export type GestionSeAlerte = { icon: string; titre: string; detail: string; lien: string };
+export type GestionSeTableauDeBord = {
+  entonnoir: GestionSeEntonnoir[];
+  execution: GestionSeExecution;
+  delais: GestionSeDelais;
+  alertes: GestionSeAlerte[];
+};
+
+export type GestionSeIndicateur = {
+  code: string;
+  famille: string;
+  familleLibelle: string;
+  libelle: string;
+  mode: 'calcule' | 'saisi';
+  unite: string | null;
+  cible: string;
+  valeur: string;
+  ecart: 'ok' | 'ko' | null;
+};
+
+export type GestionSeDepouillementValeurs = { empT: number | string; empF: number | string; empJ: number | string; empR: number | string; benef: number | string; inv: number | string; incidents: number | string; note: string };
+export type GestionSeDepouillement = {
+  documentId: string;
+  titre: string;
+  operateur: string;
+  convention: string | null;
+  dateTransmission: string | null;
+  fichierUrl: string | null;
+  statut: 'a_depouiller' | 'propose' | 'valide';
+  saisiPar: string | null;
+  valeurs: GestionSeDepouillementValeurs;
+};
+
+export type GestionSeRapport = { documentId: string; periode: string; pdf: { url?: string; name?: string } | null; generePar: string | null; genereLe: string | null };
+export type GestionSeCohorte = { documentId: string; label: string };
