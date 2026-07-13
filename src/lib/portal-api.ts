@@ -490,22 +490,35 @@ export async function uploadPortalFile(file: File): Promise<{ id: number; name: 
   const jwt = await getPortalJwt();
   if (!jwt || !file || file.size === 0) return null;
 
+  // Le fichier vient d'une Server Action (Blob deserialise) : on materialise le corps
+  // en Buffer pour que fetch pose un Content-Length. Sans lui, undici envoie en
+  // "transfer-encoding: chunked" — que certains proxys/CDN en prod bufferisent
+  // indefiniment (symptome : « Televersement… » qui tourne sans fin).
+  const buf = Buffer.from(await file.arrayBuffer());
   const form = new FormData();
-  form.append('files', file, file.name);
+  form.append('files', new Blob([buf], { type: file.type || 'application/octet-stream' }), file.name);
 
-  // NB : pas de Content-Type manuel — laisser fetch poser le boundary multipart.
-  const response = await fetch(`${STRAPI_URL}/api/upload`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${jwt}` },
-    body: form,
-    cache: 'no-store',
-  });
-
-  if (!response.ok) return null;
-
-  const payload = (await response.json()) as Array<{ id: number; name?: string }>;
-  if (!payload?.[0]?.id) return null;
-  return { id: payload[0].id, name: payload[0].name || file.name };
+  // Garde-fou : jamais de requete pendante infinie (timeout dur 45 s).
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 45_000);
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/upload`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${jwt}` },
+      body: form,
+      cache: 'no-store',
+      signal: ctrl.signal,
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as Array<{ id: number; name?: string }>;
+    if (!payload?.[0]?.id) return null;
+    return { id: payload[0].id, name: payload[0].name || file.name };
+  } catch {
+    // Abort (timeout) ou erreur reseau : renvoyer null -> l'UI affiche « Echec ».
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // Depot d'un complement (remediation 1.7) : rattache le media au complement demande.

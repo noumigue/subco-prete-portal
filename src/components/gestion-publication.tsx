@@ -23,7 +23,12 @@ export function GestionPublicationView({ publication, appelId }: { publication: 
 
   async function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setPending(true); setError(null);
-    const r = await fn();
+    let r: { ok: boolean; error?: string };
+    try {
+      r = await fn();
+    } catch {
+      r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' };
+    }
     setPending(false);
     if (r.ok) router.refresh(); else setError(r.error || 'Action refusée.');
   }
