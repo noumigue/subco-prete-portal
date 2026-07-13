@@ -17,6 +17,10 @@ import type {
   GestionSeance,
   GestionSubventionDetail,
   GestionSubventionRow,
+  GestionAssistanceRow,
+  GestionAssistanceDetail,
+  GestionAssistanceOperateur,
+  GestionAssistanceRattachements,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -214,3 +218,28 @@ export const mesureEmettre = (subventionId: string, data: { description: string;
 export const mesureValider = (id: string) => gestionPost(`/api/gestion/mesures/${id}/valider`, {});
 export const suspendreSubvention = (id: string, motif?: string) => gestionPost(`/api/gestion/subventions/${id}/suspendre`, { motif });
 export const leverSubvention = (id: string) => gestionPost(`/api/gestion/subventions/${id}/lever`, {});
+
+// ——— M5 phase 4 : assistance côté équipe (§19) ———
+export async function getGestionAssistance(): Promise<GestionAssistanceRow[]> {
+  const res = await gestionGet<{ data: GestionAssistanceRow[] }>('/api/gestion/assistance');
+  return res?.data || [];
+}
+export async function getGestionAssistanceDetail(documentId: string): Promise<GestionAssistanceDetail | null> {
+  const res = await gestionGet<{ data: GestionAssistanceDetail }>(`/api/gestion/assistance/${documentId}`);
+  return res?.data || null;
+}
+export async function getGestionAssistanceOperateurs(): Promise<GestionAssistanceOperateur[]> {
+  const res = await gestionGet<{ data: GestionAssistanceOperateur[] }>('/api/gestion/assistance/operateurs');
+  return res?.data || [];
+}
+export async function getGestionAssistanceRattachements(userId: number): Promise<GestionAssistanceRattachements> {
+  const res = await gestionGet<{ data: GestionAssistanceRattachements }>(`/api/gestion/assistance/operateurs/${userId}/rattachements`);
+  return res?.data || { candidatures: [], subventions: [] };
+}
+// H1 — « prendre » sert aussi de « reprendre » (pas de blocage).
+export const assistancePrendre = (id: string) => gestionPost(`/api/gestion/assistance/${id}/prendre`, {});
+export const assistanceLiberer = (id: string) => gestionPost(`/api/gestion/assistance/${id}/liberer`, {});
+export const assistanceRepondre = (id: string, data: { corps: string; pieces?: number[] }) => gestionPost(`/api/gestion/assistance/${id}/repondre`, data);
+export const assistanceResoudre = (id: string) => gestionPost(`/api/gestion/assistance/${id}/resoudre`, {});
+export const assistanceCreer = (data: { operateurId: number; objet: string; corps: string; categorie?: string; concerneCandidature?: string; concerneSubvention?: string }) =>
+  gestionPost('/api/gestion/assistance', data);

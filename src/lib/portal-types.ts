@@ -642,3 +642,42 @@ export type GestionSubventionDetail = GestionSubventionRow & {
   mesures: GestionMesure[];
   rapports: GestionRapportRecu[];
 };
+
+// ——— M5 phase 4 : assistance côté équipe (§19) ———
+
+export type GestionAssistanceStatut = 'ouverte' | 'en_cours' | 'resolue';
+
+export type GestionAssistanceRow = {
+  documentId: string;
+  objet: string;
+  statut: GestionAssistanceStatut;
+  origine: 'operateur' | 'ugp';
+  operateur: string;
+  categorie: { code?: string; libelle?: string } | null;
+  concerneCandidature: { documentId: string; numeroDossier: string | null; titreProjet: string | null } | null;
+  concerneSubvention: { documentId: string; numeroConvention: string | null } | null;
+  priseEnChargePar: { id: number; nom: string } | null;
+  updatedAt: string | null;
+  dernierAuteur: 'operateur' | 'equipe' | null;
+  dernierLe: string | null;
+};
+
+export type GestionAssistanceMessage = {
+  auteur: 'operateur' | 'equipe';
+  corps: string;
+  envoyeLe: string | null;
+  pieces: { url?: string; name?: string }[];
+};
+
+export type GestionAssistanceDetail = GestionAssistanceRow & {
+  resolueLe: string | null;
+  resoluePar: 'operateur' | 'equipe' | null;
+  messages: GestionAssistanceMessage[];
+};
+
+export type GestionAssistanceOperateur = { id: number; nom: string; email: string; role: string };
+
+export type GestionAssistanceRattachements = {
+  candidatures: { documentId: string; numeroDossier: string | null; titreProjet: string }[];
+  subventions: { documentId: string; numeroConvention: string | null; statut: string }[];
+};
