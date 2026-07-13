@@ -7560,3 +7560,51 @@ a.gx-pc:hover { border-color: var(--emerald); }
 @media (max-width: 860px) {
   .gx-msg { max-width: 100%; }
 }
+
+/* ============================================================
+   M5 phase 5 — Non-objection outillée (§6.7)
+   ============================================================ */
+.gx-vtag { font-size: 10.5px; font-weight: 800; border-radius: 6px; padding: 1px 7px; background: #efe6f5; border: 1px solid #d9c8e8; color: #5a3d82; white-space: nowrap; }
+.gx-pill-prep { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-pill-trans { background: var(--sage-tile); border-color: var(--sage-border); color: var(--pine); }
+.gx-pill-obs { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+.gx-pill-acc { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+
+/* registre */
+.gx-nrow { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); box-shadow: var(--shadow-soft); padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; text-decoration: none; color: inherit; }
+.gx-nrow:hover { border-color: var(--sage-border); }
+.gx-nrow-main { flex: 1; min-width: 230px; }
+.gx-nrow-obj { font-size: 14.5px; font-weight: 600; margin: 0 0 3px; }
+.gx-nrow-meta { font-size: 12.5px; color: var(--muted-warm); display: flex; gap: 5px 12px; flex-wrap: wrap; align-items: center; }
+
+/* synthèse chiffrée */
+.gx-stbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.gx-stbl td { padding: 8px 6px; border-bottom: 1px solid var(--line-warm); }
+.gx-stbl tr:last-child td { border-bottom: 0; }
+.gx-stbl td:last-child { text-align: right; width: 120px; }
+.gx-stbl input { width: 90px; padding: 6px 8px; text-align: right; font-size: 14px; }
+.gx-autotag { font-size: 10.5px; color: var(--emerald-dark); font-weight: 700; margin-left: 6px; }
+
+/* paquet de pièces */
+.gx-plist .gx-pi { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-warm); font-size: 13.5px; flex-wrap: wrap; }
+.gx-plist .gx-pi:last-child { border-bottom: 0; }
+.gx-pn { flex: 1; min-width: 200px; }
+.gx-okp { color: var(--emerald-dark); font-weight: 700; font-size: 12px; text-decoration: none; }
+a.gx-okp:hover { text-decoration: underline; }
+.gx-manp { color: var(--gx-amber-tx); font-weight: 700; font-size: 12px; }
+
+/* génération / observations / accord */
+.gx-genline { display: flex; gap: 10px; align-items: center; background: var(--surface-2, #fbfaf4); border: 1px solid var(--line-warm); border-radius: 10px; padding: 11px 14px; font-size: 13.5px; margin-top: 10px; }
+.gx-obsbox { background: var(--gx-red-bg); border: 1px solid var(--gx-red-bd); border-radius: 10px; padding: 13px 15px; margin-bottom: 12px; }
+.gx-obsbox h4 { margin: 0 0 6px; font-size: 13.5px; color: var(--gx-red-tx); }
+.gx-accbanner { background: #dff1e6; border: 1px solid #bfe3cd; border-radius: 10px; padding: 13px 15px; font-size: 13.5px; color: var(--emerald-dark); font-weight: 600; margin-bottom: 12px; }
+.gx-accbanner a { color: var(--emerald-dark); }
+
+/* historique */
+.gx-hist .gx-hrow { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-warm); font-size: 12.5px; color: var(--muted-warm); flex-wrap: wrap; align-items: center; }
+.gx-hist .gx-hrow:last-child { border-bottom: 0; }
+
+/* grilles */
+.gx-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gx-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 860px) { .gx-grid2, .gx-grid3 { grid-template-columns: 1fr; } }
