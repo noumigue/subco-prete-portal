@@ -319,8 +319,8 @@ function DemandeRow({ subId, d, isUgp, run, busy, notify }: { subId: string; d: 
         </div>
       ) : null}
 
-      {/* Avis technique — Cabinet */}
-      {d.statut === 'avis_technique' ? (
+      {/* Avis technique — Cabinet (dès la soumission : l'API accepte soumise + avis_technique) */}
+      {d.statut === 'soumise' || d.statut === 'avis_technique' ? (
         !isUgp ? (
           <div className="gx-avis-form">
             <div className="gx-block-title" style={{ marginBottom: 8 }}>Avis technique (Cabinet) — §11.4</div>
