@@ -35,7 +35,13 @@ function fmtDate(v: string | null) {
 async function upload(file: File | undefined): Promise<{ id: number; name: string } | null> {
   if (!file) return null;
   const fd = new FormData(); fd.append('fichier', file);
-  return uploadFileAction(fd);
+  try {
+    return await uploadFileAction(fd);
+  } catch {
+    // Action serveur injoignable (déploiement en cours, page périmée, réseau) :
+    // retourner null plutôt que de laisser le spinner bloqué.
+    return null;
+  }
 }
 
 export function GestionNonObjectionDetail({ detail, canWrite }: { detail: GestionNoDetail; canWrite: boolean }) {
@@ -53,7 +59,12 @@ export function GestionNonObjectionDetail({ detail, canWrite }: { detail: Gestio
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => {
     setBusy(true);
     startTransition(async () => {
-      const r = await fn();
+      let r: { ok: boolean; error?: string };
+      try {
+        r = await fn();
+      } catch {
+        r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' };
+      }
       setBusy(false);
       notify(r.ok ? okMsg : (r.error || 'L’action a échoué.'));
     });

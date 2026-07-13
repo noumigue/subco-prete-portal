@@ -37,7 +37,12 @@ export function GestionAssistanceFil({ detail, userId }: { detail: GestionAssist
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string, after?: () => void) => {
     setBusy(true);
     startTransition(async () => {
-      const r = await fn();
+      let r: { ok: boolean; error?: string };
+      try {
+        r = await fn();
+      } catch {
+        r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' };
+      }
       setBusy(false);
       notify(r.ok ? okMsg : (r.error || 'L’action a échoué.'));
       if (r.ok && after) after();
@@ -51,9 +56,10 @@ export function GestionAssistanceFil({ detail, userId }: { detail: GestionAssist
     if (!file) return;
     setUploading(true);
     const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
+    let up: { id: number; name: string } | null = null;
+    try { up = await uploadFileAction(fd); } catch { up = null; }
     setUploading(false);
-    if (up) { setPiece(up); notify(`Pièce jointe : ${up.name}`); } else notify('Échec du téléversement.');
+    if (up) { setPiece(up); notify(`Pièce jointe : ${up.name}`); } else notify('Échec du téléversement — rechargez la page et réessayez.');
   };
 
   return (

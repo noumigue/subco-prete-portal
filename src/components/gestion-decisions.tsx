@@ -24,7 +24,12 @@ export function GestionDecisionsView({ decisions, appelId }: { decisions: Gestio
 
   async function run(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setPending(true); setError(null);
-    const r = await fn();
+    let r: { ok: boolean; error?: string };
+    try {
+      r = await fn();
+    } catch {
+      r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' };
+    }
     setPending(false);
     if (r.ok) router.refresh();
     else setError(r.error || 'Action refusée.');
@@ -34,9 +39,11 @@ export function GestionDecisionsView({ decisions, appelId }: { decisions: Gestio
   async function onPvSigne(file: File) {
     setPending(true); setError(null);
     const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
-    if (!up) { setPending(false); setError('Échec du téléversement.'); return; }
-    const r = await joindrePvSigneAction(appelId, up.id);
+    let up: { id: number; name: string } | null = null;
+    try { up = await uploadFileAction(fd); } catch { up = null; }
+    if (!up) { setPending(false); setError('Échec du téléversement — rechargez la page et réessayez.'); return; }
+    let r: { ok: boolean; error?: string };
+    try { r = await joindrePvSigneAction(appelId, up.id); } catch { r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' }; }
     setPending(false);
     if (r.ok) router.refresh(); else setError(r.error || 'Échec.');
   }

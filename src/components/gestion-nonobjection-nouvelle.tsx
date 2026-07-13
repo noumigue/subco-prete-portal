@@ -23,9 +23,10 @@ export function GestionNonObjectionNouvelle({ cas }: { cas: GestionNoCas[] }) {
     if (!file) return;
     setUploading(true);
     const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
+    let up: { id: number; name: string } | null = null;
+    try { up = await uploadFileAction(fd); } catch { up = null; }
     setUploading(false);
-    if (up) setPiece(up); else setError('Échec du téléversement.');
+    if (up) setPiece(up); else setError('Échec du téléversement — rechargez la page et réessayez.');
   };
 
   const submit = () => {

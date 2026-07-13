@@ -62,7 +62,12 @@ export function GestionSubventionDossier({ detail, role }: { detail: GestionSubv
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => {
     setBusy(true);
     startTransition(async () => {
-      const r = await fn();
+      let r: { ok: boolean; error?: string };
+      try {
+        r = await fn();
+      } catch {
+        r = { ok: false, error: 'Connexion interrompue — rechargez la page et réessayez.' };
+      }
       setBusy(false);
       notify(r.ok ? okMsg : (r.error || 'L’action a échoué.'));
     });
@@ -182,9 +187,10 @@ function PreparationView({ detail, isUgp, run, busy, notify }: ViewProps) {
     if (!file) return;
     setUploading(true);
     const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
+    let up: { id: number; name: string } | null = null;
+    try { up = await uploadFileAction(fd); } catch { up = null; }
     setUploading(false);
-    if (up) { setPdf(up); notify(`PDF joint : ${up.name}`); } else notify('Échec du téléversement.');
+    if (up) { setPdf(up); notify(`PDF joint : ${up.name}`); } else notify('Échec du téléversement — rechargez la page et réessayez.');
   };
 
   return (
@@ -283,9 +289,10 @@ function DemandeRow({ subId, d, isUgp, run, busy, notify }: { subId: string; d: 
     if (!file) return;
     setUploading(true);
     const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
+    let up: { id: number; name: string } | null = null;
+    try { up = await uploadFileAction(fd); } catch { up = null; }
     setUploading(false);
-    if (up) { setAcd(up); notify(`ACD jointe : ${up.name}`); } else notify('Échec du téléversement.');
+    if (up) { setAcd(up); notify(`ACD jointe : ${up.name}`); } else notify('Échec du téléversement — rechargez la page et réessayez.');
   };
 
   return (

@@ -33,7 +33,11 @@ export function GestionAssistanceNouvelle({
     setRattachements({ candidatures: [], subventions: [] });
     if (id !== '' && Number.isInteger(id)) {
       startTransition(async () => {
-        setRattachements(await rattachementsOperateurAction(id));
+        try {
+          setRattachements(await rattachementsOperateurAction(id));
+        } catch {
+          setRattachements({ candidatures: [], subventions: [] });
+        }
       });
     }
   };
