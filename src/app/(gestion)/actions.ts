@@ -21,6 +21,10 @@ import {
   observationsNonObjection,
   reversionNonObjection,
   getGestionNonObjectionPaquet,
+  seDepouillementProposer,
+  seDepouillementValider,
+  seDepouillementRenvoyer,
+  seGenererRapport,
   cloreAppel,
   cloreSeance,
   conditionActionRequise,
@@ -415,4 +419,19 @@ export async function reversionNonObjectionAction(id: string, ajustements: strin
 
 export async function getGestionNonObjectionPaquetClient(id: string) {
   return getGestionNonObjectionPaquet(id);
+}
+
+// ——— M6 : suivi-évaluation ———
+function revalSe() { revalidatePath('/gestion/se'); }
+export async function seDepouillementProposerAction(id: string, valeurs: Record<string, unknown>): Res {
+  const r = await seDepouillementProposer(id, valeurs); revalSe(); return r;
+}
+export async function seDepouillementValiderAction(id: string): Res {
+  const r = await seDepouillementValider(id); revalSe(); return r;
+}
+export async function seDepouillementRenvoyerAction(id: string): Res {
+  const r = await seDepouillementRenvoyer(id); revalSe(); return r;
+}
+export async function seGenererRapportAction(data: { periode: string; cohorteLabel: string; cohorte?: string }): Res {
+  const r = await seGenererRapport(data); revalSe(); return r;
 }

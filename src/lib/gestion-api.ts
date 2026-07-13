@@ -25,6 +25,10 @@ import type {
   GestionNoDetail,
   GestionNoCas,
   GestionNoPaquet,
+  GestionSeTableauDeBord,
+  GestionSeIndicateur,
+  GestionSeDepouillement,
+  GestionSeRapport,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -277,3 +281,26 @@ export const transmettreNonObjection = (id: string) => gestionPost(`/api/gestion
 export const accordNonObjection = (id: string, documentFileId: number) => gestionPost(`/api/gestion/non-objection/${id}/accord`, { documentFileId });
 export const observationsNonObjection = (id: string, observations: string) => gestionPost(`/api/gestion/non-objection/${id}/observations`, { observations });
 export const reversionNonObjection = (id: string, ajustements: string) => gestionPost(`/api/gestion/non-objection/${id}/reversion`, { ajustements });
+
+// ——— M6 : suivi-évaluation (§14) ———
+function coh(cohorte?: string) { return cohorte && cohorte !== 'toutes' ? `?cohorte=${encodeURIComponent(cohorte)}` : ''; }
+export async function getSeTableauDeBord(cohorte?: string): Promise<GestionSeTableauDeBord | null> {
+  const res = await gestionGet<{ data: GestionSeTableauDeBord }>(`/api/gestion/se/tableau-de-bord${coh(cohorte)}`);
+  return res?.data || null;
+}
+export async function getSeIndicateurs(cohorte?: string): Promise<GestionSeIndicateur[]> {
+  const res = await gestionGet<{ data: GestionSeIndicateur[] }>(`/api/gestion/se/indicateurs${coh(cohorte)}`);
+  return res?.data || [];
+}
+export async function getSeDepouillements(): Promise<GestionSeDepouillement[]> {
+  const res = await gestionGet<{ data: GestionSeDepouillement[] }>('/api/gestion/se/depouillements');
+  return res?.data || [];
+}
+export async function getSeRapports(): Promise<GestionSeRapport[]> {
+  const res = await gestionGet<{ data: GestionSeRapport[] }>('/api/gestion/se/rapports');
+  return res?.data || [];
+}
+export const seDepouillementProposer = (id: string, valeurs: Record<string, unknown>) => gestionPost(`/api/gestion/se/depouillements/${id}/proposer`, { valeurs });
+export const seDepouillementValider = (id: string) => gestionPost(`/api/gestion/se/depouillements/${id}/valider`, {});
+export const seDepouillementRenvoyer = (id: string) => gestionPost(`/api/gestion/se/depouillements/${id}/renvoyer`, {});
+export const seGenererRapport = (data: { periode: string; cohorteLabel: string; cohorte?: string }) => gestionPost('/api/gestion/se/rapports', data);

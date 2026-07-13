@@ -7608,3 +7608,65 @@ a.gx-okp:hover { text-decoration: underline; }
 .gx-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .gx-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 @media (max-width: 860px) { .gx-grid2, .gx-grid3 { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   M6 — Suivi-évaluation (§14)
+   ============================================================ */
+.gx-se-filters { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted-warm); }
+.gx-se-r { margin-left: auto; font-weight: 400; font-size: 11.5px; text-transform: none; letter-spacing: 0; color: var(--muted-warm); }
+
+/* entonnoir */
+.gx-fun { display: flex; flex-direction: column; gap: 8px; }
+.gx-frow { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.gx-fl { width: 110px; color: var(--muted-warm); }
+.gx-fbar { flex: 1; height: 26px; background: var(--sage-tile); border-radius: 8px; overflow: hidden; }
+.gx-fbar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--emerald), var(--emerald-dark)); border-radius: 8px; }
+.gx-fv { width: 80px; text-align: right; font-weight: 800; color: var(--pine); font-variant-numeric: tabular-nums; }
+.gx-fp { width: 52px; text-align: right; font-size: 11.5px; color: var(--muted-warm); font-variant-numeric: tabular-nums; }
+
+/* tuiles exécution */
+.gx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gx-tile { border: 1px solid var(--line-warm); border-radius: 11px; padding: 13px 15px; background: var(--surface-2, #fbfdfb); }
+.gx-tl { font-size: 11.5px; color: var(--muted-warm); text-transform: uppercase; letter-spacing: .4px; font-weight: 700; }
+.gx-tv { font-size: 21px; font-weight: 800; color: var(--pine); margin-top: 2px; }
+.gx-ts { font-size: 11.5px; color: var(--muted-warm); }
+
+/* délais */
+.gx-dlgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gx-dl { border: 1px solid var(--line-warm); border-radius: 11px; padding: 11px 13px; text-align: center; }
+.gx-dv { font-size: 19px; font-weight: 800; color: var(--pine); }
+.gx-dl-n { font-size: 11.5px; color: var(--muted-warm); }
+
+/* alertes */
+.gx-alr { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-warm); font-size: 13.5px; flex-wrap: wrap; }
+.gx-alr:last-child { border-bottom: 0; }
+.gx-ai { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--gx-amber-bg); border: 1px solid var(--gx-amber-bd); flex-shrink: 0; }
+.gx-at { flex: 1; min-width: 220px; display: flex; flex-direction: column; }
+.gx-al-n { font-weight: 600; }
+.gx-am { font-size: 12px; color: var(--muted-warm); }
+
+/* indicateurs */
+.gx-itbl { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+.gx-itbl th, .gx-itbl td { padding: 9px 8px; border-bottom: 1px solid var(--line-warm); text-align: left; vertical-align: middle; }
+.gx-itbl th { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted-warm); font-weight: 700; }
+.gx-itbl td.gx-n { text-align: right; font-weight: 800; color: var(--pine); white-space: nowrap; }
+.gx-itbl td.gx-c { text-align: right; color: var(--muted-warm); white-space: nowrap; }
+.gx-fam { background: var(--surface-2, #fbfaf4); font-weight: 700; color: var(--pine); }
+.gx-mtag { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 7px; border: 1px solid; }
+.gx-mtag.calcule { background: var(--ok-bg, #dff1e6); border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-mtag.saisi { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-ecart-ok { color: var(--emerald-dark); font-weight: 700; }
+.gx-ecart-ko { color: var(--gx-red-tx); font-weight: 700; }
+
+/* dépouillement */
+.gx-drow2 { background: #fff; border: 1px solid var(--line-warm); border-radius: 11px; padding: 13px 15px; margin-bottom: 10px; box-shadow: var(--shadow-soft); }
+.gx-drow2-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.gx-dn2 { font-weight: 700; color: var(--pine); }
+.gx-dm2 { font-size: 12.5px; color: var(--muted-warm); flex: 1; min-width: 160px; }
+.gx-dgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 11px; }
+.gx-dgrid input { text-align: right; }
+.gx-dgrid .gx-wide { grid-column: 1 / -1; }
+
+@media (max-width: 860px) {
+  .gx-tiles, .gx-dlgrid, .gx-dgrid { grid-template-columns: 1fr 1fr; }
+}
