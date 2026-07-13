@@ -6,6 +6,12 @@ import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset 
 import { uploadPortalFile } from '@/lib/portal-api';
 import {
   assignerEvaluateur,
+  assistanceCreer,
+  assistanceLiberer,
+  assistancePrendre,
+  assistanceRepondre,
+  assistanceResoudre,
+  getGestionAssistanceRattachements,
   cloreAppel,
   cloreSeance,
   conditionActionRequise,
@@ -338,4 +344,30 @@ export async function suspendreSubventionAction(subId: string, motif: string): R
 }
 export async function leverSubventionAction(subId: string): Res {
   const r = await leverSubvention(subId); revalSub(subId); return r;
+}
+
+// ——— M5 phase 4 : assistance côté équipe ———
+function revalAssist(id?: string) {
+  if (id) revalidatePath(`/gestion/assistance/${id}`);
+  revalidatePath('/gestion/assistance');
+}
+
+export async function prendreAssistanceAction(id: string): Res {
+  const r = await assistancePrendre(id); revalAssist(id); return r;
+}
+export async function libererAssistanceAction(id: string): Res {
+  const r = await assistanceLiberer(id); revalAssist(id); return r;
+}
+export async function repondreAssistanceEquipeAction(id: string, data: { corps: string; pieces?: number[] }): Res {
+  const r = await assistanceRepondre(id, data); revalAssist(id); return r;
+}
+export async function resoudreAssistanceEquipeAction(id: string): Res {
+  const r = await assistanceResoudre(id); revalAssist(id); return r;
+}
+export async function creerAssistanceOperateurAction(data: { operateurId: number; objet: string; corps: string; categorie?: string; concerneCandidature?: string; concerneSubvention?: string }): Res {
+  const r = await assistanceCreer(data); revalAssist(); return r;
+}
+// Rattachements de l'opérateur choisi (formulaire H4) — lecture à la demande côté client.
+export async function rattachementsOperateurAction(userId: number) {
+  return getGestionAssistanceRattachements(userId);
 }

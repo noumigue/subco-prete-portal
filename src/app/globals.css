@@ -7532,3 +7532,31 @@ a.gx-pc:hover { border-color: var(--emerald); }
 @media (max-width: 860px) {
   .gx-signform { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   M5 phase 4 — Assistance côté équipe (file, fil, prise en charge)
+   ============================================================ */
+.gx-tag-origin { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; background: #efe6f5; border: 1px solid #d9c8e8; color: #5a3d82; white-space: nowrap; }
+
+/* barre de prise en charge (H1) */
+.gx-claimbar { background: var(--gx-amber-bg); border: 1px solid var(--gx-amber-bd); border-radius: 10px; padding: 11px 14px; font-size: 13.5px; margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.gx-claimbar.mine { background: var(--sage-tile); border-color: var(--sage-border); }
+
+/* fil de conversation (bulles opérateur à gauche / équipe à droite) */
+.gx-thread { margin: 4px 0 8px; }
+.gx-msg { max-width: 86%; margin-bottom: 13px; }
+.gx-msg.is-eq { margin-left: auto; }
+.gx-msg-who { font-size: 11.5px; font-weight: 700; color: var(--muted-warm); margin: 0 0 3px; text-transform: uppercase; letter-spacing: .4px; }
+.gx-msg.is-eq .gx-msg-who { text-align: right; }
+.gx-msg-bubble { border-radius: 12px; padding: 11px 14px; font-size: 14px; border: 1px solid var(--line-warm); background: #fff; white-space: pre-line; }
+.gx-msg.is-eq .gx-msg-bubble { background: var(--sage-tile); border-color: var(--sage-border); }
+
+/* bandeau résolu + zone de réponse */
+.gx-resolved-banner { background: #dff1e6; border: 1px solid #bfe3cd; border-radius: 10px; padding: 12px 15px; font-size: 13.5px; color: var(--emerald-dark); font-weight: 600; margin-bottom: 16px; }
+.gx-replybox { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); box-shadow: var(--shadow-soft); padding: 14px; margin-top: 8px; }
+.gx-reply-actions { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.gx-resolve-line { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line-warm); display: flex; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 860px) {
+  .gx-msg { max-width: 100%; }
+}

@@ -10,6 +10,7 @@ type GestionShellProps = {
   children: React.ReactNode;
   session: PortalSession;
   pendingCount: number;
+  assistCount?: number;
 };
 
 // Metadonnees de role : nom affiche (session.orgName sert de nom de personne pour les
@@ -25,7 +26,7 @@ function initials(nom: string) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || 'SP';
 }
 
-export function GestionShell({ children, session, pendingCount }: GestionShellProps) {
+export function GestionShell({ children, session, pendingCount, assistCount = 0 }: GestionShellProps) {
   const pathname = usePathname();
   const isFileActive = pathname.startsWith('/gestion/dossiers');
   const meta = ROLE_META[session.role] || ROLE_META.instructeur;
@@ -71,14 +72,14 @@ export function GestionShell({ children, session, pendingCount }: GestionShellPr
                   <Link className={`gx-nav-item${active('/gestion/decisions')}`} href="/gestion/decisions"><span className="gx-ic"><GestionNavIcon name="decisions" /></span>Décisions du Comité</Link>
                   <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic"><GestionNavIcon name="publication" /></span>Publication</Link>
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions</Link>
-                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                  <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
                 </>
               ) : (
                 <>
                   <Link className={`gx-nav-item${active('/gestion/evaluations')}`} href="/gestion/evaluations"><span className="gx-ic"><GestionNavIcon name="evaluations" /></span>Mes évaluations</Link>
                   <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions<span className="gx-phase-note" style={{ marginLeft: 6 }}>Suivi technique</span></Link>
-                  <span className="gx-nav-item disabled"><span className="gx-ic"><GestionNavIcon name="assistance" /></span><span>Assistance<span className="gx-phase-note">Phase 4</span></span></span>
+                  <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
                 </>
               )}
             </>
