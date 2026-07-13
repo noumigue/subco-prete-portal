@@ -21,6 +21,10 @@ import type {
   GestionAssistanceDetail,
   GestionAssistanceOperateur,
   GestionAssistanceRattachements,
+  GestionNoRow,
+  GestionNoDetail,
+  GestionNoCas,
+  GestionNoPaquet,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -243,3 +247,33 @@ export const assistanceRepondre = (id: string, data: { corps: string; pieces?: n
 export const assistanceResoudre = (id: string) => gestionPost(`/api/gestion/assistance/${id}/resoudre`, {});
 export const assistanceCreer = (data: { operateurId: number; objet: string; corps: string; categorie?: string; concerneCandidature?: string; concerneSubvention?: string }) =>
   gestionPost('/api/gestion/assistance', data);
+
+// ——— M5 phase 5 : non-objection outillée (§6.7) ———
+export async function getGestionNonObjections(): Promise<GestionNoRow[]> {
+  const res = await gestionGet<{ data: GestionNoRow[] }>('/api/gestion/non-objection');
+  return res?.data || [];
+}
+export async function getGestionNonObjection(documentId: string): Promise<GestionNoDetail | null> {
+  const res = await gestionGet<{ data: GestionNoDetail }>(`/api/gestion/non-objection/${documentId}`);
+  return res?.data || null;
+}
+export async function getGestionNonObjectionCas(): Promise<GestionNoCas[]> {
+  const res = await gestionGet<{ data: GestionNoCas[] }>('/api/gestion/non-objection/cas');
+  return res?.data || [];
+}
+export async function getGestionNonObjectionPaquet(documentId: string): Promise<GestionNoPaquet> {
+  const res = await gestionGet<{ data: GestionNoPaquet }>(`/api/gestion/non-objection/${documentId}/paquet`);
+  return res?.data || { files: [] };
+}
+export const creerNonObjection = (data: { casDocumentId: string; objet: string; reference?: string; demandeRedigeeFileId?: number }) =>
+  gestionPost('/api/gestion/non-objection', data);
+export const majSyntheseNonObjection = (id: string, data: { recalculer?: boolean; valeurs?: { recus: number; complets: number; eligibles: number; evalues: number; recommandes: number } }) =>
+  gestionPost(`/api/gestion/non-objection/${id}/synthese`, data);
+export const joindrePieceNonObjection = (id: string, slot: 'es' | 'fiduciaire', fileId: number) =>
+  gestionPost(`/api/gestion/non-objection/${id}/piece`, { slot, fileId });
+export const genererNonObjection = (id: string, data: { lieu?: string; date?: string; signataire?: string }) =>
+  gestionPost(`/api/gestion/non-objection/${id}/generer`, data);
+export const transmettreNonObjection = (id: string) => gestionPost(`/api/gestion/non-objection/${id}/transmettre`, {});
+export const accordNonObjection = (id: string, documentFileId: number) => gestionPost(`/api/gestion/non-objection/${id}/accord`, { documentFileId });
+export const observationsNonObjection = (id: string, observations: string) => gestionPost(`/api/gestion/non-objection/${id}/observations`, { observations });
+export const reversionNonObjection = (id: string, ajustements: string) => gestionPost(`/api/gestion/non-objection/${id}/reversion`, { ajustements });

@@ -1,9 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionPublication } from '@/lib/portal-types';
-import { publierDecisionsAction, setNonObjectionAction, uploadFileAction } from '@/app/(gestion)/actions';
+import { publierDecisionsAction, setNonObjectionAction } from '@/app/(gestion)/actions';
 
 const DEC_LBL: Record<string, string> = { retenu: 'Retenu', conditions: 'Retenu sous conditions', rejete: 'Rejeté', attente: "Liste d'attente" };
 
@@ -26,16 +27,6 @@ export function GestionPublicationView({ publication, appelId }: { publication: 
     setPending(false);
     if (r.ok) router.refresh(); else setError(r.error || 'Action refusée.');
   }
-  async function onAccord(file: File) {
-    setPending(true); setError(null);
-    const fd = new FormData(); fd.append('fichier', file);
-    const up = await uploadFileAction(fd);
-    if (!up) { setPending(false); setError('Échec du téléversement.'); return; }
-    const r = await setNonObjectionAction(appelId, { action: 'accordee', documentFileId: up.id });
-    setPending(false);
-    if (r.ok) router.refresh(); else setError(r.error || 'Échec.');
-  }
-
   return (
     <>
       <h1 className="gx-page-title">Publication des décisions — {publication.appel.codeCohorte} {publication.publiee ? <span className="gx-statuschip gx-sc-val">Publiée</span> : null}</h1>
@@ -51,21 +42,14 @@ export function GestionPublicationView({ publication, appelId }: { publication: 
         <div className="gx-nobj">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <b>Non-objection Banque mondiale</b>
-            <span className="gx-nobj-st">{nobj.statut === 'a_demander' ? 'À demander' : nobj.statut === 'transmise' ? 'Demande transmise' : '✓ Accord reçu'}</span>
+            <span className="gx-nobj-st">{nobj.statut === 'accordee' ? '✓ Accord reçu' : nobj.statut === 'transmise' ? 'Demande transmise' : nobj.statut === 'observations' ? 'Observations reçues' : 'En préparation'}</span>
           </div>
-          <ul style={{ margin: '8px 0', paddingLeft: 18, fontSize: 12.5, color: 'var(--muted-warm)' }}>
-            <li>Pièces prêtes (Annexe 14) : rapport d&apos;évaluation · PV du Comité · liste des projets recommandés · tableau des scores · synthèse d&apos;éligibilité · note E&S</li>
-          </ul>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            {nobj.statut === 'a_demander' ? <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => run(() => setNonObjectionAction(appelId, { action: 'transmise' }))}>Marquer « demande transmise »</button> : null}
-            {nobj.statut !== 'accordee' ? (
-              <label className="gx-btn gx-btn-primary gx-btn-sm" style={{ cursor: 'pointer' }}>
-                Enregistrer l&apos;accord reçu (document)
-                <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.heic,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" style={{ display: 'none' }} disabled={pending} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAccord(f); }} />
-              </label>
-            ) : <span style={{ fontSize: 12.5, color: 'var(--emerald-dark)', fontWeight: 600 }}>Accord enregistré{nobj.dateAccord ? ` le ${new Date(nobj.dateAccord).toLocaleDateString('fr-FR')}` : ''} · document joint</span>}
+          <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '8px 0 0' }}>
+            La demande (Annexe 14), sa génération, sa transmission et la réponse de la Banque mondiale se gèrent désormais dans l&apos;écran dédié. « Accordée » débloque cette publication (contrat inchangé).
+          </p>
+          <div style={{ marginTop: 10 }}>
+            <Link className="gx-btn gx-btn-ghost gx-btn-sm" href="/gestion/non-objection">Gérer la non-objection →</Link>
           </div>
-          <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '8px 0 0' }}>Transmission via canaux officiels hors plateforme ; l&apos;outillage complet de la demande (Annexe 14) = phase 5.</p>
         </div>
       ) : null}
 

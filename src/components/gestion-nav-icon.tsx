@@ -67,6 +67,18 @@ export function GestionNavIcon({ name }: { name?: string }) {
           <line x1="4.93" y1="19.07" x2="9.17" y2="14.83" />
         </svg>
       );
+    case 'nonobjection':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="3" y1="21" x2="21" y2="21" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+          <path d="M5 10v9" />
+          <path d="M19 10v9" />
+          <path d="M9 10v9" />
+          <path d="M15 10v9" />
+          <path d="M12 3 3 8h18z" />
+        </svg>
+      );
     case 'seance':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">

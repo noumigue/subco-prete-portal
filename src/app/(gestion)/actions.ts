@@ -12,6 +12,15 @@ import {
   assistanceRepondre,
   assistanceResoudre,
   getGestionAssistanceRattachements,
+  creerNonObjection,
+  majSyntheseNonObjection,
+  joindrePieceNonObjection,
+  genererNonObjection,
+  transmettreNonObjection,
+  accordNonObjection,
+  observationsNonObjection,
+  reversionNonObjection,
+  getGestionNonObjectionPaquet,
   cloreAppel,
   cloreSeance,
   conditionActionRequise,
@@ -370,4 +379,40 @@ export async function creerAssistanceOperateurAction(data: { operateurId: number
 // Rattachements de l'opérateur choisi (formulaire H4) — lecture à la demande côté client.
 export async function rattachementsOperateurAction(userId: number) {
   return getGestionAssistanceRattachements(userId);
+}
+
+// ——— M5 phase 5 : non-objection outillée ———
+function revalNo(id?: string) {
+  if (id) revalidatePath(`/gestion/non-objection/${id}`);
+  revalidatePath('/gestion/non-objection');
+}
+export async function creerNonObjectionAction(data: { casDocumentId: string; objet: string; reference?: string; demandeRedigeeFileId?: number }): Promise<{ ok: boolean; error?: string; documentId?: string }> {
+  const r = await creerNonObjection(data) as { ok: boolean; error?: string; documentId?: string };
+  revalNo();
+  return r;
+}
+export async function majSyntheseNonObjectionAction(id: string, data: { recalculer?: boolean; valeurs?: { recus: number; complets: number; eligibles: number; evalues: number; recommandes: number } }): Res {
+  const r = await majSyntheseNonObjection(id, data); revalNo(id); return r;
+}
+export async function joindrePieceNonObjectionAction(id: string, slot: 'es' | 'fiduciaire', fileId: number): Res {
+  const r = await joindrePieceNonObjection(id, slot, fileId); revalNo(id); return r;
+}
+export async function genererNonObjectionAction(id: string, data: { lieu?: string; date?: string; signataire?: string }): Res {
+  const r = await genererNonObjection(id, data); revalNo(id); return r;
+}
+export async function transmettreNonObjectionAction(id: string): Res {
+  const r = await transmettreNonObjection(id); revalNo(id); return r;
+}
+export async function accordNonObjectionAction(id: string, documentFileId: number): Res {
+  const r = await accordNonObjection(id, documentFileId); revalNo(id); return r;
+}
+export async function observationsNonObjectionAction(id: string, observations: string): Res {
+  const r = await observationsNonObjection(id, observations); revalNo(id); return r;
+}
+export async function reversionNonObjectionAction(id: string, ajustements: string): Res {
+  const r = await reversionNonObjection(id, ajustements); revalNo(id); return r;
+}
+
+export async function getGestionNonObjectionPaquetClient(id: string) {
+  return getGestionNonObjectionPaquet(id);
 }

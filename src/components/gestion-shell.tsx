@@ -73,6 +73,7 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
                   <Link className={`gx-nav-item${active('/gestion/publication')}`} href="/gestion/publication"><span className="gx-ic"><GestionNavIcon name="publication" /></span>Publication</Link>
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions</Link>
                   <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
+                  <Link className={`gx-nav-item${active('/gestion/non-objection')}`} href="/gestion/non-objection"><span className="gx-ic"><GestionNavIcon name="nonobjection" /></span>Non-objection</Link>
                 </>
               ) : (
                 <>
@@ -80,6 +81,7 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
                   <Link className={`gx-nav-item${active('/gestion/rapport')}`} href="/gestion/rapport"><span className="gx-ic"><GestionNavIcon name="rapport" /></span>Rapport &amp; classement</Link>
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions<span className="gx-phase-note" style={{ marginLeft: 6 }}>Suivi technique</span></Link>
                   <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
+                  <Link className={`gx-nav-item${active('/gestion/non-objection')}`} href="/gestion/non-objection"><span className="gx-ic"><GestionNavIcon name="nonobjection" /></span>Non-objection<span className="gx-phase-note" style={{ marginLeft: 6 }}>Lecture</span></Link>
                 </>
               )}
             </>

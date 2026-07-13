@@ -570,7 +570,7 @@ export type GestionDecisions = {
 export type GestionPublication = {
   seanceClose: boolean;
   publiee: boolean;
-  nonObjection: { requise: boolean; statut: 'a_demander' | 'transmise' | 'accordee'; dateAccord: string | null };
+  nonObjection: { requise: boolean; statut: 'a_demander' | 'en_preparation' | 'transmise' | 'accordee' | 'observations'; dateAccord: string | null };
   pvSigne: boolean;
   appel: { documentId: string; nom?: string; codeCohorte?: string };
   dossiers: { op: string; decisionComite: string | null }[];
@@ -681,3 +681,47 @@ export type GestionAssistanceRattachements = {
   candidatures: { documentId: string; numeroDossier: string | null; titreProjet: string }[];
   subventions: { documentId: string; numeroConvention: string | null; statut: string }[];
 };
+
+// ——— M5 phase 5 : non-objection outillée (§6.7) ———
+
+export type GestionNoStatut = 'en_preparation' | 'transmise' | 'accordee' | 'observations';
+export type GestionNoCas = { documentId: string; code: string; libelle: string };
+export type GestionNoMedia = { url?: string; name?: string } | null;
+
+export type GestionNoRow = {
+  documentId: string;
+  objet: string;
+  type: { code?: string; libelle?: string } | null;
+  reference: string | null;
+  statut: GestionNoStatut;
+  version: number;
+  selection: boolean;
+  requise: boolean;
+  dateTransmission: string | null;
+  dateAccord: string | null;
+};
+
+export type GestionNoSynthese = { recus: number; complets: number; eligibles: number; evalues: number; recommandes: number };
+
+export type GestionNoVersion = {
+  version: number;
+  dateTransmission: string | null;
+  observations: string | null;
+  ajustements: string | null;
+  demandePdf: GestionNoMedia;
+};
+
+export type GestionNoDetail = GestionNoRow & {
+  appel: { documentId: string; nom?: string; codeCohorte?: string } | null;
+  synthese: GestionNoSynthese;
+  pieces: { rapport: GestionNoMedia; pvSigne: GestionNoMedia; es: GestionNoMedia; fiduciaire: GestionNoMedia };
+  demandePdf: GestionNoMedia;
+  demandeRedigee: GestionNoMedia;
+  document: GestionNoMedia;
+  observations: string | null;
+  ajustements: string | null;
+  dateObservations: string | null;
+  versions: GestionNoVersion[];
+};
+
+export type GestionNoPaquet = { files: { label: string; url: string }[] };
