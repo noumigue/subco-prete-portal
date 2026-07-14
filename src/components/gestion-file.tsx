@@ -28,6 +28,7 @@ function tabOf(d: GestionDossierRow): Tab {
 function Pill({ d }: { d: GestionDossierRow }) {
   if (tabOf(d) === 'clos') return <span className="gx-pill gx-pill-rej">{d.statutClos || 'Clos'}</span>;
   if (d.enValidation) return <span className="gx-pill gx-pill-val">⏳ À valider (UGP)</span>;
+  if (d.complementRecu) return <span className="gx-pill gx-pill-ok">Compléments reçus</span>;
   if (d.complementEnCours) return <span className="gx-pill gx-pill-comp">Compléments demandés</span>;
   return null;
 }

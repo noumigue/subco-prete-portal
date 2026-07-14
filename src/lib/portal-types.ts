@@ -355,7 +355,17 @@ export type GestionDossierRow = {
   enValidation: boolean;
   enValidationPhase: 'completude' | 'eligibilite' | null;
   complementEnCours: boolean;
+  complementRecu?: boolean;
   statutClos: string | null;
+};
+
+export type GestionComplement = {
+  documentId: string;
+  pieceDemandee: string;
+  echeance: string | null;
+  statut: 'demande' | 'fourni';
+  fichierUrl: string | null;
+  fourniLe: string | null;
 };
 
 export type GestionInstructionCompletude = {
@@ -396,6 +406,7 @@ export type GestionDossierDetail = GestionDossierRow & {
   instructionEligibilite: GestionInstructionEligibilite | null;
   referentiels: GestionReferentiels;
   journal: GestionActe[];
+  complements?: GestionComplement[];
 };
 
 export type GestionAppel = {

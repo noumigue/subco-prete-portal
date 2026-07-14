@@ -7777,3 +7777,10 @@ a.gx-okp:hover { text-decoration: underline; }
 /* Bandeau d'erreur inline (interstitiel « Avant de commencer », etc.) */
 .operator-flash { border-radius: 10px; padding: 11px 14px; font-size: 14px; margin: 0 0 14px; }
 .operator-flash-error { background: var(--gx-red-bg, #f7ece9); border: 1px solid var(--gx-red-bd, #e2c4bc); color: var(--gx-red-tx, #9a5546); }
+
+/* Compléments reçus — versant équipe (gestion / complétude) */
+.gx-cpl-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid var(--line-warm); }
+.gx-cpl-row:last-of-type { border-bottom: 0; }
+.gx-cpl-piece { font-weight: 600; font-size: 13.5px; color: var(--ink-warm); flex: 1; min-width: 160px; }
+.gx-cpl-ech { font-size: 12px; color: var(--muted-warm); }
+.gx-cpl-wait { font-size: 12px; color: var(--gx-lock); font-style: italic; }
