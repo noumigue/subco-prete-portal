@@ -38,7 +38,7 @@ export default async function ValueChainDetailPage({ params }: Props) {
         </article>
         <div className="actions" style={{ marginTop: 16 }}>
           <Link href="/eligibilite" className="btn value-chain-secondary">Vérifier mon éligibilité</Link>
-          <Link href="/candidature/deposer" className="btn primary">Déposer une candidature</Link>
+          <Link href="/candidature" className="btn primary">Déposer une candidature</Link>
         </div>
       </div>
     </main>

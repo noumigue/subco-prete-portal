@@ -589,8 +589,8 @@ export default function EligibilityPage() {
                 </button>
 
                 {result.status === 'eligible' && (
-                  <Link href="/candidature/deposer" className="btn primary">
-                    Créer mon compte et candidater →
+                  <Link href="/candidature" className="btn primary">
+                    Préparer ma candidature →
                   </Link>
                 )}
                 {result.status === 'reserve' && (

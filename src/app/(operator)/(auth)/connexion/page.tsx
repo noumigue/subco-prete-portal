@@ -53,7 +53,7 @@ export default async function LoginPage({
           <span>demo-candidat@subco-prete.bi</span>
           <span>SubcoDemo2026!</span>
         </div>
-        <p className="operator-auth-alt">Pas encore de compte ? <Link href="/inscription">Créer un compte</Link></p>
+        <p className="operator-auth-alt">Pas encore de compte ? <Link href={next ? `/inscription?next=${encodeURIComponent(next)}` : '/inscription'}>Créer un compte</Link></p>
         {/* Couture G3 : rattrape une erreur d'aiguillage vers la porte interne. */}
         <p className="operator-auth-alt">Membre de l&apos;équipe du projet ? <Link href="/gestion/connexion">Espace de gestion</Link></p>
         </div>

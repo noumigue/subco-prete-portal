@@ -336,7 +336,7 @@ export default async function HomePage() {
               </p>
               <div className="actions">
                 <Link href="/eligibilite" className="btn ghost">Vérifier mon éligibilité</Link>
-                <Link href="/candidature/deposer" className="btn primary">
+                <Link href="/candidature" className="btn primary">
                   {homepage?.ctaLabel || 'Déposer une candidature'}
                 </Link>
               </div>

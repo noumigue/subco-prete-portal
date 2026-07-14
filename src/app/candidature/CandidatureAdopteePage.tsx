@@ -134,7 +134,7 @@ export default function CandidatureAdopteePage() {
             {"Cette page présente la préparation recommandée avant la soumission : prérequis, étapes, documents clés et critères d'éligibilité. La candidature se dépose ensuite via le formulaire en ligne."}
           </p>
           <div className="actions">
-            <Link href="/candidature/deposer" className="btn primary">Déposer une candidature</Link>
+            <Link href="/candidatures/nouvelle" className="btn primary">Déposer une candidature</Link>
             <Link href="#appels" className="btn secondary" style={heroSecondaryButtonStyle}>Voir les appels</Link>
           </div>
         </div>
@@ -257,12 +257,12 @@ export default function CandidatureAdopteePage() {
             <article className="candidature-bis-final-card">
               <h4>{"Je n'ai pas de compte"}</h4>
               <p style={finalCardTextStyle}>Créer un compte et commencer la candidature.</p>
-              <Link href="/candidature/deposer" className="btn primary">Créer mon compte →</Link>
+              <Link href="/inscription?next=/candidatures/nouvelle" className="btn primary">Créer mon compte →</Link>
             </article>
             <article className="candidature-bis-final-card">
               <h4>{"J'ai déjà un compte"}</h4>
               <p style={finalCardTextStyle}>Reprendre votre brouillon ou suivre votre dossier.</p>
-              <Link href="/candidature/deposer" className="btn secondary" style={finalSecondaryButtonStyle}>Me connecter →</Link>
+              <Link href="/connexion?next=/candidatures/nouvelle" className="btn secondary" style={finalSecondaryButtonStyle}>Me connecter →</Link>
             </article>
           </div>
         </div>

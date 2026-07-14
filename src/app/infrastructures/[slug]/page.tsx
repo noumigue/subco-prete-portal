@@ -41,7 +41,7 @@ export default async function InfrastructureDetailPage({ params }: Props) {
             </div>
             <div className="btns">
               <Link className="btn primary" href="/eligibilite">Tester mon éligibilité</Link>
-              <Link className="btn ghost" href="/candidature/deposer">Candidater</Link>
+              <Link className="btn ghost" href="/candidature">Candidater</Link>
             </div>
           </div>
 
