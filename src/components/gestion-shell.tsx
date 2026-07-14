@@ -46,8 +46,10 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
             <span className="gx-avatar">{initials(session.orgName)}</span>
             <span>{session.orgName}<span className="gx-rtag">{meta.rtag}</span></span>
           </div>
-          <form action={logoutGestionAction}>
-            <button type="submit" className="gx-logout">Déconnexion</button>
+          {/* Mobile uniquement : la barre latérale (qui porte « Se déconnecter ») est
+              masquée sous 860px — on garde donc une sortie dans le bandeau. */}
+          <form action={logoutGestionAction} className="gx-logout-mobile">
+            <button type="submit" className="gx-logout">Se déconnecter</button>
           </form>
         </div>
       </header>
@@ -92,9 +94,14 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
           )}
         </div>
         <div className="gx-nav-footer">
-          <Link className="gx-nav-item" style={{ fontSize: 13, color: 'var(--muted-warm)' }} href="/gestion/mon-compte">
+          <Link className="gx-nav-item" href="/gestion/mon-compte">
             <span className="gx-ic"><GestionNavIcon name="account" /></span>Mon compte
           </Link>
+          <form action={logoutGestionAction}>
+            <button type="submit" className="gx-nav-item gx-nav-logout">
+              <span className="gx-ic"><GestionNavIcon name="logout" /></span>Se déconnecter
+            </button>
+          </form>
         </div>
       </nav>
 
