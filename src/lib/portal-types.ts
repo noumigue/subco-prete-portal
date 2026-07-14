@@ -112,14 +112,6 @@ export type PortalContenuAide = {
   corps?: PortalBlock[];
 };
 
-export type PortalFaqEntree = {
-  id: number;
-  documentId: string;
-  question?: string;
-  reponse?: PortalBlock[];
-  ordre?: number;
-};
-
 // FAQ editoriale existante (content-type `faq-item`, partagee avec le site public).
 export type PortalFaqItem = {
   id: number;

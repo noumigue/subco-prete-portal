@@ -5,7 +5,6 @@ import type {
   PortalContenuAide,
   PortalDemandeAssistance,
   PortalDocumentTelechargeable,
-  PortalFaqEntree,
   PortalFaqItem,
   PortalFiliere,
   PortalNotification,
@@ -160,14 +159,6 @@ export async function getPortalResourceDocuments() {
   const response = await publicFetch<StrapiCollection<PortalResourceDocument>>(
     '/api/resource-documents?populate=file&sort[0]=title:asc',
     [REFERENTIEL_TAGS.resourceDocument],
-  );
-  return response?.data || [];
-}
-
-export async function getPortalFaqEntrees() {
-  const response = await publicFetch<StrapiCollection<PortalFaqEntree>>(
-    '/api/faq-entrees?sort[0]=ordre:asc',
-    [REFERENTIEL_TAGS.faqEntree],
   );
   return response?.data || [];
 }
