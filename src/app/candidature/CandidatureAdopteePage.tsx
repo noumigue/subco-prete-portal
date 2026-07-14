@@ -134,7 +134,7 @@ export default function CandidatureAdopteePage() {
             {"Cette page présente la préparation recommandée avant la soumission : prérequis, étapes, documents clés et critères d'éligibilité. La candidature se dépose ensuite via le formulaire en ligne."}
           </p>
           <div className="actions">
-            <Link href="/candidatures/nouvelle" className="btn primary">Déposer une candidature</Link>
+            <Link href="/candidatures/nouvelle" className="btn primary" target="_blank" rel="noopener noreferrer" aria-label="Déposer une candidature (nouvel onglet)">Déposer une candidature ↗</Link>
             <Link href="#appels" className="btn secondary" style={heroSecondaryButtonStyle}>Voir les appels</Link>
           </div>
         </div>
