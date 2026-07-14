@@ -24,22 +24,24 @@ const TABS: [Tab, string][] = [
 const ROLES: [string, string][] = [['instructeur', 'instructeur'], ['ugp', 'ugp'], ['comite', 'comite']];
 
 // L4 — annuaire (où change-t-on X ?). Aide à la navigation, pas une donnée métier :
-// l'admin Strapi reste l'éditeur ; cet écran oriente, il ne duplique aucun formulaire.
-const REFS: [string, string, string][] = [
-  ['Provinces & communes', 'Cascade territoriale (réforme 2025 : 5 provinces / 42 communes) — M3, profils, back-office', 'Référentiels'],
-  ['Filières', '5 filières prioritaires + projet transversal — cartes publiques, M3, filtres S&E', 'Référentiels'],
-  ['Types d’infrastructure', 'Exemples de référence de l’info-bulle M3 (champ libre, jamais un menu fermé)', 'Référentiels'],
-  ['Types de contrepartie', 'Numéraire / nature / mixte — M3 étape 3, contrôle ≥ 20 %', 'Référentiels'],
-  ['Statuts de site & niveaux de maturité', 'Listes M3 étape 2', 'Référentiels'],
-  ['Cohortes / appels (AAP)', 'Fenêtres de candidature, dates, cohorte pilote', 'Appels'],
-  ['Types de documents (Annexe 9)', 'Les 18 pièces par slot — M3 étape 4, complétude Annexe 11', 'Référentiels'],
-  ['Barème d’évaluation', 'Blocs A/B, pondérations, bonus, seuils de bande — arbitrage E1 réversible', 'Barème'],
-  ['Paramètres du Comité', 'Quorum (placeholder 5/7), nombre de membres', 'Paramètres'],
-  ['Paramètres de décaissement', 'Délai indicatif de traitement (§11.5, à confirmer)', 'Paramètres'],
-  ['Catégories d’assistance', 'Ma candidature / Ma subvention / Problème technique / Autre', 'Référentiels'],
-  ['Cas de non-objection', 'Les 9 cas 6.7.1 a–i — liste adaptable', 'Référentiels'],
-  ['Indicateurs S&E', '17 indicateurs, 5 familles 14.3, mode calculé/saisi, cibles éditables', 'Référentiels'],
-  ['Contenus éditoriaux', 'FAQ (dont canaux MGP), documents téléchargeables, bandes du site public', 'Contenus CMS'],
+// le CMS reste l'éditeur ; cet écran oriente, il ne duplique aucun formulaire.
+// 4e élément = chemin content-manager du CMS (deep-link vers le bon content-type) ;
+// '' = pas de content-type dédié (enum du formulaire M3) → renvoie à l'accueil du CMS.
+const REFS: [string, string, string, string][] = [
+  ['Provinces & communes', 'Cascade territoriale (réforme 2025 : 5 provinces / 42 communes) — M3, profils, back-office', 'Référentiels', 'collection-types/api::province.province'],
+  ['Filières', '5 filières prioritaires + projet transversal — cartes publiques, M3, filtres S&E', 'Référentiels', 'collection-types/api::filiere.filiere'],
+  ['Types d’infrastructure', 'Exemples de référence de l’info-bulle M3 (champ libre, jamais un menu fermé)', 'Référentiels', 'collection-types/api::infrastructure-type.infrastructure-type'],
+  ['Types de contrepartie', 'Numéraire / nature / mixte — M3 étape 3, contrôle ≥ 20 %', 'Référentiels', 'collection-types/api::type-contrepartie.type-contrepartie'],
+  ['Statuts de site & niveaux de maturité', 'Listes M3 étape 2', 'Référentiels', ''],
+  ['Cohortes / appels (AAP)', 'Fenêtres de candidature, dates, cohorte pilote', 'Appels', 'collection-types/api::appel.appel'],
+  ['Types de documents (Annexe 9)', 'Les 18 pièces par slot — M3 étape 4, complétude Annexe 11', 'Référentiels', 'collection-types/api::type-piece.type-piece'],
+  ['Barème d’évaluation', 'Blocs A/B, pondérations, bonus, seuils de bande — arbitrage E1 réversible', 'Barème', 'collection-types/api::critere-evaluation.critere-evaluation'],
+  ['Paramètres du Comité', 'Quorum (placeholder 5/7), nombre de membres', 'Paramètres', 'single-types/api::parametres-comite.parametres-comite'],
+  ['Paramètres de décaissement', 'Délai indicatif de traitement (§11.5, à confirmer)', 'Paramètres', 'single-types/api::parametres-decaissement.parametres-decaissement'],
+  ['Catégories d’assistance', 'Ma candidature / Ma subvention / Problème technique / Autre', 'Référentiels', 'collection-types/api::categorie-assistance.categorie-assistance'],
+  ['Cas de non-objection', 'Les 9 cas 6.7.1 a–i — liste adaptable', 'Référentiels', 'collection-types/api::cas-non-objection.cas-non-objection'],
+  ['Indicateurs S&E', '17 indicateurs, 5 familles 14.3, mode calculé/saisi, cibles éditables', 'Référentiels', 'collection-types/api::indicateur.indicateur'],
+  ['Contenus éditoriaux', 'FAQ (dont canaux MGP), documents téléchargeables, bandes du site public', 'Contenus CMS', 'collection-types/api::faq-item.faq-item'],
 ];
 
 const SECU: [string, string, string, 'on' | 'def', string][] = [
@@ -288,11 +290,11 @@ export function GestionAdmin({
         <>
           <div className="gx-card">
             <div className="gx-block-title">Annuaire des référentiels &amp; paramètres <span className="gx-m7-r">l’admin Strapi reste l’éditeur — cet écran oriente, il ne duplique pas</span></div>
-            {REFS.map(([n, d, w], i) => (
+            {REFS.map(([n, d, w, path], i) => (
               <div className="gx-m7-rrow" key={i}>
                 <span className="gx-m7-rn">{n}</span>
                 <span className="gx-m7-rd">{d}<br /><span className="gx-m7-rw">{w}</span></span>
-                <a className="gx-btn gx-btn-ghost gx-btn-sm" href={`${strapiAdminUrl}/content-manager`} target="_blank" rel="noopener noreferrer">Éditer dans Strapi ↗</a>
+                <a className="gx-btn gx-btn-ghost gx-btn-sm" href={`${strapiAdminUrl}/content-manager${path ? `/${path}` : ''}`} target="_blank" rel="noopener noreferrer">Éditer dans le CMS ↗</a>
               </div>
             ))}
           </div>
