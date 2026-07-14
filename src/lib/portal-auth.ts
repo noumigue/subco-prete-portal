@@ -65,16 +65,12 @@ export async function getPortalJwt() {
 }
 
 export async function registerCandidate(email: string, password: string, orgName: string) {
-  // orgName persiste sur le user via `register.allowedFields` (cf. config/plugins.js du CMS).
-  // Alimente ensuite la session (salutation), jamais de repli sur l'e-mail (remediation 1.1).
-  const response = await strapiFetch('/api/auth/local/register', {
+  // Flux gouverne par la mail platform du CMS (portal-auth) : l'inscription cree un compte
+  // NON confirme et envoie l'e-mail de confirmation via le SMTP custom (plus de mail natif
+  // Strapi). orgName est persiste sur le user et alimente la session (jamais de repli e-mail).
+  const response = await strapiFetch('/api/portal-auth/register', {
     method: 'POST',
-    body: JSON.stringify({
-      username: email,
-      email,
-      password,
-      orgName,
-    }),
+    body: JSON.stringify({ email, password, orgName }),
   });
 
   if (!response.ok) {
@@ -104,7 +100,8 @@ export async function loginCandidate(email: string, password: string) {
 }
 
 export async function resendConfirmation(email: string) {
-  const response = await strapiFetch('/api/auth/send-email-confirmation', {
+  // Endpoint gouverne (mail platform). Reponse constante cote CMS (anti-enumeration).
+  const response = await strapiFetch('/api/portal-auth/resend-confirmation', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -116,20 +113,17 @@ export async function resendConfirmation(email: string) {
 }
 
 export async function requestPasswordReset(email: string) {
-  await strapiFetch('/api/auth/forgot-password', {
+  // Endpoint gouverne (mail platform) : envoi du lien via SMTP custom, reponse constante.
+  await strapiFetch('/api/portal-auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
 }
 
 export async function resetPassword(code: string, password: string) {
-  const response = await strapiFetch('/api/auth/reset-password', {
+  const response = await strapiFetch('/api/portal-auth/reset-password', {
     method: 'POST',
-    body: JSON.stringify({
-      code,
-      password,
-      passwordConfirmation: password,
-    }),
+    body: JSON.stringify({ code, password }),
   });
 
   if (!response.ok) {
