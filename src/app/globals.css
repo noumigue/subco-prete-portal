@@ -7245,7 +7245,7 @@ a.docs-item:hover .docs-item-dl {
 
 /* ---- champs ---- */
 .gx label { display: block; font-size: 13.5px; font-weight: 600; margin: 13px 0 5px; }
-.gx input[type=text], .gx input[type=email], .gx input[type=password], .gx input[type=date], .gx textarea, .gx select {
+.gx input[type=text], .gx input[type=email], .gx input[type=password], .gx input[type=date], .gx input[type=number], .gx textarea, .gx select {
   width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid var(--sage-border); border-radius: 10px; background: #fcfdfc; font-family: inherit; color: var(--ink-warm);
 }
 .gx input:focus, .gx textarea:focus, .gx select:focus { border-color: var(--emerald); background: #fff; }
@@ -7664,6 +7664,7 @@ a.gx-okp:hover { text-decoration: underline; }
 .gx-dn2 { font-weight: 700; color: var(--pine); }
 .gx-dm2 { font-size: 12.5px; color: var(--muted-warm); flex: 1; min-width: 160px; }
 .gx-dgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 11px; }
+.gx-dgrid > div { min-width: 0; }
 .gx-dgrid input { text-align: right; }
 .gx-dgrid .gx-wide { grid-column: 1 / -1; }
 
