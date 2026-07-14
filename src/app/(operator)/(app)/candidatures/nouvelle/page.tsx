@@ -2,8 +2,13 @@ import Link from 'next/link';
 import { createDraftAction } from '../../../actions';
 import { getPortalOpenCalls, getPortalOrganisation, getPortalTypePieces } from '@/lib/portal-api';
 
-export default async function NewApplicationPage() {
-  const [organisation, openCalls, typePieces] = await Promise.all([
+export default async function NewApplicationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const [{ error }, organisation, openCalls, typePieces] = await Promise.all([
+    searchParams,
     getPortalOrganisation(),
     getPortalOpenCalls(),
     getPortalTypePieces(),
@@ -15,6 +20,11 @@ export default async function NewApplicationPage() {
       <section className="operator-card operator-card-large">
         <p className="operator-kicker">Nouvelle candidature</p>
         <h1>Avant de commencer</h1>
+        {error ? (
+          <p className="operator-flash operator-flash-error" role="alert">
+            La création n’a pas pu démarrer : {error === 'creation' ? 'une erreur est survenue.' : error}
+          </p>
+        ) : null}
         <p className="operator-page-intro">
           {organisation
             ? 'Votre profil organisation est déjà connu. Vérifiez les informations au démarrage du formulaire.'

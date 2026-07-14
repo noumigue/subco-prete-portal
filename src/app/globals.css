@@ -7773,3 +7773,7 @@ a.gx-okp:hover { text-decoration: underline; }
   .gx-m7-grid3 { grid-template-columns: 1fr; }
   .gx-m7-rn { width: 100%; }
 }
+
+/* Bandeau d'erreur inline (interstitiel « Avant de commencer », etc.) */
+.operator-flash { border-radius: 10px; padding: 11px 14px; font-size: 14px; margin: 0 0 14px; }
+.operator-flash-error { background: var(--gx-red-bg, #f7ece9); border: 1px solid var(--gx-red-bd, #e2c4bc); color: var(--gx-red-tx, #9a5546); }

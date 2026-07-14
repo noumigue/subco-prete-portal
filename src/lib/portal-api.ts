@@ -180,15 +180,28 @@ export async function getPortalDocumentsTelechargeables() {
   return response?.data || [];
 }
 
-export async function createPortalDraft(session: PortalSession) {
-  return portalFetch<StrapiItem<PortalCandidature>>('/api/candidatures', {
+// Crée le brouillon et remonte l'erreur exacte du CMS (message + statut) au lieu de la
+// masquer : « Commencer » doit pouvoir expliquer POURQUOI la création échoue.
+export async function createPortalDraft(
+  session: PortalSession,
+): Promise<{ ok: boolean; documentId?: string; error?: string; status?: number }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expirée — reconnectez-vous.' };
+
+  const response = await fetch(`${STRAPI_URL}/api/candidatures`, {
     method: 'POST',
-    body: JSON.stringify({
-      data: {
-        titreProjet: `Nouvelle candidature - ${session.orgName}`,
-      },
-    }),
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: { titreProjet: `Nouvelle candidature - ${session.orgName}` } }),
+    cache: 'no-store',
   });
+  const payload = (await response.json().catch(() => null)) as
+    | { data?: { documentId?: string }; error?: { message?: string } }
+    | null;
+
+  if (!response.ok) {
+    return { ok: false, status: response.status, error: payload?.error?.message || `Erreur ${response.status}.` };
+  }
+  return { ok: true, documentId: payload?.data?.documentId };
 }
 
 export async function deletePortalDraft(documentId: string) {

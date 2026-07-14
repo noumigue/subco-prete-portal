@@ -8,6 +8,7 @@ import {
   createDemande,
   createDemandeAssistance,
   createPortalDraft,
+  getPortalCandidatures,
   repondreAssistance,
   resoudreAssistance,
   deletePortalDraft,
@@ -125,14 +126,22 @@ export async function logoutAction() {
 
 export async function createDraftAction() {
   const session = await requirePortalSession();
-  const draft = await createPortalDraft(session);
-  const documentId = draft?.data?.documentId;
+  const result = await createPortalDraft(session);
 
-  if (!documentId) {
-    redirect('/candidatures/nouvelle?error=creation');
+  if (result.ok && result.documentId) {
+    redirect(`/candidatures/${result.documentId}/formulaire`);
   }
 
-  redirect(`/candidatures/${documentId}/formulaire`);
+  // Récupération : si un brouillon existe déjà (ex. tentative précédente, ou garde
+  // « une seule candidature vivante »), on y renvoie plutôt que d'échouer en boucle.
+  const existing = await getPortalCandidatures();
+  const vivante = existing.find((c) => c.statut?.code === 'brouillon');
+  if (vivante?.documentId) {
+    redirect(`/candidatures/${vivante.documentId}/formulaire`);
+  }
+
+  // Sinon, on remonte le message d'erreur réel du CMS (au lieu d'un « error=creation » muet).
+  redirect(`/candidatures/nouvelle?error=${encodeURIComponent(result.error || 'La création a échoué.')}`);
 }
 
 export async function deleteDraftAction(formData: FormData) {
