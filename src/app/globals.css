@@ -7671,3 +7671,77 @@ a.gx-okp:hover { text-decoration: underline; }
 @media (max-width: 860px) {
   .gx-tiles, .gx-dlgrid, .gx-dgrid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ===== M7 — Administration (§3.9/§9.5/§14.10) ===== */
+.gx-m7-lock { background: var(--gx-amber-bg); border: 1px solid var(--gx-amber-bd); border-radius: 10px; padding: 14px 16px; font-size: 13.5px; color: var(--gx-amber-tx); }
+.gx-m7-r { margin-left: auto; font-weight: 400; font-size: 11.5px; text-transform: none; letter-spacing: 0; color: var(--muted-warm); }
+.gx-m7-hint { font-size: 12px; color: var(--muted-warm); margin: 10px 0 0; }
+
+/* comptes */
+.gx-m7-urow { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-warm); flex-wrap: wrap; }
+.gx-m7-urow:last-child { border-bottom: 0; }
+.gx-m7-uav { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; flex-shrink: 0; background: var(--sage-base); color: var(--pine); }
+.gx-m7-uav.ugp { background: var(--gold); color: #3a2c10; }
+.gx-m7-uav.instructeur { background: var(--sage-base); color: var(--pine); }
+.gx-m7-uav.comite { background: #cbb9e0; color: #3a2456; }
+.gx-m7-um { flex: 1; min-width: 210px; display: flex; flex-direction: column; }
+.gx-m7-un { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.gx-m7-ue { font-size: 12px; color: var(--muted-warm); }
+.gx-m7-rolebadge { font-size: 10.5px; font-weight: 800; border-radius: 6px; padding: 1px 8px; border: 1px solid; text-transform: uppercase; letter-spacing: .3px; }
+.gx-m7-rolebadge.rb-ugp { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-m7-rolebadge.rb-instructeur { background: var(--sage-tile); border-color: var(--sage-border); color: var(--pine); }
+.gx-m7-rolebadge.rb-comite { background: #efe6f5; border-color: #d9c8e8; color: #5a3d82; }
+.gx-m7-admtag { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 7px; background: var(--pine-dark); color: var(--gold); border: 1px solid var(--pine); }
+.gx-m7-pill-actif { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-m7-pill-off { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+.gx-m7-pill-inv { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-m7-uacts { display: flex; gap: 6px; flex-wrap: wrap; }
+.gx-m7-roleedit { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.gx-m7-roleedit select { width: auto; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--sage-border); border-radius: 8px; background: #fff; font-family: inherit; }
+.gx-m7-grid3 { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px; }
+.gx-m7-lbl { display: block; font-size: 13px; font-weight: 600; margin: 0 0 5px; }
+.gx-m7-grid3 input, .gx-m7-grid3 select { width: 100%; padding: 9px 11px; font-size: 14px; border: 1px solid var(--sage-border); border-radius: 9px; background: #fcfdfc; font-family: inherit; color: var(--ink-warm); }
+
+/* journal */
+.gx-m7-jwrap { overflow-x: auto; }
+.gx-m7-jtbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.gx-m7-jtbl th, .gx-m7-jtbl td { padding: 8px; border-bottom: 1px solid var(--line-warm); text-align: left; vertical-align: top; }
+.gx-m7-jtbl th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted-warm); font-weight: 700; }
+.gx-m7-jd { white-space: nowrap; color: var(--muted-warm); font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+.gx-m7-jr { font-size: 10.5px; color: var(--gx-lock); }
+.gx-m7-jn { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: var(--pine); font-size: 11.5px; white-space: nowrap; }
+.gx-m7-empty { color: var(--muted-warm); text-align: center; padding: 18px 8px; }
+.gx-m7-ttag { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 7px; border: 1px solid; white-space: nowrap; }
+.gx-m7-ttag.tt-instr { background: var(--sage-tile); border-color: var(--sage-border); color: var(--pine); }
+.gx-m7-ttag.tt-eval { background: #e6eef9; border-color: #c6d8ef; color: #2d5e9e; }
+.gx-m7-ttag.tt-dec { background: #efe6f5; border-color: #d9c8e8; color: #5a3d82; }
+.gx-m7-ttag.tt-subv { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+.gx-m7-ttag.tt-assist { background: #e4f2ee; border-color: #bfe0d5; color: var(--pine-mid); }
+.gx-m7-ttag.tt-adm { background: var(--gx-red-bg); border-color: var(--gx-red-bd); color: var(--gx-red-tx); }
+.gx-m7-pager { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 12px 0 4px; font-size: 12px; color: var(--muted-warm); flex-wrap: wrap; }
+
+/* annuaire référentiels */
+.gx-m7-rrow { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--line-warm); flex-wrap: wrap; }
+.gx-m7-rrow:last-child { border-bottom: 0; }
+.gx-m7-rn { width: 230px; font-weight: 600; font-size: 13.5px; color: var(--pine); }
+.gx-m7-rd { flex: 1; min-width: 220px; font-size: 12.5px; color: var(--muted-warm); }
+.gx-m7-rw { font-size: 11px; color: var(--gx-lock); }
+.gx-m7-codebox { background: var(--pine-dark); color: #cfe6d8; border-radius: 8px; padding: 10px 13px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; margin-top: 4px; line-height: 1.7; }
+.gx-m7-codebox b { color: var(--gold); }
+.gx-m7-cmt { opacity: .7; }
+
+/* sécurité */
+.gx-m7-sec { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line-warm); }
+.gx-m7-sec:last-child { border-bottom: 0; }
+.gx-m7-si { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--sage-tile); border: 1px solid var(--sage-border); flex-shrink: 0; }
+.gx-m7-st { flex: 1; }
+.gx-m7-sn { font-weight: 600; font-size: 13.5px; }
+.gx-m7-sm { font-size: 12.5px; color: var(--muted-warm); }
+.gx-m7-stag { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 7px; border: 1px solid; }
+.gx-m7-stag.on { background: #dff1e6; border-color: #bfe3cd; color: var(--emerald-dark); }
+.gx-m7-stag.def { background: var(--gx-amber-bg); border-color: var(--gx-amber-bd); color: var(--gx-amber-tx); }
+
+@media (max-width: 860px) {
+  .gx-m7-grid3 { grid-template-columns: 1fr; }
+  .gx-m7-rn { width: 100%; }
+}

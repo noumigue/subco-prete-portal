@@ -7,6 +7,8 @@ export type PortalSession = {
   emailVerified: boolean;
   phone?: string | null;
   role: PortalRole;
+  // M7 L1 — porteur du drapeau de gouvernance des comptes internes (back-office).
+  adminComptes?: boolean;
 };
 
 export type PortalAppel = {
@@ -758,3 +760,29 @@ export type GestionSeDepouillement = {
 
 export type GestionSeRapport = { documentId: string; periode: string; pdf: { url?: string; name?: string } | null; generePar: string | null; genereLe: string | null };
 export type GestionSeCohorte = { documentId: string; label: string };
+
+// ——— M7 : administration (§3.9/§9.5/§14.10) ———
+export type GestionAdminCompte = {
+  id: number;
+  nom: string;
+  email: string;
+  role: 'instructeur' | 'ugp' | 'comite' | null;
+  adminComptes: boolean;
+  statut: 'actif' | 'desactive' | 'invitation';
+};
+export type GestionAdminActeur = { id: number; nom: string };
+export type GestionAdminJournalEntry = {
+  date: string;
+  acteur: string;
+  role: string;
+  cat: 'instr' | 'eval' | 'dec' | 'subv' | 'assist' | 'adm';
+  typeLabel: string;
+  acte: string;
+  reference: string;
+};
+export type GestionAdminJournal = {
+  data: GestionAdminJournalEntry[];
+  meta: { total: number; page: number; pageSize: number };
+  acteurs: GestionAdminActeur[];
+};
+export type GestionAdminJournalFilters = { periode?: string; type?: string; acteur?: string; dossier?: string; page?: number; pageSize?: number };

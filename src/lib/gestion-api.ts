@@ -29,6 +29,9 @@ import type {
   GestionSeIndicateur,
   GestionSeDepouillement,
   GestionSeRapport,
+  GestionAdminCompte,
+  GestionAdminJournal,
+  GestionAdminJournalFilters,
 } from './portal-types';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338';
@@ -304,3 +307,65 @@ export const seDepouillementProposer = (id: string, valeurs: Record<string, unkn
 export const seDepouillementValider = (id: string) => gestionPost(`/api/gestion/se/depouillements/${id}/valider`, {});
 export const seDepouillementRenvoyer = (id: string) => gestionPost(`/api/gestion/se/depouillements/${id}/renvoyer`, {});
 export const seGenererRapport = (data: { periode: string; cohorteLabel: string; cohorte?: string }) => gestionPost('/api/gestion/se/rapports', data);
+
+// ——— M7 : administration (§3.9/§9.5/§14.10) ———
+// Comptes internes (L1/L2) — gated `adminComptes` cote serveur (403 pour un ugp standard).
+export async function getAdminComptes(): Promise<GestionAdminCompte[] | null> {
+  // null = 403 (pas de drapeau adminComptes) → l'ecran montre le verrouillage L1.
+  const jwt = await getPortalJwt();
+  if (!jwt) return null;
+  const response = await fetch(`${STRAPI_URL}/api/gestion/admin/comptes`, { headers: { Authorization: `Bearer ${jwt}` }, cache: 'no-store' });
+  if (!response.ok) return null;
+  const res = (await response.json()) as { data: GestionAdminCompte[] };
+  return res?.data || [];
+}
+export const inviterCompte = (data: { nom: string; email: string; role: string; adminComptes: boolean }) =>
+  gestionPost('/api/gestion/admin/comptes/inviter', data);
+export const renvoyerInvitation = (id: number) => gestionPost(`/api/gestion/admin/comptes/${id}/renvoyer`, {});
+export const desactiverCompte = (id: number) => gestionPost(`/api/gestion/admin/comptes/${id}/desactiver`, {});
+export const reactiverCompte = (id: number) => gestionPost(`/api/gestion/admin/comptes/${id}/reactiver`, {});
+export const changerRoleCompte = (id: number, role: string) => gestionPost(`/api/gestion/admin/comptes/${id}/role`, { role });
+
+// Journal transverse (L3) — tout `ugp`.
+function adminJournalQuery(f: GestionAdminJournalFilters = {}): string {
+  const p = new URLSearchParams();
+  if (f.periode) p.set('periode', f.periode);
+  if (f.type && f.type !== 'tous') p.set('type', f.type);
+  if (f.acteur) p.set('acteur', String(f.acteur));
+  if (f.dossier) p.set('dossier', f.dossier);
+  if (f.page) p.set('page', String(f.page));
+  if (f.pageSize) p.set('pageSize', String(f.pageSize));
+  const s = p.toString();
+  return s ? `?${s}` : '';
+}
+export async function getAdminJournal(f: GestionAdminJournalFilters = {}): Promise<GestionAdminJournal | null> {
+  return gestionGet<GestionAdminJournal>(`/api/gestion/admin/journal${adminJournalQuery(f)}`);
+}
+// Export CSV genere cote serveur — renvoie le texte brut (le client declenche le telechargement).
+export async function getAdminJournalCsv(f: GestionAdminJournalFilters = {}): Promise<string | null> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return null;
+  const response = await fetch(`${STRAPI_URL}/api/gestion/admin/journal/export${adminJournalQuery(f)}`, {
+    headers: { Authorization: `Bearer ${jwt}` }, cache: 'no-store',
+  });
+  if (!response.ok) return null;
+  return response.text();
+}
+
+// Invitation — endpoints PUBLICS (garde par token), hors session.
+export async function verifierInvitation(token: string): Promise<{ email: string; nom: string; deja: boolean } | null> {
+  const response = await fetch(`${STRAPI_URL}/api/gestion/admin/invitation?token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (!response.ok) return null;
+  return response.json();
+}
+export async function definirMotDePasse(token: string, password: string): Promise<Ok> {
+  const response = await fetch(`${STRAPI_URL}/api/gestion/admin/invitation/definir`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: { token, password } }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || "L'activation a echoue." };
+  return { ok: true };
+}

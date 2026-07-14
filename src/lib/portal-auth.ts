@@ -159,6 +159,7 @@ async function fetchCurrentUser(jwt: string) {
     orgName?: string | null;
     phone?: string | null;
     confirmed?: boolean;
+    adminComptes?: boolean;
     role?: {
       type?: string;
       name?: string;
@@ -208,6 +209,8 @@ export async function getPortalSession(): Promise<PortalSession | null> {
     // Telephone : capte a la 1re candidature (D1). Priorite au champ compte, puis au profil org.
     phone: user.phone || organisation?.telephone || null,
     role,
+    // M7 L1 — gouvernance des comptes internes (jamais vrai pour un operateur).
+    adminComptes: Boolean(user.adminComptes),
   };
 }
 

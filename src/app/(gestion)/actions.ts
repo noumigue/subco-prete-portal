@@ -66,7 +66,16 @@ import {
   validerEligibilite,
   validerJustification,
   validerRapport,
+  inviterCompte,
+  renvoyerInvitation,
+  desactiverCompte,
+  reactiverCompte,
+  changerRoleCompte,
+  getAdminJournal,
+  getAdminJournalCsv,
+  definirMotDePasse,
 } from '@/lib/gestion-api';
+import type { GestionAdminJournalFilters } from '@/lib/portal-types';
 
 const INTERNAL_ROLES = new Set(['instructeur', 'ugp', 'comite']);
 
@@ -106,6 +115,11 @@ export async function requestResetGestionAction(formData: FormData) {
   const email = readString(formData, 'email');
   await requestPasswordReset(email);
   redirect('/gestion/mot-de-passe-oublie?sent=1');
+}
+
+// M7 L2 — activation d'un compte interne invite : definit le mot de passe ET confirme le compte.
+export async function definirMotDePasseAction(token: string, password: string): Promise<{ ok: boolean; error?: string }> {
+  return definirMotDePasse(token, password);
 }
 
 // ——— C1 : prise en charge / reassignation ———
@@ -434,4 +448,32 @@ export async function seDepouillementRenvoyerAction(id: string): Res {
 }
 export async function seGenererRapportAction(data: { periode: string; cohorteLabel: string; cohorte?: string }): Res {
   const r = await seGenererRapport(data); revalSe(); return r;
+}
+
+// ——— M7 : administration (§3.9/§9.5/§14.10) ———
+function revalAdmin() { revalidatePath('/gestion/administration'); }
+export async function inviterCompteAction(data: { nom: string; email: string; role: string; adminComptes: boolean }): Res {
+  const r = await inviterCompte(data); revalAdmin(); return r;
+}
+export async function renvoyerInvitationAction(id: number): Res {
+  const r = await renvoyerInvitation(id); revalAdmin(); return r;
+}
+export async function desactiverCompteAction(id: number): Res {
+  const r = await desactiverCompte(id); revalAdmin(); return r;
+}
+export async function reactiverCompteAction(id: number): Res {
+  const r = await reactiverCompte(id); revalAdmin(); return r;
+}
+export async function changerRoleCompteAction(id: number, role: string): Res {
+  const r = await changerRoleCompte(id, role); revalAdmin(); return r;
+}
+// Rafraichissement du journal (filtres / pagination) — lecture a la demande cote client.
+export async function fetchAdminJournalAction(filters: GestionAdminJournalFilters) {
+  return getAdminJournal(filters);
+}
+// Export CSV du journal (L3) — le serveur renvoie le texte ; le client declenche le telechargement.
+export async function exportJournalCsvAction(filters: GestionAdminJournalFilters): Promise<{ ok: boolean; csv?: string; error?: string }> {
+  const csv = await getAdminJournalCsv(filters);
+  if (csv == null) return { ok: false, error: "L'export a echoue." };
+  return { ok: true, csv };
 }

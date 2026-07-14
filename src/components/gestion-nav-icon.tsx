@@ -97,6 +97,13 @@ export function GestionNavIcon({ name }: { name?: string }) {
           <path d="M12 2 20 7H4z" />
         </svg>
       );
+    case 'admin':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      );
     case 'account':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">
