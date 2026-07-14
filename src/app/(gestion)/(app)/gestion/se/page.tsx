@@ -31,7 +31,7 @@ export default async function SePage({
   const [tableauDeBord, indicateurs, depouillements, rapports] = await Promise.all([
     getSeTableauDeBord(activeCohorte),
     getSeIndicateurs(activeCohorte),
-    getSeDepouillements(),
+    getSeDepouillements(activeCohorte),
     getSeRapports(),
   ]);
 

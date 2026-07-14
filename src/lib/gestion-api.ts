@@ -292,8 +292,8 @@ export async function getSeIndicateurs(cohorte?: string): Promise<GestionSeIndic
   const res = await gestionGet<{ data: GestionSeIndicateur[] }>(`/api/gestion/se/indicateurs${coh(cohorte)}`);
   return res?.data || [];
 }
-export async function getSeDepouillements(): Promise<GestionSeDepouillement[]> {
-  const res = await gestionGet<{ data: GestionSeDepouillement[] }>('/api/gestion/se/depouillements');
+export async function getSeDepouillements(cohorte?: string): Promise<GestionSeDepouillement[]> {
+  const res = await gestionGet<{ data: GestionSeDepouillement[] }>(`/api/gestion/se/depouillements${coh(cohorte)}`);
   return res?.data || [];
 }
 export async function getSeRapports(): Promise<GestionSeRapport[]> {

@@ -63,7 +63,7 @@ export function GestionSe({
 
       {tab === 'tdb' ? <TableauDeBord data={tableauDeBord} cohortes={cohortes} cohorte={cohorte} setCohorte={setCohorte} /> : null}
       {tab === 'ind' ? <Indicateurs rows={indicateurs} cohortes={cohortes} cohorte={cohorte} setCohorte={setCohorte} /> : null}
-      {tab === 'dep' ? <Depouillement rows={depouillements} role={role} busy={busy} run={run} /> : null}
+      {tab === 'dep' ? <Depouillement rows={depouillements} role={role} cohortes={cohortes} cohorte={cohorte} setCohorte={setCohorte} busy={busy} run={run} /> : null}
       {tab === 'rap' ? <Rapports rows={rapports} role={role} cohortes={cohortes} cohorte={cohorte} busy={busy} run={run} /> : null}
 
       {toast ? <div className="gx-toast show">{toast}</div> : null}
@@ -261,9 +261,10 @@ function DepRow({ d, role, busy, run }: { d: GestionSeDepouillement; role: 'ugp'
   );
 }
 
-function Depouillement({ rows, role, busy, run }: { rows: GestionSeDepouillement[]; role: 'ugp' | 'cabinet'; busy: boolean; run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void }) {
+function Depouillement({ rows, role, cohortes, cohorte, setCohorte, busy, run }: { rows: GestionSeDepouillement[]; role: 'ugp' | 'cabinet'; cohortes: GestionSeCohorte[]; cohorte: string; setCohorte: (v: string) => void; busy: boolean; run: (fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) => void }) {
   return (
     <>
+      <CohorteFilter cohortes={cohortes} cohorte={cohorte} setCohorte={setCohorte} />
       <p style={{ fontSize: 13, color: 'var(--muted-warm)', margin: '-6px 0 14px' }}>
         Grille structurée saisie à réception de chaque rapport bénéficiaire — <b>le Cabinet saisit, l&apos;UGP valide</b> (14.6).
         Seules les valeurs <b>validées</b> alimentent les indicateurs.
@@ -313,7 +314,9 @@ function Rapports({ rows, role, cohortes, cohorte, busy, run }: { rows: GestionS
               Générer le rapport (PDF)
             </button>
           ) : (
-            <span style={{ fontSize: 12.5, color: 'var(--muted-warm)', alignSelf: 'center' }}>Génération réservée à l&apos;UGP (validation &amp; transmission — 14.6).</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted-warm)', border: '1px solid var(--line-warm)', borderRadius: 8, padding: '8px 12px' }}>
+              🔒 Génération réservée à l&apos;UGP (validation &amp; transmission — 14.6).
+            </span>
           )}
         </div>
       </div>
