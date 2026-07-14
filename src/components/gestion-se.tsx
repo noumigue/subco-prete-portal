@@ -314,7 +314,7 @@ function Rapports({ rows, role, cohortes, cohorte, busy, run }: { rows: GestionS
               Générer le rapport (PDF)
             </button>
           ) : (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted-warm)', border: '1px solid var(--line-warm)', borderRadius: 8, padding: '8px 12px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--gx-amber-tx)', background: 'var(--gx-amber-bg)', border: '1px solid var(--gx-amber-bd)', borderRadius: 8, padding: '8px 12px' }}>
               🔒 Génération réservée à l&apos;UGP (validation &amp; transmission — 14.6).
             </span>
           )}

@@ -50,8 +50,8 @@ function StatutChip({ statut }: { statut: GestionSubventionDetail['statut'] }) {
   return <span className="gx-statuschip">Close</span>;
 }
 
-export function GestionSubventionDossier({ detail, role }: { detail: GestionSubventionDetail; role: Role }) {
-  const [subview, setSubview] = useState<'exec' | 'jalons' | 'mesures'>('exec');
+export function GestionSubventionDossier({ detail, role, initialSubview = 'exec' }: { detail: GestionSubventionDetail; role: Role; initialSubview?: 'exec' | 'jalons' | 'mesures' }) {
+  const [subview, setSubview] = useState<'exec' | 'jalons' | 'mesures'>(initialSubview);
   const [toast, setToast] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
