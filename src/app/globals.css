@@ -7222,9 +7222,9 @@ a.docs-item:hover .docs-item-dl {
 .gx-rolechip .gx-rtag { font-size: 10.5px; font-weight: 700; letter-spacing: .4px; opacity: .85; display: block; line-height: 1.1; }
 .gx-logout { margin-left: 4px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; }
 .gx-logout:hover { background: rgba(255,255,255,.16); }
-/* Sortie du bandeau : mobile uniquement (la barre latérale, qui porte « Se déconnecter »,
-   est masquée sous 860px). Sur desktop, la déconnexion vit dans le pied de la barre latérale. */
-.gx-logout-mobile { display: none; margin: 0; }
+/* Burger + scrim : masqués sur desktop, ne s'activent qu'en mobile (voir media query). */
+.gx-burger { display: none; border: 0; background: transparent; color: #fff; cursor: pointer; padding: 4px; align-items: center; justify-content: center; margin-right: 2px; }
+.gx-scrim { display: none; }
 
 /* Colonne sticky, hauteur d'écran : le menu défile en interne, le pied reste épinglé en bas. */
 .gx-side { grid-area: nav; position: sticky; top: 62px; align-self: start; height: calc(100vh - 62px); background: #fff; border-right: 1px solid var(--line-warm); display: flex; flex-direction: column; overflow: hidden; }
@@ -7373,8 +7373,16 @@ a.docs-item:hover .docs-item-dl {
 
 @media (max-width: 860px) {
   .gx-app { grid-template-columns: 1fr; grid-template-areas: "head" "main" "foot"; }
-  .gx-side { display: none; }
-  .gx-logout-mobile { display: block; }
+  /* Tiroir mobile : le menu n'est plus masqué mais glisse depuis la gauche (burger + scrim). */
+  .gx-side {
+    position: fixed; top: 0; left: 0; bottom: 0; height: auto;
+    width: 264px; transform: translateX(-100%); transition: transform .2s ease; z-index: 40;
+  }
+  .gx-side.open { transform: translateX(0); box-shadow: 0 10px 40px rgba(6,32,40,.35); }
+  .gx-burger { display: inline-flex; }
+  .gx-scrim.show { display: block; position: fixed; inset: 0; background: rgba(6,32,40,.45); z-index: 35; }
+  /* Header compact : on ne garde que la pastille (avatar), le nom+rôle passe à la ligne sinon. */
+  .gx-rolechip > span:last-child { display: none; }
   .gx-content { padding: 18px 14px; }
   .gx-inline2 { grid-template-columns: 1fr; }
 }

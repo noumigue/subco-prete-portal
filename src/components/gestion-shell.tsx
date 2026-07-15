@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { PortalSession } from '@/lib/portal-types';
@@ -28,15 +29,24 @@ function initials(nom: string) {
 
 export function GestionShell({ children, session, pendingCount, assistCount = 0 }: GestionShellProps) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const isFileActive = pathname.startsWith('/gestion/dossiers');
   const meta = ROLE_META[session.role] || ROLE_META.instructeur;
   const isUgp = session.role === 'ugp';
   const isComite = session.role === 'comite';
   const active = (p: string) => (pathname.startsWith(p) ? ' active' : '');
+  // Mobile : tout clic sur un lien de nav referme le tiroir (delegation, evite d'annoter chaque Link).
+  const closeOnLink = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  };
 
   return (
     <div className="gx gx-app">
+      <div className={`gx-scrim${open ? ' show' : ''}`} onClick={() => setOpen(false)} />
       <header className="gx-top">
+        <button type="button" className="gx-burger" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+        </button>
         <div className="gx-brand">
           <span className="gx-mark">SP</span>
           <span>SUBCO-PRETE<small>Espace de gestion</small></span>
@@ -46,15 +56,10 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
             <span className="gx-avatar">{initials(session.orgName)}</span>
             <span>{session.orgName}<span className="gx-rtag">{meta.rtag}</span></span>
           </div>
-          {/* Mobile uniquement : la barre latérale (qui porte « Se déconnecter ») est
-              masquée sous 860px — on garde donc une sortie dans le bandeau. */}
-          <form action={logoutGestionAction} className="gx-logout-mobile">
-            <button type="submit" className="gx-logout">Se déconnecter</button>
-          </form>
         </div>
       </header>
 
-      <nav className="gx-side">
+      <nav className={`gx-side${open ? ' open' : ''}`} onClick={closeOnLink}>
         <div className="gx-nav-scroll">
           {isComite ? (
             /* Comité : accès réduit au dossier de séance (F2, lecture). */
