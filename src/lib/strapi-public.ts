@@ -393,13 +393,19 @@ export async function getSiteNavigation() {
 
 export type BrandAssets = { label: string; logoUrl: string | null; logoIconUrl: string | null };
 
+// Assets de marque par defaut (livres dans /public) : le logo s'affiche partout sans
+// aucun upload. Les champs CMS `site-navigation.logo`/`logoIcon`, une fois renseignes,
+// prennent le dessus (editable sans redeploiement).
+export const DEFAULT_LOGO_URL = '/subco-prete-logo.png';
+export const DEFAULT_LOGO_ICON_URL = '/subco-prete-logo-icon.png';
+
 // Assets de marque (logo complet + icône) resolus depuis `site-navigation`, reutilisables
-// dans tous les shells (public, operateur, gestion). Repli sur « SUBCO PRETE » si vide.
+// dans tous les shells (public, operateur, gestion).
 export async function getBrandAssets(): Promise<BrandAssets> {
   const nav = await getSiteNavigation();
   return {
     label: nav?.brandLabel || 'SUBCO PRETE',
-    logoUrl: mediaUrl(nav?.logo),
-    logoIconUrl: mediaUrl(nav?.logoIcon),
+    logoUrl: mediaUrl(nav?.logo) || DEFAULT_LOGO_URL,
+    logoIconUrl: mediaUrl(nav?.logoIcon) || DEFAULT_LOGO_ICON_URL,
   };
 }

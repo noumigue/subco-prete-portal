@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { getFooterLinks, getSiteNavigation, mediaUrl } from '@/lib/strapi-public';
+import { getFooterLinks, getSiteNavigation, mediaUrl, DEFAULT_LOGO_URL, DEFAULT_LOGO_ICON_URL } from '@/lib/strapi-public';
 import { LANG_TOGGLE_ENABLED } from '@/lib/site-config';
 import './globals.css';
 
@@ -70,8 +70,8 @@ export default async function RootLayout({
     : siteNavigation?.supportLabelFr || '';
   const supportUrl = siteNavigation?.supportUrl || '';
   const brandLabel = siteNavigation?.brandLabel || 'SUBCO PRETE';
-  const logoUrl = mediaUrl(siteNavigation?.logo);
-  const logoIconUrl = mediaUrl(siteNavigation?.logoIcon);
+  const logoUrl = mediaUrl(siteNavigation?.logo) || DEFAULT_LOGO_URL;
+  const logoIconUrl = mediaUrl(siteNavigation?.logoIcon) || DEFAULT_LOGO_ICON_URL;
   const headerLogo = logoUrl || logoIconUrl;
   const navItems: HeaderNavItem[] = [
     { href: '/#home-top', label: 'Accueil' },
