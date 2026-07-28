@@ -16,6 +16,8 @@ type OperatorShellProps = {
   unreadCount: number;
   // Statut de la subvention de l'operateur (null = aucune). Deverrouille « Ma subvention » (S1).
   subventionStatut?: string | null;
+  // Logo de marque (icône pour la pastille du header). Repli « SP » si vide.
+  brand?: { label: string; logoUrl: string | null; logoIconUrl: string | null };
 };
 
 // « Ma subvention » (Lot 2) : verrouillee tant qu'aucune subvention n'existe ; deverrouillee
@@ -36,13 +38,14 @@ const subventionSubItems = [
   { href: '/ma-subvention/decaissements', label: 'Décaissements' },
 ];
 
-export function OperatorShell({ children, session, unreadCount, subventionStatut }: OperatorShellProps) {
+export function OperatorShell({ children, session, unreadCount, subventionStatut, brand }: OperatorShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const helpRef = useRef<HTMLDivElement>(null);
   const subventionUnlocked = Boolean(subventionStatut);
   const isPreparation = subventionStatut === 'preparation';
+  const brandMark = brand?.logoIconUrl || brand?.logoUrl || null;
 
   // Mini-panneau « Besoin d'aide ? » (A6, HELP_DESTINATION='C') : fermeture au clic exterieur + Echap.
   useEffect(() => {
@@ -69,7 +72,12 @@ export function OperatorShell({ children, session, unreadCount, subventionStatut
           <OperatorNavIcon name="menu" />
         </button>
         <div className="operator-brand">
-          <span className="operator-brand-mark">SP</span>
+          {brandMark ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="brand-mark-img" src={brandMark} alt={brand?.label || 'SUBCO-PRETE'} />
+          ) : (
+            <span className="operator-brand-mark">SP</span>
+          )}
           <span>SUBCO-PRETE<small>Portail opérateur</small></span>
         </div>
         <div className="operator-topbar-right">

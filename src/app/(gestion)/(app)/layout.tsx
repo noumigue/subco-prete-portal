@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getPortalSession } from '@/lib/portal-auth';
 import { getGestionAssistance, getGestionPendingCount } from '@/lib/gestion-api';
+import { getBrandAssets } from '@/lib/strapi-public';
 import { GestionShell } from '@/components/gestion-shell';
 
 // Garde d'acces (gestion)/(app) : session valide ET role interne {instructeur, ugp, comite}.
@@ -27,9 +28,10 @@ export default async function GestionAppLayout({
   const assistCount = session.role === 'comite'
     ? 0
     : (await getGestionAssistance()).filter((d) => d.statut !== 'resolue').length;
+  const brand = await getBrandAssets();
 
   return (
-    <GestionShell session={session} pendingCount={pendingCount} assistCount={assistCount}>
+    <GestionShell session={session} pendingCount={pendingCount} assistCount={assistCount} brand={brand}>
       {children}
     </GestionShell>
   );

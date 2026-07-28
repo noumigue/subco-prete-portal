@@ -212,6 +212,8 @@ export type NavigationLinkItem = {
 
 export type SiteNavigation = {
   brandLabel?: string;
+  logo?: StrapiMedia;
+  logoIcon?: StrapiMedia;
   supportLabelFr?: string;
   supportLabelRn?: string;
   supportUrl?: string;
@@ -385,6 +387,19 @@ export async function getFooterLinks() {
 }
 
 export async function getSiteNavigation() {
-  const out = await getJson<StrapiOne<SiteNavigation>>('/api/site-navigation?populate[primaryItems]=*&populate[newsItems]=*');
+  const out = await getJson<StrapiOne<SiteNavigation>>('/api/site-navigation?populate[primaryItems]=*&populate[newsItems]=*&populate[logo]=*&populate[logoIcon]=*');
   return out?.data || null;
+}
+
+export type BrandAssets = { label: string; logoUrl: string | null; logoIconUrl: string | null };
+
+// Assets de marque (logo complet + icône) resolus depuis `site-navigation`, reutilisables
+// dans tous les shells (public, operateur, gestion). Repli sur « SUBCO PRETE » si vide.
+export async function getBrandAssets(): Promise<BrandAssets> {
+  const nav = await getSiteNavigation();
+  return {
+    label: nav?.brandLabel || 'SUBCO PRETE',
+    logoUrl: mediaUrl(nav?.logo),
+    logoIconUrl: mediaUrl(nav?.logoIcon),
+  };
 }

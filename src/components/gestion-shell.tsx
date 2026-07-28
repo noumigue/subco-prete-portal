@@ -12,6 +12,8 @@ type GestionShellProps = {
   session: PortalSession;
   pendingCount: number;
   assistCount?: number;
+  // Logo de marque (icône pour la pastille du header). Repli « SP » si vide.
+  brand?: { label: string; logoUrl: string | null; logoIconUrl: string | null };
 };
 
 // Metadonnees de role : nom affiche (session.orgName sert de nom de personne pour les
@@ -27,7 +29,7 @@ function initials(nom: string) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || 'SP';
 }
 
-export function GestionShell({ children, session, pendingCount, assistCount = 0 }: GestionShellProps) {
+export function GestionShell({ children, session, pendingCount, assistCount = 0, brand }: GestionShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isFileActive = pathname.startsWith('/gestion/dossiers');
@@ -35,6 +37,7 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
   const isUgp = session.role === 'ugp';
   const isComite = session.role === 'comite';
   const active = (p: string) => (pathname.startsWith(p) ? ' active' : '');
+  const brandMark = brand?.logoIconUrl || brand?.logoUrl || null;
   // Mobile : tout clic sur un lien de nav referme le tiroir (delegation, evite d'annoter chaque Link).
   const closeOnLink = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('a')) setOpen(false);
@@ -48,7 +51,12 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0 
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
         </button>
         <div className="gx-brand">
-          <span className="gx-mark">SP</span>
+          {brandMark ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="brand-mark-img" src={brandMark} alt={brand?.label || 'SUBCO-PRETE'} />
+          ) : (
+            <span className="gx-mark">SP</span>
+          )}
           <span>SUBCO-PRETE<small>Espace de gestion</small></span>
         </div>
         <div className="gx-head-right">

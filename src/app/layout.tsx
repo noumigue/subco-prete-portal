@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { getFooterLinks, getSiteNavigation } from '@/lib/strapi-public';
+import { getFooterLinks, getSiteNavigation, mediaUrl } from '@/lib/strapi-public';
 import { LANG_TOGGLE_ENABLED } from '@/lib/site-config';
 import './globals.css';
 
@@ -70,6 +70,9 @@ export default async function RootLayout({
     : siteNavigation?.supportLabelFr || '';
   const supportUrl = siteNavigation?.supportUrl || '';
   const brandLabel = siteNavigation?.brandLabel || 'SUBCO PRETE';
+  const logoUrl = mediaUrl(siteNavigation?.logo);
+  const logoIconUrl = mediaUrl(siteNavigation?.logoIcon);
+  const headerLogo = logoUrl || logoIconUrl;
   const navItems: HeaderNavItem[] = [
     { href: '/#home-top', label: 'Accueil' },
     { href: '/#home-mechanism-band', label: 'Le Mécanisme' },
@@ -104,7 +107,14 @@ export default async function RootLayout({
             </div>
             <header className="site-header">
               <div className="container nav-wrap">
-                <Link href="/" className="brand">{brandLabel}</Link>
+                <Link href="/" className="brand" aria-label={brandLabel}>
+                  {headerLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="brand-logo" src={headerLogo} alt={brandLabel} />
+                  ) : (
+                    brandLabel
+                  )}
+                </Link>
                 <nav className="main-nav">
                   {navItems.map((item) => (
                     item.href.startsWith('/#') ? (
@@ -128,7 +138,12 @@ export default async function RootLayout({
           <footer className="site-footer">
             <div className="container footer-wrap">
               <div className="footer-brand">
-                <p className="footer-brand-name">SUBCO-PRETE</p>
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className="footer-logo" src={logoUrl} alt={brandLabel} />
+                ) : (
+                  <p className="footer-brand-name">SUBCO-PRETE</p>
+                )}
                 <p className="footer-tagline">
                   La plateforme des subventions de contrepartie du PRETE : s’informer, vérifier son éligibilité,
                   candidater, puis suivre et gérer sa subvention.
