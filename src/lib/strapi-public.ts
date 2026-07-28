@@ -387,7 +387,9 @@ export async function getFooterLinks() {
 }
 
 export async function getSiteNavigation() {
-  const out = await getJson<StrapiOne<SiteNavigation>>('/api/site-navigation?populate[primaryItems]=*&populate[newsItems]=*&populate[logo]=*&populate[logoIcon]=*');
+  // NB : les médias se peuplent avec `=true` (le `=*` ne renvoie rien pour un média en Strapi 5,
+  // contrairement aux composants primaryItems/newsItems).
+  const out = await getJson<StrapiOne<SiteNavigation>>('/api/site-navigation?populate[primaryItems]=*&populate[newsItems]=*&populate[logo]=true&populate[logoIcon]=true');
   return out?.data || null;
 }
 
