@@ -7795,7 +7795,7 @@ a.gx-okp:hover { text-decoration: underline; }
 
 /* ===== Logo de marque (CMS : site-navigation.logo / logoIcon), repli « SP » si vide ===== */
 /* Logo complet par défaut (fond clair, ex. header public). */
-.brand-logo { display: block; height: 40px; width: auto; max-width: 260px; object-fit: contain; }
+.brand-logo { display: block; height: 60px; width: auto; max-width: 340px; object-fit: contain; }
 /* Icône compacte dans les pastilles de header (topbars sombres) → chip blanc pour le contraste. */
 .brand-mark-img { display: block; height: 34px; width: auto; max-width: 48px; object-fit: contain; background: #fff; border-radius: 8px; padding: 3px; }
 /* Logo complet sur surfaces sombres (pages de connexion) → chip blanc. */
