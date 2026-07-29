@@ -306,6 +306,23 @@ export async function getCalls() {
   return out?.data?.filter(isPublicCall) || [];
 }
 
+// Bande « Appels à propositions » de l'accueil : source de vérité = le content-type
+// OPÉRATIONNEL `appel` (celui des candidatures / back-office), pour que la home ne dérive
+// jamais des dates réelles. On mappe `appel` vers la forme CallItem attendue par la bande.
+type AppelRaw = { id: number; nom?: string; codeCohorte?: string; statut?: string; ouvertLe?: string; clotureLe?: string };
+const APPEL_STATUT_TO_CALL: Record<string, string> = { ouvert: 'open', a_venir: 'upcoming', ferme: 'closed' };
+export async function getHomeAppels(): Promise<CallItem[]> {
+  const out = await getJson<StrapiList<AppelRaw>>('/api/appels?sort=ouvertLe:asc&pagination[pageSize]=100');
+  return (out?.data || []).map((a) => ({
+    id: a.id,
+    title: a.nom,
+    callStatus: APPEL_STATUT_TO_CALL[String(a.statut || '').toLowerCase()] || a.statut,
+    openingDate: a.ouvertLe,
+    deadlineDate: a.clotureLe,
+    // pas de slug éditorial : le CTA « Voir le détail » de la bande pointe vers /candidature.
+  }));
+}
+
 export async function getCallBySlug(slug: string) {
   const q = encodeURIComponent(slug);
   const out = await getJson<StrapiList<CallItem>>(`/api/call-for-proposals?filters[slug][$eq]=${q}&pagination[limit]=1`);

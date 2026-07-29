@@ -6,7 +6,7 @@ import HomeMechanismBand from './HomeMechanismBand';
 import HomeNotificationBand from './HomeNotificationBand';
 import HomeProgramStepsBand from './HomeProgramStepsBand';
 import {
-  getCalls,
+  getHomeAppels,
   getFaqItems,
   getHomepage,
   getPartners,
@@ -293,7 +293,7 @@ export default async function HomePage() {
   const [homepage, chains, calls, partners, faqItems, programSteps] = await Promise.all([
     getHomepage(),
     getValueChains(),
-    getCalls(),
+    getHomeAppels(),
     getPartners(),
     getFaqItems(),
     getProgramSteps(),
@@ -373,11 +373,9 @@ export default async function HomePage() {
                       {featuredCallCountdown}
                     </span>
                   ) : null}
-                  {featuredCall.slug ? (
-                    <Link href={`/appels/${featuredCall.slug}`} className="btn secondary home-call-band-link">
-                      Voir le détail
-                    </Link>
-                  ) : null}
+                  <Link href="/candidature" className="btn secondary home-call-band-link">
+                    Voir le détail
+                  </Link>
                 </div>
               </article>
             ) : (
