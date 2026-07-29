@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 // Vignette d'accueil (overlay) : informe que les candidatures ne sont pas encore ouvertes,
 // affiche le compte à rebours J-XX jusqu'à l'OUVERTURE, et renvoie vers la bande d'inscription.
-// Additive : ne modifie pas les sections existantes de la home. Fermeture mémorisée (localStorage).
-const DISMISS_KEY = 'subco_home_opening_modal_v1';
+// Additive : ne modifie pas les sections existantes de la home. Ré-affichée à CHAQUE chargement
+// (pas de mémorisation) : la fermeture ne masque que la vue courante.
 
 function daysUntil(dateStr: string): number | null {
   if (!dateStr) return null;
@@ -25,10 +25,7 @@ function formatDate(dateStr: string): string {
 export default function HomeOpeningModal({ openingDate }: { openingDate: string }) {
   const [open, setOpen] = useState(false);
 
-  const dismiss = useCallback(() => {
-    try { window.localStorage.setItem(DISMISS_KEY, '1'); } catch { /* stockage indisponible */ }
-    setOpen(false);
-  }, []);
+  const dismiss = useCallback(() => setOpen(false), []);
 
   const goNotify = useCallback(() => {
     // Défiler vers la bande d'inscription AVANT de fermer (l'overlay est en position:fixed,
@@ -38,12 +35,11 @@ export default function HomeOpeningModal({ openingDate }: { openingDate: string 
   }, [dismiss]);
 
   useEffect(() => {
-    // Ouverture décidée uniquement côté client (localStorage indisponible en SSR) : on part
-    // de `false` au rendu serveur pour éviter tout écart d'hydratation, puis on affiche ici.
-    let dismissed = false;
-    try { dismissed = window.localStorage.getItem(DISMISS_KEY) === '1'; } catch { /* ignore */ }
+    // Affichée à chaque montage (donc à chaque chargement de la home). On part de `false` au
+    // rendu serveur (le compte à rebours dépend de la date locale) puis on affiche côté client,
+    // ce qui évite tout écart d'hydratation.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!dismissed) setOpen(true);
+    setOpen(true);
   }, []);
 
   useEffect(() => {
