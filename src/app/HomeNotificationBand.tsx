@@ -141,7 +141,7 @@ export default function HomeNotificationBand({ disabled, targetCohort }: Props) 
   };
 
   return (
-    <section className={`section section-band band-notify${disabled ? ' is-disabled' : ''}`}>
+    <section id="home-notification-band" className={`section section-band band-notify${disabled ? ' is-disabled' : ''}`}>
       <div className="container">
         <div className="notify-shell">
           <div className="notify-copy">

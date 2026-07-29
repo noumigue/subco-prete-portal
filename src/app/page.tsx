@@ -4,6 +4,7 @@ import InfraBand from '@/components/InfraBand';
 import FaqSection from './FaqSection';
 import HomeMechanismBand from './HomeMechanismBand';
 import HomeNotificationBand from './HomeNotificationBand';
+import HomeOpeningModal from './HomeOpeningModal';
 import HomeProgramStepsBand from './HomeProgramStepsBand';
 import {
   getHomeAppels,
@@ -321,9 +322,13 @@ export default async function HomePage() {
   const pastCalls = orderedCalls.filter((item) => item.id !== featuredCall?.id).slice(0, 8);
   const hasOpenCall = orderedCalls.some((item) => resolveCallStatus(item.callStatus, item.openingDate, item.deadlineDate) === 'open');
   const notificationTargetCohort = resolveNotificationTargetCohort(programSteps);
+  // Vignette d'accueil (overlay additif) : uniquement quand aucun appel n'est ouvert et
+  // qu'une ouverture future est connue (ex. C1 le 20 août) → compte à rebours J-XX.
+  const openingModalDate = !hasOpenCall && featuredCallStatus === 'upcoming' ? featuredCall?.openingDate : undefined;
 
   return (
     <main className="min-h-screen">
+      {openingModalDate ? <HomeOpeningModal openingDate={openingModalDate} /> : null}
       <section
         id="home-top"
         className="hero hero-template"
