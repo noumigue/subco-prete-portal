@@ -299,8 +299,12 @@ export default async function HomePage() {
     getProgramSteps(),
   ]);
   const transversalChain = chains.find((item) => item.slug === 'projet-transversal');
+  // Toutes les chaînes prioritaires (non transversales), triées par priorityOrder, puis la transversale.
+  // Plus de plafond codé en dur : une nouvelle chaîne (ex. porcine) apparaît automatiquement.
+  const priorityChains = chains.filter((item) => item.slug !== 'projet-transversal');
+  const priorityCount = priorityChains.length;
   const homepageChains = [
-    ...chains.filter((item) => item.slug !== 'projet-transversal').slice(0, 5),
+    ...priorityChains,
     ...(transversalChain ? [transversalChain] : []),
   ];
   const heroImage = mediaUrl(homepage?.heroImage) || mediaUrl(chains.find((item) => mediaUrl(item.heroImage))?.heroImage);
@@ -430,8 +434,8 @@ export default async function HomePage() {
 
       <section id="home-value-chains" className="section section-band band-chains">
         <div className="container">
-          <h2 className="section-title">5 chaînes de valeur prioritaires + 1 possibilité transversale</h2>
-          <p className="hero-vision infrastructure-lead chain-intro">Les cinq chaînes ciblées par le mécanisme de subventions de contrepartie, plus une possibilité de projet transversal utile à plusieurs chaînes.</p>
+          <h2 className="section-title">{priorityCount} chaînes de valeur prioritaires + 1 possibilité transversale</h2>
+          <p className="hero-vision infrastructure-lead chain-intro">Les chaînes ciblées par le mécanisme de subventions de contrepartie, plus une possibilité de projet transversal utile à plusieurs chaînes.</p>
           <div className="grid three">
             {homepageChains.map((item) => (
               <article key={item.id} className="card">
