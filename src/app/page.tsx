@@ -378,7 +378,7 @@ export default async function HomePage() {
                       {featuredCallCountdown}
                     </span>
                   ) : null}
-                  <Link href="/candidature" className="btn secondary home-call-band-link">
+                  <Link href={featuredCall.slug ? `/appels/${featuredCall.slug}` : '/candidature'} className="btn secondary home-call-band-link">
                     Voir le détail
                   </Link>
                 </div>

@@ -1,14 +1,5 @@
 import Link from 'next/link';
-
-const openCalls = [
-  {
-    status: 'AMI ouvert — Cohorte 1',
-    deadline: '15 juillet 2026',
-    remaining: 'il reste 15 jours',
-    cta: "Voir le détail de l'appel",
-    href: '/appels',
-  },
-];
+import { getHomeAppels, type CallItem } from '@/lib/strapi-public';
 
 const procedureSteps = [
   {
@@ -50,8 +41,8 @@ const constraints = [
 
 const documentItems = [
   {
-    title: "TdR de l'appel — v1",
-    detail: 'PDF · Mis à jour 30 mai 2026',
+    title: "TdR de l'appel à propositions",
+    detail: 'PDF · Référence officielle de la cohorte en cours',
   },
   {
     title: "Modèle de plan d'affaires",
@@ -90,7 +81,62 @@ const profileRows = [
   },
 ];
 
-export default function CandidatureAdopteePage() {
+function formatDate(value?: string) {
+  if (!value) return 'Date à confirmer';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(date);
+}
+
+function resolveCallStatus(item?: CallItem | null) {
+  if (!item) return 'upcoming';
+  const now = new Date();
+  const opening = item.openingDate ? new Date(item.openingDate) : null;
+  const deadline = item.deadlineDate ? new Date(item.deadlineDate) : null;
+
+  if (deadline && !Number.isNaN(deadline.getTime()) && deadline.getTime() < now.getTime()) return 'closed';
+  if (opening && !Number.isNaN(opening.getTime()) && opening.getTime() > now.getTime()) return 'upcoming';
+  if ((item.callStatus || '').toLowerCase() === 'closed') return 'closed';
+  return 'open';
+}
+
+function buildOpenCallBanner(item?: CallItem | null) {
+  if (!item) {
+    return {
+      status: 'Aucun appel en cours',
+      meta: 'La prochaine cohorte sera publiée depuis le CMS.',
+      href: '/appels',
+    };
+  }
+
+  const status = resolveCallStatus(item);
+  if (status === 'upcoming') {
+    return {
+      status: 'À venir — Cohorte 1',
+      meta: `Ouverture prévue le ${formatDate(item.openingDate)} · clôture le ${formatDate(item.deadlineDate)}`,
+      href: item.slug ? `/appels/${item.slug}` : '/appels',
+    };
+  }
+
+  if (status === 'closed') {
+    return {
+      status: 'Appel clôturé — Cohorte 1',
+      meta: `Clôturé le ${formatDate(item.deadlineDate)}`,
+      href: item.slug ? `/appels/${item.slug}` : '/appels',
+    };
+  }
+
+  return {
+    status: 'Appel ouvert — Cohorte 1',
+    meta: `Clôture le ${formatDate(item.deadlineDate)}`,
+    href: item.slug ? `/appels/${item.slug}` : '/appels',
+  };
+}
+
+export default async function CandidatureAdopteePage() {
+  const calls = await getHomeAppels();
+  const featuredCall = calls[0] || null;
+  const openCallBanner = buildOpenCallBanner(featuredCall);
   const heroBandStyle = {
     background:
       'linear-gradient(145deg, rgba(16, 76, 58, 0.86), rgba(19, 102, 74, 0.84)), linear-gradient(160deg, #0c5c47, #0a473a)',
@@ -140,21 +186,19 @@ export default function CandidatureAdopteePage() {
         </div>
       </section>
 
-      {openCalls.map((item) => (
-        <section className="section" key={item.status}>
-          <div className="container candidature-bis-open-banner-wrap">
-            <article className="candidature-bis-open-banner">
-              <p className="candidature-bis-open-badge">{item.status}</p>
-              <div>
-                <p className="candidature-bis-open-meta">Clôture le {item.deadline} — {item.remaining}</p>
-                <Link href={item.href} className="candidature-bis-open-link">
-                  {item.cta}
-                </Link>
-              </div>
-            </article>
-          </div>
-        </section>
-      ))}
+      <section className="section">
+        <div className="container candidature-bis-open-banner-wrap">
+          <article className="candidature-bis-open-banner">
+            <p className="candidature-bis-open-badge">{openCallBanner.status}</p>
+            <div>
+              <p className="candidature-bis-open-meta">{openCallBanner.meta}</p>
+              <Link href={openCallBanner.href} className="candidature-bis-open-link">
+                Voir le détail de l&apos;appel
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
 
       <section className="section candidature-bis-section-white">
         <div className="container">
