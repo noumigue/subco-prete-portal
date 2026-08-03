@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getHomeAppels, type CallItem } from '@/lib/strapi-public';
+import { getHomeAppels, getResourceDocuments, getTypePieces, mediaUrl, type CallItem } from '@/lib/strapi-public';
 
 const procedureSteps = [
   {
@@ -39,32 +39,52 @@ const constraints = [
   },
 ];
 
-const documentItems = [
-  {
-    title: "TdR de l'appel à propositions",
-    detail: 'PDF · Référence officielle de la cohorte en cours',
-  },
-  {
-    title: "Modèle de plan d'affaires",
-    detail: 'DOCX · Modèle à remplir',
-  },
-  {
-    title: 'Liste des pièces du dossier',
-    detail: 'PDF · Checklist officielle',
-  },
-  {
-    title: "Grilles d'évaluation",
-    detail: 'PDF · Éligibilité + technique',
-  },
-  {
-    title: 'Engagement de cofinancement',
-    detail: 'DOCX · Modèle à signer',
-  },
-  {
-    title: 'Fiche de screening environnemental et social',
-    detail: 'PDF · Auto-évaluation',
-  },
+// Libellés de la checklist Annexe 9 (mêmes conventions que /faq-documents).
+const PIECE_GROUP_LABELS: Record<string, string> = {
+  administratif: 'Administratives',
+  financier: 'Financières',
+  technique: 'Techniques',
+};
+const PIECE_EXIGENCE_LABELS: Record<string, string> = {
+  obligatoire: 'Obligatoire',
+  si_applicable: 'Si applicable',
+  si_disponible: 'Si disponible',
+};
+
+// Liste canonique Annexe 9 (identique au référentiel `type-piece` du CMS). Sert de
+// secours : la checklist affiche le référentiel live quand il répond, sinon cette liste,
+// afin de rester fonctionnelle même si l'endpoint référentiel n'est pas exposé en prod.
+type ChecklistPiece = { id: number; libelle: string; groupe: string; exigence: string; ordre: number };
+const CANONICAL_ANNEXE9_PIECES: ChecklistPiece[] = [
+  { id: 10, libelle: "Attestation d'existence légale (RC / acte constitutif)", groupe: 'administratif', exigence: 'obligatoire', ordre: 10 },
+  { id: 20, libelle: "Numéro d'identification fiscale (NIF)", groupe: 'administratif', exigence: 'obligatoire', ordre: 20 },
+  { id: 30, libelle: 'Attestation de non-redevance fiscale', groupe: 'administratif', exigence: 'si_applicable', ordre: 30 },
+  { id: 40, libelle: "Déclaration de conflit d'intérêt", groupe: 'administratif', exigence: 'obligatoire', ordre: 40 },
+  { id: 50, libelle: 'États financiers récents (3 exercices)', groupe: 'financier', exigence: 'obligatoire', ordre: 50 },
+  { id: 60, libelle: 'Justificatif de mobilisation de la contrepartie', groupe: 'financier', exigence: 'obligatoire', ordre: 60 },
+  { id: 70, libelle: "Plan d'affaires / budget détaillé", groupe: 'financier', exigence: 'obligatoire', ordre: 70 },
+  { id: 80, libelle: 'Note conceptuelle du projet', groupe: 'technique', exigence: 'obligatoire', ordre: 80 },
+  { id: 90, libelle: 'Preuve de disponibilité du site', groupe: 'technique', exigence: 'obligatoire', ordre: 90 },
+  { id: 100, libelle: "Devis / plans d'infrastructure", groupe: 'technique', exigence: 'si_disponible', ordre: 100 },
+  { id: 110, libelle: 'Plan de gestion environnementale et sociale (PGES)', groupe: 'technique', exigence: 'si_applicable', ordre: 110 },
 ];
+
+// Type de fichier lisible (PDF / DOCX…) depuis l'extension du média.
+function fileTypeLabel(url?: string | null): string {
+  if (!url) return 'Fichier';
+  const ext = url.split('?')[0].split('.').pop() || '';
+  return ext ? ext.toUpperCase() : 'Fichier';
+}
+
+// Ordre d'affichage : le Manuel d'abord, puis les annexes par numéro (Annexe 1..10),
+// le reste à la fin (le tri CMS title:asc placerait « Annexe 10 » avant « Annexe 1 »).
+function docSortKey(title?: string): number {
+  const t = String(title || '');
+  if (/manuel/i.test(t)) return 0;
+  const m = /annexe\s*(\d+)/i.exec(t);
+  if (m) return Number(m[1]);
+  return 99;
+}
 
 const profileRows = [
   {
@@ -134,9 +154,38 @@ function buildOpenCallBanner(item?: CallItem | null) {
 }
 
 export default async function CandidatureAdopteePage() {
-  const calls = await getHomeAppels();
+  const [calls, resourceDocs, typePieces] = await Promise.all([
+    getHomeAppels(),
+    getResourceDocuments(),
+    getTypePieces(),
+  ]);
   const featuredCall = calls[0] || null;
   const openCallBanner = buildOpenCallBanner(featuredCall);
+
+  // Documents « Pour vous préparer » = les documents réels du CMS (resource-document),
+  // mêmes que /faq-documents : Manuel + Annexes, en tuiles téléchargeables.
+  const documentItems = resourceDocs
+    .map((doc) => {
+      const url = mediaUrl(doc.file) || null;
+      const type = fileTypeLabel(url);
+      const detail = [type, doc.description].filter(Boolean).join(' · ');
+      return { title: doc.title || 'Document', detail, url, sortKey: docSortKey(doc.title) };
+    })
+    .filter((d) => d.url)
+    .sort((a, b) => a.sortKey - b.sortKey);
+
+  // Checklist Annexe 9 : référentiel `type-piece` live s'il répond, sinon liste canonique
+  // de secours (endpoint référentiel non exposé en prod → la checklist reste affichée).
+  const checklistPieces = typePieces.length > 0
+    ? [...typePieces].sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
+    : CANONICAL_ANNEXE9_PIECES;
+  const pieceGroups = ['administratif', 'financier', 'technique']
+    .map((group) => ({
+      key: group,
+      label: PIECE_GROUP_LABELS[group],
+      items: checklistPieces.filter((p) => p.groupe === group),
+    }))
+    .filter((g) => g.items.length > 0);
   const heroBandStyle = {
     background:
       'linear-gradient(145deg, rgba(16, 76, 58, 0.86), rgba(19, 102, 74, 0.84)), linear-gradient(160deg, #0c5c47, #0a473a)',
@@ -248,8 +297,10 @@ export default async function CandidatureAdopteePage() {
             </div>
           </div>
           <div className="candidature-bis-docs">
-            {documentItems.map((doc) => (
-              <article key={doc.title} className="candidature-bis-doc-card">
+            {documentItems.length === 0 ? (
+              <p className="candidature-bis-profile-intro">Documents bientôt disponibles.</p>
+            ) : documentItems.map((doc) => (
+              <a key={doc.title} className="candidature-bis-doc-card" href={doc.url ?? '#'} target="_blank" rel="noopener noreferrer">
                 <div>
                   <h3>{doc.title}</h3>
                   <p>{doc.detail}</p>
@@ -259,9 +310,32 @@ export default async function CandidatureAdopteePage() {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-              </article>
+              </a>
             ))}
           </div>
+
+          {pieceGroups.length > 0 ? (
+            <div className="candidature-bis-checklist">
+              <h3 className="candidature-bis-checklist-title">Pièces du dossier (Annexe 9)</h3>
+              <p className="candidature-bis-checklist-intro">La liste des pièces à réunir pour un dossier complet, par nature.</p>
+              <div className="candidature-bis-checklist-grid">
+                {pieceGroups.map((group) => (
+                  <div key={group.key} className="candidature-bis-checklist-col">
+                    <h4>{group.label}</h4>
+                    <ul>
+                      {group.items.map((piece) => (
+                        <li key={piece.id}>
+                          <span className="candidature-bis-check" aria-hidden="true">✓</span>
+                          <span className="candidature-bis-check-label">{piece.libelle}</span>
+                          {piece.exigence ? <span className={`candidature-bis-check-exig exig-${piece.exigence}`}>{PIECE_EXIGENCE_LABELS[piece.exigence] || piece.exigence}</span> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
 

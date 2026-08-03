@@ -348,6 +348,14 @@ export async function getResourceDocuments() {
   return out?.data || [];
 }
 
+// Référentiel des pièces du dossier (Annexe 9), en lecture publique — pour la checklist
+// affichée sur la page /candidature (mêmes données que la liste de /faq-documents).
+export type TypePiece = { id: number; documentId?: string; libelle?: string; groupe?: string; exigence?: string; ordre?: number };
+export async function getTypePieces() {
+  const out = await getJson<StrapiList<TypePiece>>('/api/type-pieces?sort=ordre:asc&pagination[pageSize]=100');
+  return out?.data || [];
+}
+
 export async function getProgramSteps() {
   const out = await getJson<StrapiList<ProgramStepRaw>>('/api/etape-programmes?sort=cohorte:asc&sort=ordre:asc&pagination[pageSize]=100');
   return (out?.data || []).map((item) => ({

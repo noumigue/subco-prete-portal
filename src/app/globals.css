@@ -7853,3 +7853,20 @@ a.gx-okp:hover { text-decoration: underline; }
 @keyframes homeOpenmodalFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes homeOpenmodalPop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .home-openmodal-overlay, .home-openmodal { animation: none; } }
+
+/* /candidature — tuiles docs (désormais des liens de téléchargement) + checklist Annexe 9 */
+a.candidature-bis-doc-card { text-decoration: none; color: inherit; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+a.candidature-bis-doc-card:hover { border-color: var(--brand); box-shadow: 0 6px 18px rgba(20, 60, 50, 0.08); transform: translateY(-1px); }
+a.candidature-bis-doc-card:hover .candidature-bis-doc-download { stroke: var(--brand-deep, var(--brand)); }
+
+.candidature-bis-checklist { margin-top: 1.8rem; border-top: 1px solid var(--line); padding-top: 1.4rem; }
+.candidature-bis-checklist-title { margin: 0; font-size: 1.1rem; color: var(--ink); }
+.candidature-bis-checklist-intro { margin: 0.3rem 0 1rem; color: var(--ink-soft); font-size: 0.95rem; }
+.candidature-bis-checklist-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.candidature-bis-checklist-col > h4 { margin: 0 0 0.55rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--brand, #2e9d63); font-weight: 800; }
+.candidature-bis-checklist-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.candidature-bis-checklist-col li { display: grid; grid-template-columns: 18px 1fr auto; gap: 0.5rem; align-items: start; font-size: 0.92rem; color: var(--ink); line-height: 1.35; }
+.candidature-bis-check { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; background: #e4f2ee; color: var(--brand, #2e9d63); font-size: 0.72rem; font-weight: 800; margin-top: 1px; }
+.candidature-bis-check-exig { align-self: center; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; color: var(--ink-soft); white-space: nowrap; }
+.candidature-bis-check-exig.exig-obligatoire { background: #e4f2ee; border-color: #bfe0d5; color: #1f6b52; }
+@media (max-width: 860px) { .candidature-bis-checklist-grid { grid-template-columns: 1fr; } }
