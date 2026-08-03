@@ -52,8 +52,8 @@ const PIECE_EXIGENCE_LABELS: Record<string, string> = {
 };
 
 // Liste canonique Annexe 9 (identique au référentiel `type-piece` du CMS). Sert de
-// secours : la checklist affiche le référentiel live quand il répond, sinon cette liste,
-// afin de rester fonctionnelle même si l'endpoint référentiel n'est pas exposé en prod.
+// secours : la checklist affiche le référentiel live (route `/api/types-piece`) quand il
+// répond, sinon cette liste, afin de rester fonctionnelle si le référentiel est vide/indispo.
 type ChecklistPiece = { id: number; libelle: string; groupe: string; exigence: string; ordre: number };
 const CANONICAL_ANNEXE9_PIECES: ChecklistPiece[] = [
   { id: 10, libelle: "Attestation d'existence légale (RC / acte constitutif)", groupe: 'administratif', exigence: 'obligatoire', ordre: 10 },
@@ -175,7 +175,7 @@ export default async function CandidatureAdopteePage() {
     .sort((a, b) => a.sortKey - b.sortKey);
 
   // Checklist Annexe 9 : référentiel `type-piece` live s'il répond, sinon liste canonique
-  // de secours (endpoint référentiel non exposé en prod → la checklist reste affichée).
+  // de secours (référentiel vide/indispo → la checklist reste affichée).
   const checklistPieces = typePieces.length > 0
     ? [...typePieces].sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0))
     : CANONICAL_ANNEXE9_PIECES;

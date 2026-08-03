@@ -352,7 +352,9 @@ export async function getResourceDocuments() {
 // affichée sur la page /candidature (mêmes données que la liste de /faq-documents).
 export type TypePiece = { id: number; documentId?: string; libelle?: string; groupe?: string; exigence?: string; ordre?: number };
 export async function getTypePieces() {
-  const out = await getJson<StrapiList<TypePiece>>('/api/type-pieces?sort=ordre:asc&pagination[pageSize]=100');
+  // NB : le pluralName du content-type est `types-piece` (pas `type-pieces`) → la route REST
+  // est bien `/api/types-piece` (même endpoint que portal-api.ts côté opérateur).
+  const out = await getJson<StrapiList<TypePiece>>('/api/types-piece?sort=ordre:asc&pagination[pageSize]=100');
   return out?.data || [];
 }
 
