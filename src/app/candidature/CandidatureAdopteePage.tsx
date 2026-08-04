@@ -163,8 +163,10 @@ export default async function CandidatureAdopteePage() {
   const openCallBanner = buildOpenCallBanner(featuredCall);
 
   // Documents « Pour vous préparer » = les documents réels du CMS (resource-document),
-  // mêmes que /faq-documents : Manuel + Annexes, en tuiles téléchargeables.
+  // en tuiles téléchargeables. On exclut le Manuel de gestion des subventions (les Annexes
+  // seules sont pertinentes ici pour préparer la candidature).
   const documentItems = resourceDocs
+    .filter((doc) => !/manuel/i.test(doc.title || ''))
     .map((doc) => {
       const url = mediaUrl(doc.file) || null;
       const type = fileTypeLabel(url);
