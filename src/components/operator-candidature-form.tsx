@@ -36,7 +36,8 @@ const GATES = [
   'Conformité fiscale sans contentieux majeur',
   'Aucune activité exclue par le mécanisme',
   'Capacité de mobiliser une contrepartie d’au moins 20 %',
-  'Aucun conflit d’intérêt avec le projet ou l’UGP',
+  // TODO(conflit-interet) retiré temporairement — voir ROLLBACK_conflit-interet.md
+  // 'Aucun conflit d’intérêt avec le projet ou l’UGP',
 ];
 const ES_FIELDS = [
   'Travaux ou construction',
