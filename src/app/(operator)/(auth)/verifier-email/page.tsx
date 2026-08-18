@@ -26,7 +26,6 @@ export default async function VerifyEmailPage({
           {resent ? <p className="operator-auth-note">Un nouveau lien vient d&apos;être demandé.</p> : null}
           <OperatorResendLink email={email} justResent={Boolean(resent)} />
         </div>
-        <p className="operator-auth-annot"><b>D2.</b> Cette page reste une porte dure tant que le compte n&apos;est pas confirmé.</p>
       </section>
     </main>
   );

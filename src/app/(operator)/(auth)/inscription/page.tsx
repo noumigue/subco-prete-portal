@@ -39,7 +39,6 @@ export default async function RegisterPage({
         </form>
         <p className="operator-auth-alt">Déjà un compte ? <Link href="/connexion">Se connecter</Link></p>
         </div>
-        <p className="operator-auth-annot"><b>D3.</b> Le téléphone et le contact sont captés plus tard dans le parcours, ici on garde le set minimal de la maquette.</p>
       </section>
     </main>
   );

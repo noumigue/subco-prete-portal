@@ -48,16 +48,10 @@ export default async function LoginPage({
           </div>
           <button type="submit" className="operator-primary-btn">Se connecter</button>
         </form>
-        <div className="operator-auth-demo">
-          <strong>Compte de démo</strong>
-          <span>demo-candidat@subco-prete.bi</span>
-          <span>SubcoDemo2026!</span>
-        </div>
         <p className="operator-auth-alt">Pas encore de compte ? <Link href={next ? `/inscription?next=${encodeURIComponent(next)}` : '/inscription'}>Créer un compte</Link></p>
         {/* Couture G3 : rattrape une erreur d'aiguillage vers la porte interne. */}
         <p className="operator-auth-alt">Membre de l&apos;équipe du projet ? <Link href="/gestion/connexion">Espace de gestion</Link></p>
         </div>
-        <p className="operator-auth-annot"><b>D2.</b> Si l&apos;e-mail n&apos;est pas encore vérifié, la connexion reste bloquée et renvoie vers la vérification.</p>
       </section>
     </main>
   );

@@ -60,13 +60,12 @@ export default async function PreparationPage({
       <section className="operator-card operator-callout">
         ℹ La signature de la convention interviendra une fois toutes les conditions levées. Vous serez notifié par e-mail et SMS.
         Votre statut deviendra alors <strong>bénéficiaire</strong>.
+        {' '}L’attestation de conformité préalable au décaissement (ACD) est établie par l’UGP :
+        vous n’avez aucune démarche à faire pour l’obtenir.
+        {' '}Jusqu’à la signature, les rubriques « Ma convention », « Suivi du projet » et « Décaissements »
+        vous ramènent sur cette page.
       </section>
 
-      <p className="operator-annot">
-        <strong>Vue unique pré-signature.</strong> Les trois sous-sections renvoient ici tant que la convention n’est pas signée.
-        Le rôle reste <strong>candidat</strong> ; il passe à <strong>bénéficiaire</strong> à la signature (§8.13).
-        L’ACD (Attestation de Conformité préalable au Décaissement) est établie par l’UGP — aucune action de votre part.
-      </p>
     </div>
   );
 }

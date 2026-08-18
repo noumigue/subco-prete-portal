@@ -23,7 +23,6 @@ export default async function ForgotPasswordPage({
         {sent ? <p className="operator-auth-note">Si un compte existe pour cette adresse, un lien de réinitialisation vient d&apos;être envoyé.</p> : null}
         <p className="operator-auth-alt"><Link href="/connexion">← Retour à la connexion</Link></p>
         </div>
-        <p className="operator-auth-annot"><b>D4.</b> Le message reste neutre pour éviter toute énumération des comptes.</p>
       </section>
     </main>
   );

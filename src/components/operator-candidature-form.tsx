@@ -31,6 +31,9 @@ import {
 // Les listes METIER (provinces/communes, statuts juridiques, filieres, contreparties,
 // pieces Annexe 9, exemples d'infrastructure) viennent TOUTES des referentiels via props.
 const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impact', 'Pièces et soumission'];
+// Plafond aligné sur la limite serveur du CMS (config/middlewares.js, formidable.maxFileSize).
+// Contrôlé ici pour que le refus soit immédiat et explicite, au lieu d'un échec muet après envoi.
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
 const GATES = [
   'Structure légalement constituée',
   'Conformité fiscale sans contentieux majeur',
@@ -398,6 +401,13 @@ export function OperatorCandidatureForm({
 
   async function handleUpload(target: string, file: File | null) {
     if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      showToast(
+        `« ${file.name} » fait ${(file.size / 1024 / 1024).toFixed(1)} Mo. La limite est de 10 Mo par fichier : `
+        + 'réduisez la taille du document, ou photographiez-le page par page.',
+      );
+      return;
+    }
     setUploadingId(target);
 
     const formData = new FormData();
@@ -406,7 +416,7 @@ export function OperatorCandidatureForm({
     setUploadingId('');
 
     if (!uploaded) {
-      showToast('Le dépôt du fichier a échoué. Réessayez.');
+      showToast('Le dépôt du fichier a échoué. Vérifiez votre connexion, puis réessayez.');
       return;
     }
 
@@ -821,7 +831,11 @@ export function OperatorCandidatureForm({
                       type="file"
                       hidden
                       accept=".pdf,image/*"
-                      onChange={(event) => void handleUpload('pges', event.target.files?.[0] || null)}
+                      onChange={(event) => {
+                        const chosen = event.target.files?.[0] || null;
+                        event.target.value = '';
+                        void handleUpload('pges', chosen);
+                      }}
                     />
                   </label>
                 </div>
@@ -846,7 +860,11 @@ export function OperatorCandidatureForm({
                           type="file"
                           hidden
                           accept=".pdf,image/*"
-                          onChange={(event) => void handleUpload(piece.id, event.target.files?.[0] || null)}
+                          onChange={(event) => {
+                            const chosen = event.target.files?.[0] || null;
+                            event.target.value = '';
+                            void handleUpload(piece.id, chosen);
+                          }}
                         />
                       </label>
                     </div>

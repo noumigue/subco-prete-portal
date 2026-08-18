@@ -39,7 +39,6 @@ export default async function ResetPasswordPage({
           <button type="submit" className="operator-primary-btn">Enregistrer</button>
         </form>
         </div>
-        <p className="operator-auth-annot"><b>Succès.</b> Après validation, retour à la connexion avec message de confirmation.</p>
       </section>
     </main>
   );
