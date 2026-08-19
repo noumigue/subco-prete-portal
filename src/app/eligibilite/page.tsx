@@ -34,8 +34,8 @@ type QuizQuestion = {
 const REQUIRED_QUESTIONS = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9'];
 
 const ELIGIBLE_STATUTS = ['societe', 'cooperative', 'association', 'numerique'];
-const ELIGIBLE_REGIONS = ['ngozi', 'kayanza', 'muyinga', 'gitega', 'ruyigi'];
-const ELIGIBLE_FILIERES = ['fruits', 'volaille', 'pisciculture', 'lait', 'mines', 'transversal'];
+const ELIGIBLE_REGIONS = ['buhumuza', 'bujumbura', 'burunga', 'butanyerera', 'gitega'];
+const ELIGIBLE_FILIERES = ['fruits', 'volaille', 'porcine', 'pisciculture', 'lait', 'mines', 'transversal'];
 
 function asArray(value: AnswerValue | undefined): string[] {
   return Array.isArray(value) ? value : value ? [value] : [];
@@ -142,6 +142,7 @@ const QUESTION_GROUPS = [
         options: [
           { value: 'fruits', label: 'Fruits tropicaux' },
           { value: 'volaille', label: 'Volaille' },
+          { value: 'porcine', label: 'Élevage porcin' },
           { value: 'pisciculture', label: 'Pisciculture' },
           { value: 'lait', label: 'Lait' },
           { value: 'mines', label: 'Mines' },
@@ -151,17 +152,18 @@ const QUESTION_GROUPS = [
       },
       {
         id: 'q7',
-        text: 'Région(s) d’intervention de votre projet ?',
+        text: 'Province(s) d’intervention de votre projet ?',
+        hint: 'Découpage administratif en vigueur depuis 2025 — cinq provinces.',
         required: true,
         type: 'checkbox',
         layout: '3',
         options: [
-          { value: 'ngozi', label: 'Ngozi' },
-          { value: 'kayanza', label: 'Kayanza' },
-          { value: 'muyinga', label: 'Muyinga' },
+          { value: 'buhumuza', label: 'Buhumuza' },
+          { value: 'bujumbura', label: 'Bujumbura' },
+          { value: 'burunga', label: 'Burunga' },
+          { value: 'butanyerera', label: 'Butanyerera' },
           { value: 'gitega', label: 'Gitega' },
-          { value: 'ruyigi', label: 'Ruyigi' },
-          { value: 'autre', label: 'Autre région' },
+          { value: 'autre', label: 'Hors Burundi' },
         ],
       },
       {
@@ -261,7 +263,7 @@ function resultFromAnswers(answers: Answers): EligibilityResult {
   const hasEligibleRegion = regions.some((item) => ELIGIBLE_REGIONS.includes(item));
   const hasAutreOnly = regions.length > 0 && regions.every((item) => item === 'autre');
   if (regions.length === 0 || hasAutreOnly || !hasEligibleRegion) {
-    blockers.push('Région d’intervention hors zone du programme (Ngozi, Kayanza, Muyinga, Gitega, Ruyigi)');
+    blockers.push('Site d’implantation hors du Burundi — le programme finance des infrastructures situées dans le pays');
   } else {
     positives.push('Région(s) d’intervention éligible(s)');
   }
