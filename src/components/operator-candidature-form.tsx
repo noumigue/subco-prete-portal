@@ -247,7 +247,11 @@ export function OperatorCandidatureForm({
   function showToast(message: string) {
     setToast(message);
     window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(''), 3200);
+    // Duree proportionnelle a la longueur : un message court reste 4 s, une
+    // explication de 140 caracteres (ex. le refus au-dela de 10 Mo) tient ~8 s.
+    // 3,2 s pour tout le monde ne laissait pas le temps de lire les consignes.
+    const duree = Math.min(15000, Math.max(4000, message.length * 55));
+    toastTimer.current = window.setTimeout(() => setToast(''), duree);
   }
 
   // ——— Assemblage du contrat donneesProjet (etape = derniere etape atteinte) ———
