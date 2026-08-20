@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getPortalCandidature } from '@/lib/portal-api';
+import type { PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl as mediaUrl } from '@/lib/portal-media';
 import { depositComplementAction } from '../../../../actions';
 
@@ -38,6 +39,18 @@ export default async function FollowUpPage({
   const isRejected = candidature?.statut?.groupe === 'non_retenu';
   const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
   const decisionUrl = mediaUrl(candidature?.notificationDecision?.url);
+
+  // Pieces deposees : relire ce qu'on a envoye est la premiere chose qu'un candidat
+  // cherche apres depot. Les fichiers sont resolus cote CMS (`piecesFichiers`).
+  const fichiersPieces = candidature?.piecesFichiers || {};
+  const piecesDeposees = ((candidature?.donneesProjet as PortalDonneesProjet | null)?.pieces || [])
+    .filter((piece) => piece.depose && piece.fileId)
+    .map((piece) => ({
+      id: piece.id,
+      libelle: piece.libelle,
+      nom: fichiersPieces[String(piece.fileId)]?.nom || piece.nomFichier || 'Pièce déposée',
+      url: mediaUrl(fichiersPieces[String(piece.fileId)]?.url),
+    }));
 
   return (
     <div className="operator-page">
@@ -117,6 +130,22 @@ export default async function FollowUpPage({
             </p>
           ) : null}
         </section>
+      ) : null}
+
+      {piecesDeposees.length ? (
+        <>
+          <div className="operator-block-title">Pièces que vous avez déposées</div>
+          <section className="operator-card">
+            <p className="operator-page-intro">Ce sont les {piecesDeposees.length} fichiers reçus avec votre dossier. Cliquez pour les rouvrir.</p>
+            <div className="gx-pieces-depot">
+              {piecesDeposees.map((piece) => (
+                piece.url
+                  ? <a key={piece.id} className="gx-pc" href={piece.url} target="_blank" rel="noopener noreferrer" title={piece.libelle}>⤓ {piece.nom}</a>
+                  : <span key={piece.id} className="gx-pc" title={piece.libelle}>{piece.nom}</span>
+              ))}
+            </div>
+          </section>
+        </>
       ) : null}
 
       <div className="operator-block-title">Notifications de ce dossier</div>

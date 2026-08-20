@@ -64,6 +64,10 @@ export type PortalNotification = {
   candidature?: { documentId?: string } | null;
 };
 
+// Fichier reellement deposé pour une piece, resolu cote CMS depuis `donneesProjet.pieces[].fileId`
+// (le depot n'est pas une relation media : sans cette table, aucun ecran ne peut ouvrir la piece).
+export type GestionPieceFichier = { url: string; nom: string; mime: string | null; tailleKo: number | null };
+
 export type PortalCandidature = {
   id: number;
   documentId: string;
@@ -79,6 +83,7 @@ export type PortalCandidature = {
   notifications?: PortalNotification[];
   pdfPermanent?: { url?: string } | null;
   notificationDecision?: { url?: string } | null;
+  piecesFichiers?: Record<string, GestionPieceFichier>;
 };
 
 export type PortalStatutJuridique = {
@@ -399,6 +404,7 @@ export type GestionActe = { date: string | null; auteur: string; texte: string }
 
 export type GestionDossierDetail = GestionDossierRow & {
   donneesProjet: unknown;
+  piecesFichiers?: Record<string, GestionPieceFichier>;
   motifDecisionCourt: string | null;
   pdfPermanentUrl: string | null;
   notificationDecisionUrl: string | null;

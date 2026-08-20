@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
-import type { GestionDossierDetail } from '@/lib/portal-types';
+import type { GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
   proposerCompletudeAction,
@@ -28,6 +28,21 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
   const instr = dossier.instructionCompletude;
   const pieces = dossier.referentiels.typePieces;
   const pieceLabel = useMemo(() => Object.fromEntries(pieces.map((p) => [p.id, p.libelle])), [pieces]);
+
+  // Fichier reellement depose par le candidat, par type de piece. Le depot vit dans
+  // `donneesProjet.pieces[].fileId` ; le CMS resout ces ids en URL (`piecesFichiers`).
+  // Sans ce croisement, l'instructeur juge la conformite de documents qu'il ne peut pas ouvrir.
+  const depots = useMemo(() => {
+    const deposees = (dossier.donneesProjet as PortalDonneesProjet | null)?.pieces || [];
+    const fichiers = dossier.piecesFichiers || {};
+    return Object.fromEntries(
+      deposees
+        .filter((d) => d.depose && d.fileId)
+        .map((d) => [d.id, { url: fichiers[String(d.fileId)]?.url || null, nom: fichiers[String(d.fileId)]?.nom || d.nomFichier || 'Piece deposee' }]),
+    ) as Record<string, { url: string | null; nom: string }>;
+  }, [dossier.donneesProjet, dossier.piecesFichiers]);
+
+  const nbDeposees = Object.keys(depots).length;
 
   const validationMode = role === 'ugp' && instr?.workflow === 'propose';
   const proposedWaiting = role !== 'ugp' && instr?.workflow === 'propose';
@@ -125,7 +140,7 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
 
       {/* Check-list des pièces */}
       <div className="gx-card">
-        <div className="gx-block-title">Check-list des pièces</div>
+        <div className="gx-block-title">Check-list des pièces<span className="gx-tot">{nbDeposees} / {pieces.length} déposées</span></div>
         {pieces.map((p) => {
           const st = etats[p.id]?.etat;
           const showGroup = p.groupe !== currentGroup;
@@ -135,7 +150,14 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
             <div key={p.id}>
               {showGroup ? <div className="gx-grp-title">{GROUP_LABEL[p.groupe] || p.groupe}</div> : null}
               <div className="gx-prow">
-                <div className="gx-pname">{p.libelle}<div className="gx-exig">{p.exigence}</div></div>
+                <div className="gx-pname">
+                  {p.libelle}<div className="gx-exig">{p.exigence}</div>
+                  {depots[p.id]?.url ? (
+                    <a className="gx-pc gx-pc-dl" href={portalMediaUrl(depots[p.id].url) || '#'} target="_blank" rel="noopener noreferrer" title={`Ouvrir « ${depots[p.id].nom} »`}>⤓ {depots[p.id].nom}</a>
+                  ) : (
+                    <span className="gx-pc gx-pc-vide">Aucun fichier déposé</span>
+                  )}
+                </div>
                 <span className="gx-triseg">
                   <button type="button" className={st === 'presente' ? 'p' : ''} disabled={disabled} onClick={() => setPiece(p.id, 'presente')}>✔ Présente</button>
                   <button type="button" className={st === 'absente' ? 'a' : ''} disabled={disabled} onClick={() => setPiece(p.id, 'absente')}>✖ Absente</button>
