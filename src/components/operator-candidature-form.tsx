@@ -34,13 +34,6 @@ const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impa
 // Plafond aligné sur la limite serveur du CMS (config/middlewares.js, formidable.maxFileSize).
 // Contrôlé ici pour que le refus soit immédiat et explicite, au lieu d'un échec muet après envoi.
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
-// Valeurs fraichement calculees mais pas encore commitees par React : buildDonnees
-// doit pouvoir les prendre telles quelles, sinon on persiste l'etat precedent
-// (cf. handleUpload, qui enregistre le fileId dans la foulee du televersement).
-type DonneesOverrides = {
-  pieces?: PortalPieceDepot[];
-  pges?: { fileId?: number; nomFichier?: string } | null;
-};
 const GATES = [
   'Structure légalement constituée',
   'Conformité fiscale sans contentieux majeur',
@@ -214,12 +207,17 @@ export function OperatorCandidatureForm({
   const [pieces, setPieces] = useState<PortalPieceDepot[]>(basePieces);
   const [uploadingId, setUploadingId] = useState<string>('');
   // handleUpload est le SEUL endroit qui modifie pieces/pges, et il persiste
-  // desormais dans la foulee. Comme la valeur envoyee au serveur est batie dans
-  // la closure, deux depots menes en parallele liraient le meme etat de depart :
-  // le second ecraserait le premier, en memoire ET en base. Ces refs portent
-  // toujours la derniere valeur connue, independamment du cycle de rendu.
+  // desormais dans la foulee du televersement. L'etat React n'etant commite
+  // qu'au rendu suivant, batir la requete depuis la closure enverrait la valeur
+  // precedente — et deux depots menes en parallele liraient le meme etat de
+  // depart, le second effacant le premier jusqu'en base. Ces refs portent
+  // toujours la derniere valeur connue : buildDonnees les lit, l'etat ne sert
+  // plus qu'a l'affichage.
   const piecesRef = useRef<PortalPieceDepot[]>(basePieces);
   const pgesRef = useRef<{ fileId?: number; nomFichier?: string } | null>(saved.es?.pges || null);
+  // Les enregistrements sont serialises : deux requetes concurrentes pourraient
+  // arriver dans le desordre au CMS et la plus ancienne ecraserait la plus recente.
+  const saveQueueRef = useRef<Promise<unknown>>(Promise.resolve());
 
   // Etape 5 — resultat de soumission (effets serveur reels)
   const [submitInfo, setSubmitInfo] = useState<{ numeroDossier?: string; dateDepot?: string; pdfUrl?: string | null }>({});
@@ -269,7 +267,7 @@ export function OperatorCandidatureForm({
   }
 
   // ——— Assemblage du contrat donneesProjet (etape = derniere etape atteinte) ———
-  function buildDonnees(reachedStep: number, overrides?: DonneesOverrides): PortalDonneesProjet {
+  function buildDonnees(reachedStep: number): PortalDonneesProjet {
     return {
       etape: Math.max(reachedStep, maxStepReached),
       eligibilite: GATES.map((gate, index) => ({ libelle: gate, confirme: Boolean(eligibility[index]) })),
@@ -307,23 +305,30 @@ export function OperatorCandidatureForm({
       es: {
         reponses: ES_FIELDS.map((field, index) => ({ libelle: field, reponse: esAnswers[index] || 'Non' })),
         risqueDeclare: declaredRisk,
-        pges: overrides?.pges !== undefined ? overrides.pges : pges,
+        pges: pgesRef.current,
       },
-      pieces: overrides?.pieces ?? pieces,
+      pieces: piecesRef.current,
     };
   }
 
-  async function saveDraft(
-    reachedStep: number,
-    options?: { silent?: boolean; overrides?: DonneesOverrides },
-  ): Promise<boolean> {
+  // Enchaine les enregistrements les uns derriere les autres. La requete n'est
+  // construite qu'au moment de partir, donc elle emporte toujours l'etat le plus
+  // recent — y compris une piece deposee pendant l'attente.
+  function saveDraft(reachedStep: number, options?: { silent?: boolean }): Promise<boolean> {
+    const run = () => runSave(reachedStep, options);
+    const next = saveQueueRef.current.then(run, run);
+    saveQueueRef.current = next.catch(() => undefined);
+    return next;
+  }
+
+  async function runSave(reachedStep: number, options?: { silent?: boolean }): Promise<boolean> {
     if (!candidature?.documentId) return false;
     setSaving(true);
 
     const input: SaveStepInput = {
       documentId: candidature.documentId,
       titreProjet: projectTitle.trim() || undefined,
-      donneesProjet: buildDonnees(reachedStep, options?.overrides),
+      donneesProjet: buildDonnees(reachedStep),
       organisation: orgNom.trim()
         ? {
             nom: orgNom.trim(),
@@ -457,9 +462,7 @@ export function OperatorCandidatureForm({
     setPges(nextPges);
     setPieces(nextPieces);
 
-    // On envoie les deux valeurs : un depot de piece ne doit pas reecrire un PGES
-    // depose entre-temps, et reciproquement.
-    const persisted = await saveDraft(step, { silent: true, overrides: { pieces: nextPieces, pges: nextPges } });
+    const persisted = await saveDraft(step, { silent: true });
     setUploadingId('');
 
     showToast(
