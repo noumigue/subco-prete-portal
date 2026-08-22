@@ -34,6 +34,13 @@ const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impa
 // Plafond aligné sur la limite serveur du CMS (config/middlewares.js, formidable.maxFileSize).
 // Contrôlé ici pour que le refus soit immédiat et explicite, au lieu d'un échec muet après envoi.
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+// Valeurs fraichement calculees mais pas encore commitees par React : buildDonnees
+// doit pouvoir les prendre telles quelles, sinon on persiste l'etat precedent
+// (cf. handleUpload, qui enregistre le fileId dans la foulee du televersement).
+type DonneesOverrides = {
+  pieces?: PortalPieceDepot[];
+  pges?: { fileId?: number; nomFichier?: string } | null;
+};
 const GATES = [
   'Structure légalement constituée',
   'Conformité fiscale sans contentieux majeur',
@@ -206,6 +213,13 @@ export function OperatorCandidatureForm({
   const [pges, setPges] = useState<{ fileId?: number; nomFichier?: string } | null>(saved.es?.pges || null);
   const [pieces, setPieces] = useState<PortalPieceDepot[]>(basePieces);
   const [uploadingId, setUploadingId] = useState<string>('');
+  // handleUpload est le SEUL endroit qui modifie pieces/pges, et il persiste
+  // desormais dans la foulee. Comme la valeur envoyee au serveur est batie dans
+  // la closure, deux depots menes en parallele liraient le meme etat de depart :
+  // le second ecraserait le premier, en memoire ET en base. Ces refs portent
+  // toujours la derniere valeur connue, independamment du cycle de rendu.
+  const piecesRef = useRef<PortalPieceDepot[]>(basePieces);
+  const pgesRef = useRef<{ fileId?: number; nomFichier?: string } | null>(saved.es?.pges || null);
 
   // Etape 5 — resultat de soumission (effets serveur reels)
   const [submitInfo, setSubmitInfo] = useState<{ numeroDossier?: string; dateDepot?: string; pdfUrl?: string | null }>({});
@@ -255,7 +269,7 @@ export function OperatorCandidatureForm({
   }
 
   // ——— Assemblage du contrat donneesProjet (etape = derniere etape atteinte) ———
-  function buildDonnees(reachedStep: number): PortalDonneesProjet {
+  function buildDonnees(reachedStep: number, overrides?: DonneesOverrides): PortalDonneesProjet {
     return {
       etape: Math.max(reachedStep, maxStepReached),
       eligibilite: GATES.map((gate, index) => ({ libelle: gate, confirme: Boolean(eligibility[index]) })),
@@ -293,20 +307,23 @@ export function OperatorCandidatureForm({
       es: {
         reponses: ES_FIELDS.map((field, index) => ({ libelle: field, reponse: esAnswers[index] || 'Non' })),
         risqueDeclare: declaredRisk,
-        pges,
+        pges: overrides?.pges !== undefined ? overrides.pges : pges,
       },
-      pieces,
+      pieces: overrides?.pieces ?? pieces,
     };
   }
 
-  async function saveDraft(reachedStep: number, options?: { silent?: boolean }): Promise<boolean> {
+  async function saveDraft(
+    reachedStep: number,
+    options?: { silent?: boolean; overrides?: DonneesOverrides },
+  ): Promise<boolean> {
     if (!candidature?.documentId) return false;
     setSaving(true);
 
     const input: SaveStepInput = {
       documentId: candidature.documentId,
       titreProjet: projectTitle.trim() || undefined,
-      donneesProjet: buildDonnees(reachedStep),
+      donneesProjet: buildDonnees(reachedStep, options?.overrides),
       organisation: orgNom.trim()
         ? {
             nom: orgNom.trim(),
@@ -417,24 +434,40 @@ export function OperatorCandidatureForm({
     const formData = new FormData();
     formData.append('file', file);
     const uploaded = await uploadPieceAction(formData);
-    setUploadingId('');
 
     if (!uploaded) {
+      setUploadingId('');
       showToast('Le dépôt du fichier a échoué. Vérifiez votre connexion, puis réessayez.');
       return;
     }
 
-    if (target === 'pges') {
-      setPges({ fileId: uploaded.id, nomFichier: uploaded.name });
-    } else {
-      setPieces((current) =>
-        current.map((piece) =>
+    // Le fichier est sur le stockage, mais il n'appartient au dossier qu'une fois
+    // son fileId ecrit dans donneesProjet. Tant que ce n'etait fait qu'au
+    // "Suivant"/"Enregistrer", un candidat qui fermait l'onglet apres ses depots
+    // perdait toutes ses pieces — alors que l'interface lui affichait une coche.
+    const nextPges = target === 'pges' ? { fileId: uploaded.id, nomFichier: uploaded.name } : pgesRef.current;
+    const nextPieces = target === 'pges'
+      ? piecesRef.current
+      : piecesRef.current.map((piece) =>
           piece.id === target ? { ...piece, depose: true, fileId: uploaded.id, nomFichier: uploaded.name } : piece,
-        ),
-      );
-    }
+        );
 
-    showToast(`« ${uploaded.name} » déposé.`);
+    pgesRef.current = nextPges;
+    piecesRef.current = nextPieces;
+    setPges(nextPges);
+    setPieces(nextPieces);
+
+    // On envoie les deux valeurs : un depot de piece ne doit pas reecrire un PGES
+    // depose entre-temps, et reciproquement.
+    const persisted = await saveDraft(step, { silent: true, overrides: { pieces: nextPieces, pges: nextPges } });
+    setUploadingId('');
+
+    showToast(
+      persisted
+        ? `« ${uploaded.name} » déposé et enregistré.`
+        : `« ${uploaded.name} » a bien été envoyé, mais n’a pas pu être rattaché à votre dossier. `
+          + 'Utilisez « Enregistrer et quitter » pour réessayer : sans cela, la pièce ne sera pas prise en compte.',
+    );
   }
 
   function handleCopy() {
