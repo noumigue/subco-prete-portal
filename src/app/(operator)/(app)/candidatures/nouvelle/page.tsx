@@ -32,7 +32,7 @@ export default async function NewApplicationPage({
         </p>
         <div className="operator-checklist">
           <p>Appel rattaché automatiquement : <strong>{openCall?.nom || 'Aucun appel ouvert'}</strong></p>
-          <p>Pièces de l&apos;Annexe 9 : <Link href="/faq-documents#pieces">consulter la liste préparatoire</Link></p>
+          <p>Pièces du dossier : <Link href="/faq-documents#pieces">consulter la liste préparatoire</Link></p>
           <p>Le formulaire Module 3 s&apos;ouvrira ensuite dans le dossier brouillon avec ses 4 étapes de saisie et de dépôt.</p>
         </div>
         <div className="operator-doc-strip">

@@ -88,7 +88,7 @@ export default async function FaqDocumentsPage() {
       </section>
 
       {/* Cible du lien « voir la liste » de l'interstitiel « Avant de commencer ». */}
-      <div className="operator-block-title" id="pieces">Pièces du dossier (Annexe 9)</div>
+      <div className="operator-block-title" id="pieces">Pièces du dossier</div>
       <section className="operator-card">
         {typePieces.length === 0 ? <p className="operator-muted">Liste des pièces indisponible.</p> : groups.map((group) => (
           group.items.length === 0 ? null : (
