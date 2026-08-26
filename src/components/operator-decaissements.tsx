@@ -285,12 +285,6 @@ export function OperatorDecaissements({ subvention, modalites, canNew, blockMess
           </div>
         ) : null}
       </section>
-
-      <p className="operator-annot">
-        <strong>Fiche Annexe 16 numérisée.</strong> Identification pré-remplie · 4 modalités (référentiel) · pièces selon la modalité ·
-        circuit avis technique (Cabinet) → avis fiduciaire (UGP) → paiement. Blocage 11.4 rendu visible : l’état « à justifier »
-        verrouille toute nouvelle demande.
-      </p>
     </div>
   );
 }

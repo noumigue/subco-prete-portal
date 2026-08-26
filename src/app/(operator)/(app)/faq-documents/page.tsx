@@ -105,7 +105,6 @@ export default async function FaqDocumentsPage() {
             </div>
           )
         ))}
-        <p className="operator-field-note">Liste servie depuis les Référentiels (Annexe 9), éditable dans le CMS sans redéploiement.</p>
       </section>
     </div>
   );
