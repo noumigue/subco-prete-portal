@@ -319,7 +319,7 @@ export default async function CandidatureAdopteePage() {
 
           {pieceGroups.length > 0 ? (
             <div className="candidature-bis-checklist">
-              <h3 className="candidature-bis-checklist-title">Pièces du dossier (Annexe 9)</h3>
+              <h3 className="candidature-bis-checklist-title">Pièces du dossier</h3>
               <p className="candidature-bis-checklist-intro">La liste des pièces à réunir pour un dossier complet, par nature.</p>
               <div className="candidature-bis-checklist-grid">
                 {pieceGroups.map((group) => (
