@@ -34,6 +34,13 @@ const STEP_LABELS = ['Cadrage et éligibilité', 'Le projet', 'Économie et impa
 // Plafond aligné sur la limite serveur du CMS (config/middlewares.js, formidable.maxFileSize).
 // Contrôlé ici pour que le refus soit immédiat et explicite, au lieu d'un échec muet après envoi.
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+
+// Le PGES est la seule piece a disposer d'un emplacement dedie (bloc E&S) EN PLUS de
+// sa ligne dans la liste. Le referentiel n'offre aucun identifiant stable — pas de
+// champ `code` —, on le reconnait donc a son libelle. Tolerant aux variantes ; si la
+// reconnaissance echoue, on retombe sur le comportement anterieur (deux emplacements)
+// plutot que de masquer une piece par erreur.
+const estPges = (libelle?: string | null) => /pges|gestion environnementale/i.test(libelle || '');
 const GATES = [
   'Structure légalement constituée',
   'Conformité fiscale sans contentieux majeur',
@@ -203,7 +210,16 @@ export function OperatorCandidatureForm({
   const [esAnswers, setEsAnswers] = useState<string[]>(() =>
     ES_FIELDS.map((field, index) => saved.es?.reponses?.[index]?.reponse || 'Non'),
   );
-  const [pges, setPges] = useState<{ fileId?: number; nomFichier?: string } | null>(saved.es?.pges || null);
+  // Un PGES depose dans la ligne de la liste (avant declaration du risque, ou par un
+  // dossier anterieur au correctif) doit rester visible quand l'emplacement dedie prend
+  // le relais — sans quoi le fichier deviendrait invisible pour son propre candidat.
+  const pgesInitial = useMemo(() => {
+    if (saved.es?.pges?.fileId) return saved.es.pges;
+    const ligne = basePieces.find((piece) => estPges(piece.libelle));
+    return ligne?.depose && ligne.fileId ? { fileId: ligne.fileId, nomFichier: ligne.nomFichier || undefined } : null;
+  }, [saved.es?.pges, basePieces]);
+
+  const [pges, setPges] = useState<{ fileId?: number; nomFichier?: string } | null>(pgesInitial);
   const [pieces, setPieces] = useState<PortalPieceDepot[]>(basePieces);
   const [uploadingId, setUploadingId] = useState<string>('');
   // handleUpload est le SEUL endroit qui modifie pieces/pges, et il persiste
@@ -245,10 +261,12 @@ export function OperatorCandidatureForm({
   ];
   const completenessRate = requiredTotal > 0 ? Math.round((depositedRequired / requiredTotal) * 100) : 0;
 
+  // Quand le risque E&S est declare, le PGES a son emplacement dedie : le laisser AUSSI
+  // dans la liste le ferait apparaitre deux fois, avec deux cases independantes.
   const groupedPieces = ['administratif', 'financier', 'technique'].map((group) => ({
     key: group,
     label: group === 'administratif' ? 'Administratif' : group === 'financier' ? 'Financier' : 'Technique',
-    items: pieces.filter((piece) => piece.groupe === group),
+    items: pieces.filter((piece) => piece.groupe === group && !(declaredRisk && estPges(piece.libelle))),
   }));
 
   const operatorProvince = provinces.find((item) => item.documentId === operatorProvinceId) || null;
@@ -450,12 +468,20 @@ export function OperatorCandidatureForm({
     // son fileId ecrit dans donneesProjet. Tant que ce n'etait fait qu'au
     // "Suivant"/"Enregistrer", un candidat qui fermait l'onglet apres ses depots
     // perdait toutes ses pieces — alors que l'interface lui affichait une coche.
-    const nextPges = target === 'pges' ? { fileId: uploaded.id, nomFichier: uploaded.name } : pgesRef.current;
-    const nextPieces = target === 'pges'
-      ? piecesRef.current
-      : piecesRef.current.map((piece) =>
-          piece.id === target ? { ...piece, depose: true, fileId: uploaded.id, nomFichier: uploaded.name } : piece,
-        );
+    // Le PGES a DEUX rangements : `es.pges` (emplacement dedie) et sa ligne dans
+    // `pieces[]`. Les tenir desynchronises a produit des dossiers ou le candidat avait
+    // fourni le document sans que l'instructeur puisse le voir — l'ecran de completude
+    // ne lit que `pieces[]`. Desormais, quel que soit l'emplacement utilise, les DEUX
+    // sont remplis.
+    const depot = { fileId: uploaded.id, nomFichier: uploaded.name };
+    const cibleEstPges =
+      target === 'pges' || estPges(piecesRef.current.find((piece) => piece.id === target)?.libelle);
+
+    const nextPges = cibleEstPges ? depot : pgesRef.current;
+    const nextPieces = piecesRef.current.map((piece) => {
+      const concernee = piece.id === target || (cibleEstPges && estPges(piece.libelle));
+      return concernee ? { ...piece, depose: true, ...depot } : piece;
+    });
 
     pgesRef.current = nextPges;
     piecesRef.current = nextPieces;
