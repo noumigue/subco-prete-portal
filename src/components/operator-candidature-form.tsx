@@ -381,6 +381,20 @@ export function OperatorCandidatureForm({
       return;
     }
 
+    // Filiere et province du site : structurantes — rattachement a une chaine de valeur
+    // prioritaire, et eligibilite geographique. Bloquantes ici comme au serveur. Arreter
+    // le candidat des l'etape 2 lui evite de decouvrir le refus apres avoir tout depose.
+    if (step === 2) {
+      if (!filiereId) {
+        showToast('Choisissez la chaîne de valeur de votre projet pour continuer.');
+        return;
+      }
+      if (!sameSite && !siteProvinceId) {
+        showToast('Indiquez la province d’implantation du site pour continuer.');
+        return;
+      }
+    }
+
     if (step === 4) {
       await handleSubmit();
       return;
