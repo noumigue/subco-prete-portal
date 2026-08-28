@@ -66,7 +66,12 @@ export async function GET(
   headers.set('Content-Disposition', `attachment; filename="${filename}"; filename*=UTF-8''${utf8Name}`);
   const length = upstream.headers.get('content-length');
   if (length) headers.set('Content-Length', length);
-  headers.set('Cache-Control', 'public, max-age=3600');
+  // Surtout PAS de cache : cette route resout le fichier a chaque requete, mais le
+  // portail est servi derriere un CDN qui, lui, memorisait la reponse une heure. Un
+  // document remplace continuait donc d'etre servi dans son ancienne version — constate
+  // deux fois, les 26 et 28/08/2026. Le cout est negligeable : quelques centaines de Ko
+  // par telechargement, et les fichiers eux-memes restent caches sur leur propre CDN.
+  headers.set('Cache-Control', 'no-store');
 
   return new Response(upstream.body, { status: 200, headers });
 }
