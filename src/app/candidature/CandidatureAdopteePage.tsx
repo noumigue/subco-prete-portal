@@ -60,7 +60,7 @@ const CANONICAL_ANNEXE9_PIECES: ChecklistPiece[] = [
   { id: 20, libelle: "Numéro d'identification fiscale (NIF)", groupe: 'administratif', exigence: 'obligatoire', ordre: 20 },
   { id: 25, libelle: "Numéro de l'INSS", groupe: 'administratif', exigence: 'si_disponible', ordre: 25 },
   { id: 30, libelle: 'Attestation de non-redevance fiscale', groupe: 'administratif', exigence: 'obligatoire', ordre: 30 },
-  { id: 40, libelle: "Déclaration de conflit d'intérêt", groupe: 'administratif', exigence: 'obligatoire', ordre: 40 },
+  { id: 40, libelle: "Déclaration de conflit d'intérêt", groupe: 'administratif', exigence: 'si_applicable', ordre: 40 },
   { id: 50, libelle: 'États financiers récents (3 exercices)', groupe: 'financier', exigence: 'obligatoire', ordre: 50 },
   { id: 60, libelle: 'Justificatif de mobilisation de la contrepartie', groupe: 'financier', exigence: 'obligatoire', ordre: 60 },
   { id: 70, libelle: "Plan d'affaires / budget détaillé", groupe: 'financier', exigence: 'obligatoire', ordre: 70 },
