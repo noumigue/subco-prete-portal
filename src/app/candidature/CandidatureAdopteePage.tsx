@@ -56,15 +56,18 @@ const PIECE_EXIGENCE_LABELS: Record<string, string> = {
 // répond, sinon cette liste, afin de rester fonctionnelle si le référentiel est vide/indispo.
 type ChecklistPiece = { id: number; libelle: string; groupe: string; exigence: string; ordre: number };
 const CANONICAL_ANNEXE9_PIECES: ChecklistPiece[] = [
+  { id: 5, libelle: 'Lettre de motivation', groupe: 'administratif', exigence: 'obligatoire', ordre: 5 },
   { id: 10, libelle: "Attestation d'existence légale (RC / acte constitutif)", groupe: 'administratif', exigence: 'obligatoire', ordre: 10 },
   { id: 20, libelle: "Numéro d'identification fiscale (NIF)", groupe: 'administratif', exigence: 'obligatoire', ordre: 20 },
   { id: 25, libelle: "Numéro de l'INSS", groupe: 'administratif', exigence: 'si_disponible', ordre: 25 },
   { id: 30, libelle: 'Attestation de non-redevance fiscale', groupe: 'administratif', exigence: 'obligatoire', ordre: 30 },
   { id: 40, libelle: "Déclaration de conflit d'intérêt", groupe: 'administratif', exigence: 'si_applicable', ordre: 40 },
   { id: 50, libelle: 'États financiers récents (3 exercices)', groupe: 'financier', exigence: 'obligatoire', ordre: 50 },
+  { id: 55, libelle: 'Relevés bancaires des 6 derniers mois', groupe: 'financier', exigence: 'obligatoire', ordre: 55 },
   { id: 60, libelle: 'Justificatif de mobilisation de la contrepartie', groupe: 'financier', exigence: 'obligatoire', ordre: 60 },
   { id: 70, libelle: "Plan d'affaires / budget détaillé", groupe: 'financier', exigence: 'obligatoire', ordre: 70 },
   { id: 80, libelle: 'Note conceptuelle du projet', groupe: 'technique', exigence: 'obligatoire', ordre: 80 },
+  { id: 85, libelle: 'Liste des bénéficiaires potentiels', groupe: 'technique', exigence: 'obligatoire', ordre: 85 },
   { id: 90, libelle: 'Preuve de disponibilité du site', groupe: 'technique', exigence: 'obligatoire', ordre: 90 },
   { id: 100, libelle: "Devis / plans d'infrastructure", groupe: 'technique', exigence: 'si_disponible', ordre: 100 },
   { id: 110, libelle: 'Plan de gestion environnementale et sociale (PGES)', groupe: 'technique', exigence: 'si_applicable', ordre: 110 },
