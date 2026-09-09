@@ -30,6 +30,10 @@ function Pill({ d }: { d: GestionDossierRow }) {
   if (d.enValidation) return <span className="gx-pill gx-pill-val">⏳ À valider (UGP)</span>;
   if (d.complementRecu) return <span className="gx-pill gx-pill-ok">Compléments reçus</span>;
   if (d.complementEnCours) return <span className="gx-pill gx-pill-comp">Compléments demandés</span>;
+  // Signal distinct des deux précédents : personne n'a rien réclamé, c'est le candidat qui a
+  // ajouté une pièce de lui-même avant la clôture. Placé en dernier pour ne jamais masquer
+  // un signal sur lequel l'équipe doit agir.
+  if (d.pieceAjoutee) return <span className="gx-pill gx-pill-ok">Pièce ajoutée par le candidat</span>;
   return null;
 }
 

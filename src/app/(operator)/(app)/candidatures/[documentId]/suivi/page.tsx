@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { getPortalCandidature } from '@/lib/portal-api';
+import { getPortalCandidature, getPortalTypePieces } from '@/lib/portal-api';
 import type { PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl as mediaUrl } from '@/lib/portal-media';
-import { depositComplementAction } from '../../../../actions';
+import { addPieceAction, depositComplementAction } from '../../../../actions';
 
 const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
 const labels: Record<(typeof phases)[number], string> = {
@@ -12,6 +12,24 @@ const labels: Record<(typeof phases)[number], string> = {
   evaluation: 'Évaluation',
   decision: 'Décision',
 };
+
+// Les anciens dépôts de complément redirigent avec un CODE d'erreur ; l'ajout spontané de
+// pièce (Lot 0) redirige avec le MESSAGE du CMS, qui est porteur de sens pour le candidat
+// (« l'appel est clos », « ce dossier n'est pas encore déposé »). On affiche donc le message
+// tel quel quand ce n'est pas un code connu.
+const ERREURS_CONNUES: Record<string, string> = {
+  complement: 'Le dépôt de la pièce n’a pas abouti. Réessayez avec un fichier PDF ou image.',
+  upload: 'Le téléversement du fichier a échoué. Réessayez avec un PDF ou une image.',
+  depot: 'Le dépôt de la pièce n’a pas abouti.',
+};
+
+function formatDay(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
 
 function getPill(group?: string, hasComplement?: boolean) {
   if (hasComplement) return { label: '⚠ Complément demandé', className: 'pill-comp' };
@@ -31,7 +49,11 @@ export default async function FollowUpPage({
   const query = await searchParams;
   const flag = Array.isArray(query.complement) ? query.complement[0] : query.complement;
   const errorFlag = Array.isArray(query.error) ? query.error[0] : query.error;
-  const candidature = await getPortalCandidature(documentId);
+  const pieceFlag = Array.isArray(query.piece) ? query.piece[0] : query.piece;
+  const [candidature, typePieces] = await Promise.all([
+    getPortalCandidature(documentId),
+    getPortalTypePieces(),
+  ]);
   const currentPhase = candidature?.statut?.phase || 'recu';
   const currentIndex = phases.indexOf(currentPhase);
   const complement = candidature?.complements?.find((item) => item.statut === 'demande');
@@ -39,6 +61,28 @@ export default async function FollowUpPage({
   const isRejected = candidature?.statut?.groupe === 'non_retenu';
   const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
   const decisionUrl = mediaUrl(candidature?.notificationDecision?.url);
+  const erreur = errorFlag ? ERREURS_CONNUES[errorFlag] || errorFlag : null;
+
+  // Ajout spontané de pièce : réservé à un dossier DÉJÀ DÉPOSÉ, tant que l'appel est ouvert.
+  // Sur un brouillon, les pièces ont leur place normale dans le formulaire (et entrent dans
+  // le PDF) ; après la clôture, seules les pièces réclamées par l'UGP restent déposables.
+  const dateCloture = formatDay(candidature?.appel?.clotureLe);
+  const peutAjouterPiece = Boolean(
+    candidature?.numeroDossier &&
+      candidature?.statut?.code !== 'brouillon' &&
+      candidature?.appel?.statut === 'ouvert',
+  );
+
+  // Tout ce qui est arrivé APRÈS le dépôt, quelle qu'en soit l'origine : les pièces réclamées
+  // par l'UGP et déjà fournies, et celles que le candidat a ajoutées de lui-même.
+  const piecesAjoutees = (candidature?.complements || [])
+    .filter((item) => item.statut === 'fourni')
+    .map((item) => ({
+      documentId: item.documentId,
+      libelle: item.pieceDemandee || 'Pièce',
+      spontanee: item.origine === 'candidat',
+      url: mediaUrl(item.fichier?.url),
+    }));
 
   // Pieces deposees : relire ce qu'on a envoye est la premiere chose qu'un candidat
   // cherche apres depot. Les fichiers sont resolus cote CMS (`piecesFichiers`).
@@ -66,7 +110,8 @@ export default async function FollowUpPage({
       </div>
 
       {flag === 'depose' ? <p className="operator-auth-note">Pièce complémentaire déposée et ajoutée à votre dossier.</p> : null}
-      {errorFlag ? <p className="operator-auth-error">Le dépôt de la pièce n’a pas abouti. Réessayez avec un fichier PDF ou image.</p> : null}
+      {pieceFlag === 'ajoutee' ? <p className="operator-auth-note">Pièce ajoutée à votre dossier. Votre candidature déposée reste inchangée par ailleurs.</p> : null}
+      {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
 
       <div className="operator-block-title">Avancement du dossier</div>
       <section className="operator-card">
@@ -144,6 +189,71 @@ export default async function FollowUpPage({
                   : <span key={piece.id} className="gx-pc" title={piece.libelle}>{piece.nom}</span>
               ))}
             </div>
+          </section>
+        </>
+      ) : null}
+
+      {piecesAjoutees.length ? (
+        <>
+          <div className="operator-block-title">Pièces ajoutées après le dépôt</div>
+          <section className="operator-card">
+            <p className="operator-page-intro">
+              {piecesAjoutees.length > 1
+                ? `Ces ${piecesAjoutees.length} fichiers complètent votre dossier. Ils ne figurent pas dans le PDF de candidature, qui reste celui du jour du dépôt.`
+                : 'Ce fichier complète votre dossier. Il ne figure pas dans le PDF de candidature, qui reste celui du jour du dépôt.'}
+            </p>
+            <div className="gx-pieces-depot">
+              {piecesAjoutees.map((piece) => (
+                piece.url
+                  ? <a key={piece.documentId} className="gx-pc" href={piece.url} target="_blank" rel="noopener noreferrer" title={piece.spontanee ? 'Ajoutée par vous' : 'Demandée par l’UGP'}>⤓ {piece.libelle}</a>
+                  : <span key={piece.documentId} className="gx-pc" title={piece.libelle}>{piece.libelle}</span>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
+
+      {peutAjouterPiece ? (
+        <>
+          <div className="operator-block-title">Ajouter une pièce à mon dossier</div>
+          <section className="operator-card">
+            <p className="operator-page-intro">
+              Une pièce vous manque ? Vous pouvez l’ajouter vous-même{dateCloture ? <> jusqu’à la clôture de l’appel, le <strong>{dateCloture}</strong></> : null}.
+              Elle s’ajoute à votre dossier déjà déposé : votre numéro de dossier, votre date de dépôt et le
+              PDF de votre candidature restent inchangés.
+            </p>
+            <form action={addPieceAction}>
+              <input type="hidden" name="candidatureId" value={documentId} />
+              <div className="operator-form-grid">
+                <div className="operator-form-field">
+                  <label htmlFor="typePiece">De quelle pièce s’agit-il ?</label>
+                  <select id="typePiece" name="typePiece" defaultValue="" required>
+                    <option value="" disabled>Sélectionner une pièce…</option>
+                    {typePieces.map((type) => (
+                      <option key={type.documentId} value={type.libelle || ''}>{type.libelle}</option>
+                    ))}
+                    <option value="autre">Autre pièce…</option>
+                  </select>
+                </div>
+                <div className="operator-form-field">
+                  <label htmlFor="autreLibelle">Si « autre », précisez</label>
+                  <input id="autreLibelle" type="text" name="autreLibelle" maxLength={120} placeholder="Nom de la pièce" />
+                </div>
+              </div>
+              <div className="operator-form-field">
+                <label className="operator-action-drop">
+                  Choisissez le fichier à joindre (PDF ou image)
+                  <input type="file" name="fichier" accept=".pdf,image/*" required />
+                </label>
+              </div>
+              <div className="operator-form-actions">
+                <button type="submit" className="operator-primary-btn inline">Ajouter la pièce</button>
+                <span className="operator-field-note">
+                  Le dépôt est immédiat et vous recevrez une confirmation. Pour corriger une information
+                  du formulaire (montant, description…), passez par « Besoin d’aide sur ce dossier ? ».
+                </span>
+              </div>
+            </form>
           </section>
         </>
       ) : null}

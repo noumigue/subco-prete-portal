@@ -21,6 +21,7 @@ import {
   markNotificationRead,
   requestPortalEmailChange,
   soumettreDemande,
+  addPieceComplementaire,
   submitPortalCandidature,
   updatePortalDraft,
   updatePortalPhone,
@@ -471,4 +472,33 @@ export async function depositComplementAction(formData: FormData) {
 
   const result = await depositComplement(complementId, (uploaded as { id: number }).id);
   redirect(`${backTo}?${result ? 'complement=depose' : 'error=depot'}`);
+}
+
+// Ajout SPONTANE d'une piece sur un dossier deja depose (Lot 0) : le candidat n'attend
+// pas qu'on lui reclame quoi que ce soit. La piece s'ajoute au dossier sans toucher au
+// PDF permanent ni au statut ; le CMS refuse si l'appel est clos ou le dossier non depose.
+export async function addPieceAction(formData: FormData) {
+  await requirePortalSession();
+  const candidatureId = readString(formData, 'candidatureId');
+  const typePiece = readString(formData, 'typePiece');
+  const autreLibelle = readString(formData, 'autreLibelle');
+  const file = formData.get('fichier');
+
+  const backTo = candidatureId ? `/candidatures/${candidatureId}/suivi` : '/mes-candidatures';
+  const libelle = (typePiece === 'autre' ? autreLibelle : typePiece).trim();
+
+  if (!candidatureId || !libelle) {
+    redirect(`${backTo}?error=${encodeURIComponent('Indiquez de quelle piece il s’agit.')}`);
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    redirect(`${backTo}?error=${encodeURIComponent('Choisissez un fichier a joindre.')}`);
+  }
+
+  const uploaded = await uploadPortalFile(file as File);
+  if (!uploaded) {
+    redirect(`${backTo}?error=${encodeURIComponent("Le televersement du fichier a echoue. Reessayez avec un PDF ou une image.")}`);
+  }
+
+  const result = await addPieceComplementaire(candidatureId, libelle, (uploaded as { id: number }).id);
+  redirect(result.ok ? `${backTo}?piece=ajoutee` : `${backTo}?error=${encodeURIComponent(result.error || "L’ajout a echoue.")}`);
 }

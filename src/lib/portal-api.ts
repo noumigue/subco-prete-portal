@@ -525,6 +525,31 @@ export async function uploadPortalFile(file: File): Promise<{ id: number; name: 
   }
 }
 
+// Ajout spontane d'une piece sur un dossier deja depose (Lot 0). Le CMS verifie
+// l'appartenance, que le dossier est bien depose et que l'appel est encore ouvert ;
+// il cree la piece directement `fourni` / `origine: candidat`, notifie et journalise.
+export async function addPieceComplementaire(
+  candidatureDocumentId: string,
+  libelle: string,
+  fileId: number,
+): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/complements`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      data: { candidature: candidatureDocumentId, pieceDemandee: libelle, fichier: fileId },
+    }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  // Les refus du CMS sont porteurs de sens pour le candidat (appel clos, dossier non depose) :
+  // on remonte son message plutot qu'un « echec » muet.
+  if (!response.ok) return { ok: false, error: payload?.error?.message || "L'ajout de la piece a echoue." };
+  return { ok: true };
+}
+
 // Depot d'un complement (remediation 1.7) : rattache le media au complement demande.
 // Le controleur cote CMS passe le statut a `fourni`, emet la notification, et ne touche
 // jamais au pdfPermanent (depot en ajout).

@@ -50,6 +50,9 @@ export type PortalComplement = {
   pieceDemandee?: string;
   echeance?: string;
   statut?: 'demande' | 'fourni';
+  // `ugp` = piece reclamee par l'UGP ; `candidat` = piece ajoutee spontanement (Lot 0).
+  // Absent sur les lignes anterieures au champ : traiter l'absence comme `ugp`.
+  origine?: 'ugp' | 'candidat';
   fichier?: { url?: string } | null;
 };
 
@@ -361,6 +364,7 @@ export type GestionDossierRow = {
   enValidationPhase: 'completude' | 'eligibilite' | null;
   complementEnCours: boolean;
   complementRecu?: boolean;
+  pieceAjoutee?: boolean;
   statutClos: string | null;
 };
 
@@ -369,6 +373,7 @@ export type GestionComplement = {
   pieceDemandee: string;
   echeance: string | null;
   statut: 'demande' | 'fourni';
+  origine?: 'ugp' | 'candidat';
   fichierUrl: string | null;
   fourniLe: string | null;
 };

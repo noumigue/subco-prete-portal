@@ -249,13 +249,17 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
       {dossier.complements && dossier.complements.length > 0 ? (
         <div className="gx-card">
           <div className="gx-block-title">Compléments demandés &amp; reçus (N2)
-            <span className="gx-m7-r">{dossier.complements.filter((c) => c.statut === 'fourni').length}/{dossier.complements.length} déposé(s)</span>
+            <span className="gx-m7-r">{dossier.complements.filter((c) => c.origine !== 'candidat' && c.statut === 'fourni').length}/{dossier.complements.filter((c) => c.origine !== 'candidat').length} déposé(s)</span>
           </div>
           {dossier.complements.map((c) => (
             <div key={c.documentId} className="gx-cpl-row">
-              <span className={`gx-pill ${c.statut === 'fourni' ? 'gx-pill-ok' : 'gx-pill-val'}`}>{c.statut === 'fourni' ? 'Reçu' : 'En attente'}</span>
+              {c.origine === 'candidat' ? (
+                <span className="gx-pill gx-pill-ok">Ajoutée par le candidat</span>
+              ) : (
+                <span className={`gx-pill ${c.statut === 'fourni' ? 'gx-pill-ok' : 'gx-pill-val'}`}>{c.statut === 'fourni' ? 'Reçu' : 'En attente'}</span>
+              )}
               <span className="gx-cpl-piece">{c.pieceDemandee}</span>
-              <span className="gx-cpl-ech">Échéance : {c.echeance || '—'}</span>
+              <span className="gx-cpl-ech">{c.origine === 'candidat' ? 'Ajout spontané' : `Échéance : ${c.echeance || '—'}`}</span>
               {c.statut === 'fourni' && c.fichierUrl ? (
                 <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(c.fichierUrl) || '#'} target="_blank" rel="noopener noreferrer">⤓ Pièce déposée</a>
               ) : (
@@ -263,7 +267,8 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
               )}
             </div>
           ))}
-          <p className="gx-m7-hint">Dépôt en <b>ajout</b> (le dossier soumis figé n&apos;est jamais altéré). À réception, ré-examinez la complétude.</p>
+          <p className="gx-m7-hint">Dépôt en <b>ajout</b> (le dossier soumis figé n&apos;est jamais altéré). À réception, ré-examinez la complétude.
+            Les lignes « Ajoutée par le candidat » n&apos;ont été réclamées par personne : l&apos;opérateur a complété son dossier de lui-même avant la clôture.</p>
         </div>
       ) : null}
 
