@@ -246,6 +246,28 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
         </div>
       ) : null}
 
+      {dossier.depots && dossier.depots.length > 1 ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Versions déposées
+            <span className="gx-m7-r">v{dossier.versionDepot || 1} instruite</span>
+          </div>
+          {dossier.depots.map((depot) => (
+            <div key={depot.version} className="gx-cpl-row">
+              <span className={`gx-pill ${depot.version === (dossier.versionDepot || 1) ? 'gx-pill-ok' : 'gx-pill-val'}`}>
+                {depot.version === (dossier.versionDepot || 1) ? 'Version instruite' : `Version ${depot.version}`}
+              </span>
+              <span className="gx-cpl-piece">{depot.titreProjet || '—'}</span>
+              <span className="gx-cpl-ech">Déposée le {depot.deposeLe ? new Date(depot.deposeLe).toLocaleDateString('fr-FR') : '—'}</span>
+              {depot.pdfUrl ? (
+                <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(depot.pdfUrl) || '#'} target="_blank" rel="noopener noreferrer">⤓ PDF de cette version</a>
+              ) : <span className="gx-cpl-wait">PDF indisponible</span>}
+            </div>
+          ))}
+          <p className="gx-m7-hint">L&apos;opérateur a redéposé son dossier avant la clôture. Seule la dernière version est instruite ;
+            les précédentes sont conservées avec le document qui faisait foi à leur date, et restent opposables.</p>
+        </div>
+      ) : null}
+
       {dossier.complements && dossier.complements.length > 0 ? (
         <div className="gx-card">
           <div className="gx-block-title">Compléments demandés &amp; reçus (N2)

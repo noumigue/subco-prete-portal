@@ -389,6 +389,14 @@ export type GestionDossierRow = {
   statutClos: string | null;
 };
 
+// Une version deposee du dossier, vue par l'equipe (Lot 1).
+export type GestionDepot = {
+  version: number;
+  deposeLe: string | null;
+  titreProjet: string | null;
+  pdfUrl: string | null;
+};
+
 export type GestionComplement = {
   documentId: string;
   pieceDemandee: string;
@@ -434,6 +442,7 @@ export type GestionDossierDetail = GestionDossierRow & {
   motifDecisionCourt: string | null;
   pdfPermanentUrl: string | null;
   notificationDecisionUrl: string | null;
+  depots?: GestionDepot[];
   instructionCompletude: GestionInstructionCompletude | null;
   instructionEligibilite: GestionInstructionEligibilite | null;
   referentiels: GestionReferentiels;
