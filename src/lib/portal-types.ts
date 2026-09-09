@@ -78,6 +78,14 @@ export type PortalCandidature = {
   numeroDossier?: string | null;
   dateDepot?: string | null;
   donneesProjet?: unknown;
+  // Lot 1 — copie de travail d'un dossier deja depose. NON NULLE <=> modification en cours.
+  // `donneesProjet` reste, lui, la version DEPOSEE : c'est elle qui part en instruction tant
+  // qu'il n'y a pas eu de nouveau depot.
+  donneesProjetTravail?: unknown;
+  titreProjetTravail?: string | null;
+  versionDepot?: number | null;
+  dernierDepotLe?: string | null;
+  depots?: PortalDepotDossier[];
   motifDecisionCourt?: string | null;
   appel?: PortalAppel | null;
   organisation?: PortalOrganisation | null;
@@ -87,6 +95,16 @@ export type PortalCandidature = {
   pdfPermanent?: { url?: string } | null;
   notificationDecision?: { url?: string } | null;
   piecesFichiers?: Record<string, GestionPieceFichier>;
+};
+
+// Une version deposee du dossier, avec le PDF qui faisait foi a ce moment-la.
+export type PortalDepotDossier = {
+  id: number;
+  documentId: string;
+  version: number;
+  deposeLe: string;
+  titreProjet?: string | null;
+  pdf?: { url?: string; name?: string } | null;
 };
 
 export type PortalStatutJuridique = {
@@ -365,6 +383,9 @@ export type GestionDossierRow = {
   complementEnCours: boolean;
   complementRecu?: boolean;
   pieceAjoutee?: boolean;
+  versionDepot?: number;
+  dernierDepotLe?: string | null;
+  modificationEnCours?: boolean;
   statutClos: string | null;
 };
 

@@ -66,9 +66,24 @@ export default async function FormMountPage({
       getPortalContenuAide('exemples-infrastructure'),
     ]);
 
+  // Lot 1 — mode modification. Le formulaire est alimenté par la COPIE DE TRAVAIL, pas par la
+  // version déposée : c'est le seul aiguillage, fait ici, à l'entrée. Le composant ne connaît
+  // qu'un jeu de données à éditer et un bouton final, exactement comme pour un brouillon —
+  // on n'a donc pas touché à son chemin de sauvegarde, qui sert tous les dépôts en cours.
+  const modeModification = Boolean(candidature?.donneesProjetTravail);
+  const candidatureEditee =
+    candidature && modeModification
+      ? {
+          ...candidature,
+          donneesProjet: candidature.donneesProjetTravail,
+          titreProjet: candidature.titreProjetTravail || candidature.titreProjet,
+        }
+      : candidature;
+
   return (
     <OperatorCandidatureForm
-      candidature={candidature}
+      candidature={candidatureEditee}
+      modeModification={modeModification}
       organisation={organisation}
       openCall={candidature?.appel || openCalls[0] || null}
       typePieces={typePieces}

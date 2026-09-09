@@ -20,6 +20,7 @@ import { remapProvinceName } from '@/lib/portal-provinces';
 import {
   saveCandidatureStepAction,
   submitCandidatureAction,
+  redeposerCandidatureAction,
   uploadPieceAction,
   type SaveStepInput,
 } from '@/app/(operator)/actions';
@@ -58,6 +59,10 @@ const MATURITY_LEVELS = ['Mature', 'Semi-mature', 'Embryonnaire'];
 
 type OperatorCandidatureFormProps = {
   candidature: PortalCandidature | null;
+  // Lot 1 — le formulaire edite la copie de travail d'un dossier DEJA DEPOSE. Seules deux
+  // choses changent : l'intitule du bouton final et l'action qu'il declenche (redeposer au
+  // lieu de soumettre). Tout le reste — saisie, sauvegarde, televersements — est identique.
+  modeModification?: boolean;
   organisation: PortalOrganisation | null;
   openCall: PortalAppel | null;
   typePieces: PortalTypePiece[];
@@ -99,6 +104,7 @@ function statusBadgeLabel(exigence?: string) {
 
 export function OperatorCandidatureForm({
   candidature,
+  modeModification = false,
   organisation,
   openCall,
   typePieces,
@@ -433,7 +439,7 @@ export function OperatorCandidatureForm({
     // Garde-fou MOU (3.1.8) : on avertit sur l'incomplétude Annexe 11, on ne bloque pas.
     if (missingLabels.length > 0) {
       const proceed = window.confirm(
-        `Pièces obligatoires manquantes :\n— ${missingLabels.join('\n— ')}\n\nVous pouvez soumettre malgré tout, mais l’UGP pourra réclamer ces pièces pendant la vérification. Soumettre quand même ?`,
+        `Pièces obligatoires manquantes :\n— ${missingLabels.join('\n— ')}\n\nVous pouvez ${modeModification ? 'déposer' : 'soumettre'} malgré tout, mais l’UGP pourra réclamer ces pièces pendant la vérification. Continuer ?`,
       );
       if (!proceed) return;
     }
@@ -442,6 +448,23 @@ export function OperatorCandidatureForm({
     const savedOk = await saveDraft(4, { silent: true });
     if (!savedOk) {
       setSubmitting(false);
+      return;
+    }
+
+    // Lot 1 — un dossier déjà déposé ne se « soumet » pas une seconde fois : il se redépose.
+    // Le numéro et la date de dépôt initiale ne bougent pas, seul le document de candidature
+    // est remplacé. L'écran de confirmation du premier dépôt n'a donc pas de sens ici.
+    if (modeModification) {
+      const redepot = await redeposerCandidatureAction(candidature.documentId);
+      setSubmitting(false);
+      if (!redepot.ok) {
+        showToast(redepot.error || 'Le dépôt de cette version a échoué.');
+        return;
+      }
+      // Le bandeau du layout doit disparaitre des le retour : sans rafraichissement il
+      // continuerait d'annoncer des modifications non deposees alors qu'elles le sont.
+      router.push(`/candidatures/${candidature.documentId}/suivi?redepot=1`);
+      router.refresh();
       return;
     }
 
@@ -1031,7 +1054,11 @@ export function OperatorCandidatureForm({
 
           {step < 5 ? (
             <button type="button" className="operator-primary-btn inline" onClick={() => void goNext()} disabled={saving || submitting}>
-              {submitting ? 'Soumission…' : step === 4 ? 'Soumettre le dossier' : 'Continuer →'}
+              {submitting
+                ? (modeModification ? 'Dépôt…' : 'Soumission…')
+                : step === 4
+                  ? (modeModification ? 'Déposer cette version' : 'Soumettre le dossier')
+                  : 'Continuer →'}
             </button>
           ) : (
             <Link href="/mes-candidatures" className="operator-secondary-btn inline">

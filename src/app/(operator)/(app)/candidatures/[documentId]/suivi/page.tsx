@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { getPortalCandidature, getPortalTypePieces } from '@/lib/portal-api';
 import type { PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl as mediaUrl } from '@/lib/portal-media';
-import { addPieceAction, depositComplementAction } from '../../../../actions';
+import {
+  addPieceAction,
+  annulerModificationAction,
+  depositComplementAction,
+  redeposerAction,
+  reopenCandidatureAction,
+} from '../../../../actions';
 
 const phases = ['recu', 'completude', 'eligibilite', 'evaluation', 'decision'] as const;
 const labels: Record<(typeof phases)[number], string> = {
@@ -50,6 +56,8 @@ export default async function FollowUpPage({
   const flag = Array.isArray(query.complement) ? query.complement[0] : query.complement;
   const errorFlag = Array.isArray(query.error) ? query.error[0] : query.error;
   const pieceFlag = Array.isArray(query.piece) ? query.piece[0] : query.piece;
+  const redepotFlag = Array.isArray(query.redepot) ? query.redepot[0] : query.redepot;
+  const modifFlag = Array.isArray(query.modification) ? query.modification[0] : query.modification;
   const [candidature, typePieces] = await Promise.all([
     getPortalCandidature(documentId),
     getPortalTypePieces(),
@@ -72,6 +80,23 @@ export default async function FollowUpPage({
       candidature?.statut?.code !== 'brouillon' &&
       candidature?.appel?.statut === 'ouvert',
   );
+
+  // ——— Lot 1 : modification en cours et versions déposées ———
+  // La copie de travail est le SEUL témoin d'état : non nulle = modification en cours.
+  // Le dossier reste déposé pendant tout ce temps, et c'est la version déposée qui part en
+  // instruction tant que le candidat n'a pas déposé la nouvelle.
+  const enModification = Boolean(candidature?.donneesProjetTravail);
+  const versionDeposee = candidature?.versionDepot || 1;
+  const dateVersionDeposee = formatDay(candidature?.dernierDepotLe || candidature?.dateDepot);
+  // La prise en charge par un instructeur fait toujours sortir le dossier de la phase
+  // « reçu » : c'est le signal dont dispose le portail. Le CMS revalide de son côté.
+  const peutModifier = Boolean(
+    candidature?.numeroDossier &&
+      candidature?.statut?.code !== 'brouillon' &&
+      candidature?.appel?.statut === 'ouvert' &&
+      candidature?.statut?.phase === 'recu',
+  );
+  const versions = [...(candidature?.depots || [])].sort((a, b) => b.version - a.version);
 
   // Tout ce qui est arrivé APRÈS le dépôt, quelle qu'en soit l'origine : les pièces réclamées
   // par l'UGP et déjà fournies, et celles que le candidat a ajoutées de lui-même.
@@ -111,7 +136,39 @@ export default async function FollowUpPage({
 
       {flag === 'depose' ? <p className="operator-auth-note">Pièce complémentaire déposée et ajoutée à votre dossier.</p> : null}
       {pieceFlag === 'ajoutee' ? <p className="operator-auth-note">Pièce ajoutée à votre dossier. Votre candidature déposée reste inchangée par ailleurs.</p> : null}
+      {redepotFlag ? <p className="operator-auth-note">Nouvelle version déposée. C’est désormais elle qui sera instruite ; votre numéro de dossier et votre date de dépôt n’ont pas changé.</p> : null}
+      {modifFlag === 'abandonnee' ? <p className="operator-auth-note">Modifications abandonnées. Votre dossier reste déposé dans sa version précédente.</p> : null}
       {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
+
+      {enModification ? (
+        <section className="operator-action-card">
+          <div className="operator-action-head">⚠ Modification en cours — non déposée</div>
+          <p>
+            Votre dossier reste déposé dans sa <strong>version {versionDeposee}</strong>
+            {dateVersionDeposee ? <> du {dateVersionDeposee}</> : null}, et c’est elle qui sera instruite.
+            Vos modifications ne seront prises en compte que lorsque vous aurez déposé la nouvelle version
+            {dateCloture ? <>, au plus tard le <strong>{dateCloture}</strong></> : null}.
+          </p>
+          <div className="operator-action-foot">
+            <span className="operator-action-hint">
+              Vous pouvez reprendre vos modifications autant de fois que nécessaire avant de les déposer.
+            </span>
+            <span className="operator-dossier-right">
+              <Link href={`/candidatures/${documentId}/formulaire?modification=1`} className="operator-secondary-btn operator-btn-sm">
+                ✎ Reprendre
+              </Link>
+              <form action={redeposerAction} style={{ display: 'inline' }}>
+                <input type="hidden" name="documentId" value={documentId} />
+                <button type="submit" className="operator-amber-btn">Déposer cette version</button>
+              </form>
+            </span>
+          </div>
+          <form action={annulerModificationAction}>
+            <input type="hidden" name="documentId" value={documentId} />
+            <button type="submit" className="operator-text-link">Abandonner ces modifications</button>
+          </form>
+        </section>
+      ) : null}
 
       <div className="operator-block-title">Avancement du dossier</div>
       <section className="operator-card">
@@ -250,10 +307,50 @@ export default async function FollowUpPage({
                 <button type="submit" className="operator-primary-btn inline">Ajouter la pièce</button>
                 <span className="operator-field-note">
                   Le dépôt est immédiat et vous recevrez une confirmation. Pour corriger une information
-                  du formulaire (montant, description…), passez par « Besoin d’aide sur ce dossier ? ».
+                  du formulaire (montant, description…), {peutModifier
+                    ? 'utilisez « Modifier mon dossier » plus bas'
+                    : 'passez par « Besoin d’aide sur ce dossier ? »'}.
                 </span>
               </div>
             </form>
+          </section>
+        </>
+      ) : null}
+
+      {candidature?.numeroDossier ? (
+        <>
+          <div className="operator-block-title">Ma candidature déposée</div>
+          <section className="operator-card">
+            <p className="operator-page-intro">
+              {versions.length > 1 ? (
+                <>Version <strong>{versionDeposee}</strong>{dateVersionDeposee ? <> déposée le {dateVersionDeposee}</> : null}. C’est cette version qui est instruite. Les versions précédentes restent consultables ci-dessous.</>
+              ) : (
+                <>Version <strong>{versionDeposee}</strong>{dateVersionDeposee ? <> déposée le {dateVersionDeposee}</> : null}. C’est cette version qui est instruite.</>
+              )}
+            </p>
+            {versions.length ? (
+              <div className="gx-pieces-depot">
+                {versions.map((depot) => {
+                  const url = mediaUrl(depot.pdf?.url);
+                  const libelle = `Version ${depot.version} — ${formatDay(depot.deposeLe) || ''}`;
+                  return url
+                    ? <a key={depot.documentId} className="gx-pc" href={url} target="_blank" rel="noopener noreferrer">⤓ {libelle}</a>
+                    : <span key={depot.documentId} className="gx-pc">{libelle}</span>;
+                })}
+              </div>
+            ) : null}
+            {peutModifier && !enModification ? (
+              <div className="operator-form-actions">
+                <form action={reopenCandidatureAction}>
+                  <input type="hidden" name="documentId" value={documentId} />
+                  <button type="submit" className="operator-secondary-btn inline">✎ Modifier mon dossier</button>
+                </form>
+                <span className="operator-field-note">
+                  Vous pouvez corriger n’importe quelle information de votre dossier{dateCloture ? <> jusqu’au {dateCloture}</> : null}.
+                  Votre dossier <strong>reste déposé</strong> pendant que vous le modifiez : rien n’est perdu tant que vous n’avez pas déposé la nouvelle version.
+                </span>
+              </div>
+            ) : null}
           </section>
         </>
       ) : null}

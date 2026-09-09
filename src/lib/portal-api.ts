@@ -77,7 +77,7 @@ export async function getPortalCandidatures() {
 
 export async function getPortalCandidature(documentId: string) {
   const response = await portalFetch<StrapiItem<PortalCandidature>>(
-    `/api/candidatures/${documentId}?populate[0]=appel&populate[1]=organisation&populate[2]=statut&populate[3]=pdfPermanent&populate[4]=notificationDecision&populate[5]=complements.fichier&populate[6]=notifications`,
+    `/api/candidatures/${documentId}?populate[0]=appel&populate[1]=organisation&populate[2]=statut&populate[3]=pdfPermanent&populate[4]=notificationDecision&populate[5]=complements.fichier&populate[6]=notifications&populate[7]=depots.pdf`,
   );
   return response?.data || null;
 }
@@ -523,6 +523,36 @@ export async function uploadPortalFile(file: File): Promise<{ id: number; name: 
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Lot 1 — modifier puis redeposer un dossier deja depose.
+//
+// Ces trois appels partagent la meme forme : le CMS renvoie un message d'erreur porteur de
+// sens pour le candidat (« l'instruction a commence », « l'appel est clos »), qu'il faut lui
+// montrer tel quel plutot que d'echouer en silence.
+async function actionCandidature(documentId: string, action: string, echecParDefaut: string) {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/candidatures/${documentId}/${action}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || echecParDefaut };
+  return { ok: true };
+}
+
+export async function rouvrirCandidature(documentId: string) {
+  return actionCandidature(documentId, 'rouvrir', "L'ouverture en modification a echoue.");
+}
+
+export async function redeposerCandidature(documentId: string) {
+  return actionCandidature(documentId, 'redeposer', 'Le depot de cette version a echoue.');
+}
+
+export async function annulerModificationCandidature(documentId: string) {
+  return actionCandidature(documentId, 'annuler-modification', "L'abandon des modifications a echoue.");
 }
 
 // Ajout spontane d'une piece sur un dossier deja depose (Lot 0). Le CMS verifie

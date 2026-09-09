@@ -22,6 +22,9 @@ import {
   requestPortalEmailChange,
   soumettreDemande,
   addPieceComplementaire,
+  rouvrirCandidature,
+  redeposerCandidature,
+  annulerModificationCandidature,
   submitPortalCandidature,
   updatePortalDraft,
   updatePortalPhone,
@@ -325,6 +328,13 @@ export async function submitCandidatureAction(documentId: string): Promise<Submi
   };
 }
 
+// Variante appelable depuis le formulaire (retourne un resultat au lieu de rediriger) :
+// le composant doit pouvoir afficher le refus du CMS sans quitter la page.
+export async function redeposerCandidatureAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+  return redeposerCandidature(documentId);
+}
+
 // ——— Lot 2 : Ma subvention ———
 
 // Depot de fichier generique sur un enfant de subvention (condition / rapport / mesure).
@@ -472,6 +482,55 @@ export async function depositComplementAction(formData: FormData) {
 
   const result = await depositComplement(complementId, (uploaded as { id: number }).id);
   redirect(`${backTo}?${result ? 'complement=depose' : 'error=depot'}`);
+}
+
+// ——— Lot 1 : modifier et redeposer un dossier deja depose ———
+
+// Rouvrir NE DEPOSE PAS le dossier : la version deja deposee reste celle qui sera instruite
+// tant que le candidat n'a pas depose sa nouvelle version. Le formulaire et le bandeau
+// d'alerte le repetent, parce que c'est le seul malentendu qui peut couter un dossier.
+export async function reopenCandidatureAction(formData: FormData) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  if (!documentId) redirect('/mes-candidatures');
+
+  const result = await rouvrirCandidature(documentId);
+  if (!result.ok) {
+    redirect(`/candidatures/${documentId}/suivi?error=${encodeURIComponent(result.error || '')}`);
+  }
+  // Le bandeau « modifications non déposées » vit dans le layout : sans invalidation, il
+  // n'apparaîtrait qu'au prochain rechargement complet — or c'est précisément l'écran
+  // suivant qui doit le porter.
+  revalidatePath('/', 'layout');
+  redirect(`/candidatures/${documentId}/formulaire?modification=1`);
+}
+
+export async function redeposerAction(formData: FormData) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  if (!documentId) redirect('/mes-candidatures');
+
+  const result = await redeposerCandidature(documentId);
+  revalidatePath('/', 'layout');
+  redirect(
+    result.ok
+      ? `/candidatures/${documentId}/suivi?redepot=1`
+      : `/candidatures/${documentId}/suivi?error=${encodeURIComponent(result.error || '')}`,
+  );
+}
+
+export async function annulerModificationAction(formData: FormData) {
+  await requirePortalSession();
+  const documentId = readString(formData, 'documentId');
+  if (!documentId) redirect('/mes-candidatures');
+
+  const result = await annulerModificationCandidature(documentId);
+  revalidatePath('/', 'layout');
+  redirect(
+    result.ok
+      ? `/candidatures/${documentId}/suivi?modification=abandonnee`
+      : `/candidatures/${documentId}/suivi?error=${encodeURIComponent(result.error || '')}`,
+  );
 }
 
 // Ajout SPONTANE d'une piece sur un dossier deja depose (Lot 0) : le candidat n'attend

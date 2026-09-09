@@ -28,6 +28,10 @@ function tabOf(d: GestionDossierRow): Tab {
 function Pill({ d }: { d: GestionDossierRow }) {
   if (tabOf(d) === 'clos') return <span className="gx-pill gx-pill-rej">{d.statutClos || 'Clos'}</span>;
   if (d.enValidation) return <span className="gx-pill gx-pill-val">⏳ À valider (UGP)</span>;
+  // Placé HAUT : c'est un signal actionnable — le candidat modifie son dossier, ne le prenez
+  // pas en charge maintenant. La version déposée reste lisible et instruisible, mais elle
+  // peut être remplacée d'un instant à l'autre.
+  if (d.modificationEnCours) return <span className="gx-pill gx-pill-comp">✎ Modification en cours (candidat)</span>;
   if (d.complementRecu) return <span className="gx-pill gx-pill-ok">Compléments reçus</span>;
   if (d.complementEnCours) return <span className="gx-pill gx-pill-comp">Compléments demandés</span>;
   // Signal distinct des deux précédents : personne n'a rien réclamé, c'est le candidat qui a
