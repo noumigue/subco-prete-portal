@@ -198,9 +198,18 @@ function normalizeCallStatus(value?: string): NormalizedCallStatus {
   return 'upcoming';
 }
 
+// Les dates d'appel arrivent en AAAA-MM-JJ. `new Date('2026-09-12')` est lu par JS comme
+// MINUIT UTC, soit 2h du matin a Bujumbura (UTC+2) : le jour de la cloture, l'appel etait
+// donc considere comme ferme des 2h, la page basculait sur la cohorte suivante et affichait
+// « le depot n'est pas encore ouvert ». Les deux bornes s'entendent en heure de Bujumbura et
+// sont INCLUSIVES : ouverture a 00h00 le jour d'ouverture, cloture a 23h59 le jour de cloture.
+const FUSEAU_BUJUMBURA = '+02:00';
+const EST_DATE_SEULE = /^\d{4}-\d{2}-\d{2}$/;
+
 function isFutureDate(value?: string, now = new Date()) {
   if (!value) return false;
-  const d = new Date(value);
+  const iso = EST_DATE_SEULE.test(value) ? `${value}T00:00:00${FUSEAU_BUJUMBURA}` : value;
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return false;
   return d.getTime() > now.getTime();
 }
@@ -218,7 +227,8 @@ function resolveCallStatus(value?: string, openingDate?: string, deadlineDate?: 
 
 function isPastDeadline(value?: string, now = new Date()) {
   if (!value) return false;
-  const d = new Date(value);
+  const iso = EST_DATE_SEULE.test(value) ? `${value}T23:59:59${FUSEAU_BUJUMBURA}` : value;
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return false;
   return d.getTime() < now.getTime();
 }
