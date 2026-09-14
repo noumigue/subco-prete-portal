@@ -1,13 +1,5 @@
-import Link from 'next/link';
 import { OperatorResendLink } from '@/components/operator-resend-link';
 
-// Incident de messagerie du 11/09/2026 : notre hebergeur retient les courriels sortants.
-// L'exigence de confirmation a ete levee cote serveur (reglage users-permissions
-// `email_confirmation`), donc un compte non confirme peut se connecter. Cette page disait
-// l'inverse — « votre compte reste inactif » — et poussait au renvoi en boucle, qui
-// declenche la protection anti-abus du relais. Elle invite desormais a se connecter
-// directement. A REMETTRE EN ETAT quand la messagerie sera retablie, en meme temps que
-// le reglage : voir _livrables/outils/revert-confirmation-email.sh.
 export default async function VerifyEmailPage({
   searchParams,
 }: {
@@ -28,14 +20,10 @@ export default async function VerifyEmailPage({
             Un lien d&apos;activation a été envoyé à <strong className="operator-auth-to">{email || 'votre adresse'}</strong>.
           </p>
           <div className="operator-auth-wall-note">
-            Nos courriels connaissent actuellement des retards indépendants de notre volonté.
-            <strong> Vous n&apos;avez pas besoin d&apos;attendre ce message : connectez-vous dès maintenant</strong> avec
-            votre adresse e-mail et le mot de passe que vous venez de choisir. Pensez aussi à regarder dans vos courriers indésirables.
+            Votre compte reste inactif tant que l&apos;adresse n&apos;est pas vérifiée. Vous ne pourrez ni accéder à votre espace ni commencer une candidature avant.
           </div>
           {error ? <p className="operator-auth-error">{error}</p> : null}
           {resent ? <p className="operator-auth-note">Un nouveau lien vient d&apos;être demandé.</p> : null}
-          <Link href="/connexion" className="operator-primary-btn">Me connecter maintenant</Link>
-          <p className="operator-auth-alt">Le lien n&apos;est pas arrivé et vous préférez attendre ?</p>
           <OperatorResendLink email={email} justResent={Boolean(resent)} />
         </div>
       </section>
