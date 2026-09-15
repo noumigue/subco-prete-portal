@@ -44,21 +44,30 @@ function Pill({ d }: { d: GestionDossierRow }) {
 export function GestionFile({
   dossiers,
   role,
+  currentUserId,
   flash,
   flashError,
 }: {
   dossiers: GestionDossierRow[];
   role: 'instructeur' | 'ugp';
+  currentUserId: number | null;
   flash: string | null;
   flashError: string | null;
 }) {
   const [tab, setTab] = useState<Tab>('completude');
   const [onlyMine, setOnlyMine] = useState(false);
+  // Filtre instructeur « Mes dossiers » : non memorise, il repart decoche a chaque visite.
+  const [mesDossiers, setMesDossiers] = useState(false);
+
+  const estAMoi = (d: GestionDossierRow) => currentUserId != null && d.prisEnChargePar?.id === currentUserId;
+  // Le filtre s'applique a tous les onglets ET a leurs compteurs. Filtre coche, « Reçus » est
+  // vide : ces dossiers n'appartiennent encore a personne, il faut decocher pour en prendre un.
+  const visibles = role === 'instructeur' && mesDossiers ? dossiers.filter(estAMoi) : dossiers;
 
   const counts: Record<Tab, number> = { recu: 0, completude: 0, eligibilite: 0, evaluation: 0, clos: 0 };
-  dossiers.forEach((d) => { counts[tabOf(d)] += 1; });
+  visibles.forEach((d) => { counts[tabOf(d)] += 1; });
 
-  let items = dossiers.filter((d) => tabOf(d) === tab);
+  let items = visibles.filter((d) => tabOf(d) === tab);
   if (role === 'ugp' && onlyMine) items = items.filter((d) => d.enValidation);
 
   return (
@@ -76,7 +85,12 @@ export function GestionFile({
             <input type="checkbox" style={{ width: 'auto' }} checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
             En attente de ma validation
           </label>
-        ) : null}
+        ) : (
+          <label className="gx-chk">
+            <input type="checkbox" style={{ width: 'auto' }} checked={mesDossiers} onChange={(e) => setMesDossiers(e.target.checked)} />
+            Mes dossiers
+          </label>
+        )}
       </div>
 
       <div className="gx-tabs">
@@ -88,7 +102,7 @@ export function GestionFile({
       </div>
 
       {items.length === 0 ? (
-        <div className="gx-empty">Aucun dossier à cette étape.</div>
+        <div className="gx-empty">{role === 'instructeur' && mesDossiers ? 'Aucun de vos dossiers à cette étape.' : 'Aucun dossier à cette étape.'}</div>
       ) : (
         items.map((d) => {
           const phase = tabOf(d);
@@ -121,7 +135,7 @@ export function GestionFile({
                     <button type="submit" className="gx-btn gx-btn-primary gx-btn-sm">Prendre en charge</button>
                   </form>
                 ) : null}
-                {canInstruire && (d.prisEnChargePar || role === 'ugp') ? (
+                {canInstruire && (role === 'ugp' || estAMoi(d)) ? (
                   <>
                     {role === 'ugp' && d.prisEnChargePar ? (
                       <form action={reassignerAction}>
@@ -136,6 +150,10 @@ export function GestionFile({
                       {d.enValidation && role === 'ugp' ? 'Examiner & valider' : 'Instruire'}
                     </Link>
                   </>
+                ) : null}
+                {/* Dossier d'un collegue : consultation seule (l'ecran d'instruction s'ouvre verrouille). */}
+                {canInstruire && role === 'instructeur' && d.prisEnChargePar && !estAMoi(d) ? (
+                  <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/${instructionPath}`}>Consulter</Link>
                 ) : null}
 
                 {phase === 'evaluation' && role === 'ugp' ? (
@@ -154,7 +172,8 @@ export function GestionFile({
       <p className="gx-annot">
         <b>C1 — pool + prise en charge nominative</b> (réassignation UGP via ↺). Les onglets suivent les étapes 8.5→8.10 ;
         « Évaluation » et « Comité » arrivent en phase 2. La vue UGP ajoute le filtre « en attente de ma validation »
-        (§4.2 : le Cabinet instruit, l&apos;UGP valide).
+        (§4.2 : le Cabinet instruit, l&apos;UGP valide). Un instructeur n&apos;instruit que les dossiers qu&apos;il a pris en charge ;
+        ceux de ses collègues s&apos;ouvrent en consultation seule. Le filtre « Mes dossiers » restreint la file aux siens.
       </p>
     </>
   );

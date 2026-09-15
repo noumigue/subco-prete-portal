@@ -15,5 +15,5 @@ export default async function CompletudePage({
   if (!dossier) notFound();
   const role = session?.role === 'ugp' ? 'ugp' : 'instructeur';
 
-  return <GestionCompletude dossier={dossier} role={role} />;
+  return <GestionCompletude dossier={dossier} role={role} currentUserId={session?.userId ?? null} />;
 }

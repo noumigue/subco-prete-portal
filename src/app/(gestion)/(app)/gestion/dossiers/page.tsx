@@ -22,5 +22,5 @@ export default async function GestionDossiersPage({
               : null;
   const flashError = typeof params.error === 'string' ? params.error : null;
 
-  return <GestionFile dossiers={dossiers} role={role} flash={flash} flashError={flashError} />;
+  return <GestionFile dossiers={dossiers} role={role} currentUserId={session?.userId ?? null} flash={flash} flashError={flashError} />;
 }

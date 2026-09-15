@@ -23,7 +23,15 @@ function addDays(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDetail; role: 'instructeur' | 'ugp' }) {
+export function GestionCompletude({
+  dossier,
+  role,
+  currentUserId,
+}: {
+  dossier: GestionDossierDetail;
+  role: 'instructeur' | 'ugp';
+  currentUserId: number | null;
+}) {
   const router = useRouter();
   const instr = dossier.instructionCompletude;
   const pieces = dossier.referentiels.typePieces;
@@ -46,7 +54,11 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
 
   const validationMode = role === 'ugp' && instr?.workflow === 'propose';
   const proposedWaiting = role !== 'ugp' && instr?.workflow === 'propose';
-  const editable = !validationMode && !proposedWaiting && dossier.statut?.phase === 'completude';
+  // Un instructeur qui n'a pas le dossier en charge le consulte sans pouvoir le modifier. Le
+  // serveur refuse deja sa proposition ; decider ici, sur la page, couvre aussi l'acces par
+  // adresse directe et lui evite de remplir un formulaire qui serait rejete au dernier clic.
+  const lectureSeule = role !== 'ugp' && dossier.prisEnChargePar?.id !== currentUserId;
+  const editable = !lectureSeule && !validationMode && !proposedWaiting && dossier.statut?.phase === 'completude';
 
   const [etats, setEtats] = useState<Record<string, { etat: Etat; note?: string }>>(
     () => (instr?.verdictsPieces as Record<string, { etat: Etat; note?: string }>) || {},
@@ -134,7 +146,13 @@ export function GestionCompletude({ dossier, role }: { dossier: GestionDossierDe
       </div>
 
       {error ? <div className="gx-flash err">{error}</div> : null}
-      {proposedWaiting ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b> Verdict proposé — aucune modification possible avant la décision de l&apos;UGP.</div> : null}
+      {lectureSeule ? (
+        <div className="gx-validation-banner">
+          👁 <b>Consultation seule.</b>{' '}
+          {dossier.prisEnChargePar ? <>Dossier pris en charge par {dossier.prisEnChargePar.nom} : lui seul peut l&apos;instruire.</> : <>Ce dossier n&apos;est pas pris en charge par vous.</>}
+        </div>
+      ) : null}
+      {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b> Verdict proposé — aucune modification possible avant la décision de l&apos;UGP.</div> : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
       {validationMode ? <div className="gx-validation-banner">⚖️ <b>Mode validation UGP.</b> Verdict proposé par {instr?.proposePar || dossier.prisEnChargePar?.nom}. Votre validation déclenche les effets visibles côté candidat (statut, notification, compléments).</div> : null}
 

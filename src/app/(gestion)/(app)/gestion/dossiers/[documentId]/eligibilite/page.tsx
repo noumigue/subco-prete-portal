@@ -15,5 +15,5 @@ export default async function EligibilitePage({
   if (!dossier) notFound();
   const role = session?.role === 'ugp' ? 'ugp' : 'instructeur';
 
-  return <GestionEligibilite dossier={dossier} role={role} />;
+  return <GestionEligibilite dossier={dossier} role={role} currentUserId={session?.userId ?? null} />;
 }

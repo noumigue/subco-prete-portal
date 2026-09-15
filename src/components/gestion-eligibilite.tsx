@@ -16,14 +16,24 @@ import { GestionJournal } from '@/components/gestion-journal';
 type Etat = 'conforme' | 'non_conforme';
 type Verdict = 'eligible' | 'rejet' | '';
 
-export function GestionEligibilite({ dossier, role }: { dossier: GestionDossierDetail; role: 'instructeur' | 'ugp' }) {
+export function GestionEligibilite({
+  dossier,
+  role,
+  currentUserId,
+}: {
+  dossier: GestionDossierDetail;
+  role: 'instructeur' | 'ugp';
+  currentUserId: number | null;
+}) {
   const router = useRouter();
   const instr = dossier.instructionEligibilite;
   const criteres = dossier.referentiels.criteres;
 
   const validationMode = role === 'ugp' && instr?.workflow === 'propose';
   const proposedWaiting = role !== 'ugp' && instr?.workflow === 'propose';
-  const editable = !validationMode && !proposedWaiting && dossier.statut?.phase === 'eligibilite';
+  // Meme regle qu'a la completude : hors instructeur en charge (et UGP), consultation seule.
+  const lectureSeule = role !== 'ugp' && dossier.prisEnChargePar?.id !== currentUserId;
+  const editable = !lectureSeule && !validationMode && !proposedWaiting && dossier.statut?.phase === 'eligibilite';
 
   const [etats, setEtats] = useState<Record<string, { etat: Etat; justification?: string }>>(
     () => (instr?.verdictsCriteres as Record<string, { etat: Etat; justification?: string }>) || {},
@@ -107,7 +117,13 @@ export function GestionEligibilite({ dossier, role }: { dossier: GestionDossierD
       </div>
 
       {error ? <div className="gx-flash err">{error}</div> : null}
-      {proposedWaiting ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b></div> : null}
+      {lectureSeule ? (
+        <div className="gx-validation-banner">
+          👁 <b>Consultation seule.</b>{' '}
+          {dossier.prisEnChargePar ? <>Dossier pris en charge par {dossier.prisEnChargePar.nom} : lui seul peut l&apos;instruire.</> : <>Ce dossier n&apos;est pas pris en charge par vous.</>}
+        </div>
+      ) : null}
+      {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b></div> : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
       {validationMode ? <div className="gx-validation-banner">⚖️ <b>Mode validation UGP.</b> Verdict proposé par {instr?.proposePar || dossier.prisEnChargePar?.nom}.</div> : null}
 
