@@ -6,6 +6,8 @@ import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset 
 import { uploadPortalFile } from '@/lib/portal-api';
 import {
   assignerEvaluateur,
+  verifierCompletude,
+  verifierEligibilite,
   assistanceCreer,
   assistanceLiberer,
   assistancePrendre,
@@ -165,6 +167,15 @@ export async function validerCompletudeAction(input: { documentId: string; notif
   return result;
 }
 
+// Verification « a blanc » avant proposition : contradictions verdict / constats, rien d'ecrit.
+export async function verifierCompletudeAction(input: Omit<ProposerCompletudeInput, 'observationsUgp' | 'motifRejet'>) {
+  return verifierCompletude(input.documentId, {
+    verdictsPieces: input.verdictsPieces,
+    verdictGlobal: input.verdictGlobal,
+    complementsProposes: input.complementsProposes,
+  });
+}
+
 export async function renvoyerCompletudeAction(input: { documentId: string; commentaire: string }): Promise<{ ok: boolean; error?: string }> {
   const result = await renvoyerCompletude(input.documentId, input.commentaire);
   revalidatePath('/gestion/dossiers');
@@ -189,6 +200,13 @@ export async function proposerEligibiliteAction(input: ProposerEligibiliteInput)
   });
   revalidatePath('/gestion/dossiers');
   return result;
+}
+
+export async function verifierEligibiliteAction(input: Omit<ProposerEligibiliteInput, 'observationsUgp' | 'motifRejet'>) {
+  return verifierEligibilite(input.documentId, {
+    verdictsCriteres: input.verdictsCriteres,
+    verdictGlobal: input.verdictGlobal,
+  });
 }
 
 export async function validerEligibiliteAction(input: { documentId: string; notificationDecisionFileId?: number }): Promise<{ ok: boolean; error?: string }> {

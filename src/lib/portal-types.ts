@@ -370,6 +370,10 @@ export type PortalResourceDocument = {
 
 // ——— Socle back-office M5 (espace de gestion) ———
 
+// Contradiction entre le verdict propose et les constats de l'instructeur (C1-C5, E1-E2),
+// calculee par le serveur. Signale le dossier a l'UGP comme « a arbitrer », sans rien bloquer.
+export type GestionContradiction = { code: string; message: string };
+
 export type GestionDossierRow = {
   documentId: string;
   numeroDossier: string | null;
@@ -379,6 +383,7 @@ export type GestionDossierRow = {
   statut: { code?: string; phase?: string; groupe?: string; libelle?: string } | null;
   prisEnChargePar: { id: number; nom: string } | null;
   enValidation: boolean;
+  aArbitrer?: GestionContradiction[];
   enValidationPhase: 'completude' | 'eligibilite' | null;
   complementEnCours: boolean;
   complementRecu?: boolean;
@@ -441,6 +446,8 @@ export type GestionActe = { date: string | null; auteur: string; texte: string }
 
 export type GestionDossierDetail = GestionDossierRow & {
   donneesProjet: unknown;
+  contradictionsCompletude?: GestionContradiction[];
+  contradictionsEligibilite?: GestionContradiction[];
   piecesFichiers?: Record<string, GestionPieceFichier>;
   motifDecisionCourt: string | null;
   pdfPermanentUrl: string | null;

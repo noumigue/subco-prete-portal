@@ -6,6 +6,7 @@ import { getPortalJwt } from './portal-auth';
 import type {
   GestionAppel,
   GestionConsolidation,
+  GestionContradiction,
   GestionDecisions,
   GestionDossierDetail,
   GestionDossierRow,
@@ -63,6 +64,21 @@ async function gestionPost(path: string, data?: unknown): Promise<Ok> {
   return { ok: true };
 }
 
+// Verification « a blanc » : renvoie les contradictions sans rien enregistrer.
+async function gestionVerifier(path: string, data: unknown): Promise<{ ok: boolean; error?: string; contradictions: GestionContradiction[] }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.', contradictions: [] };
+  const response = await fetch(`${STRAPI_URL}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { data?: { contradictions?: GestionContradiction[] }; error?: { message?: string } } | null;
+  if (!response.ok) return { ok: false, error: payload?.error?.message || "La verification a echoue.", contradictions: [] };
+  return { ok: true, contradictions: payload?.data?.contradictions || [] };
+}
+
 // ——— Lectures ———
 export async function getGestionDossiers(): Promise<GestionDossierRow[]> {
   const res = await gestionGet<{ data: GestionDossierRow[] }>('/api/gestion/dossiers');
@@ -93,6 +109,10 @@ export const proposerCompletude = (
   documentId: string,
   data: { verdictsPieces: unknown; verdictGlobal: string; complementsProposes?: unknown; motifRejet?: string; observationsUgp?: string },
 ) => gestionPost(`/api/gestion/dossiers/${documentId}/completude/proposer`, data);
+export const verifierCompletude = (
+  documentId: string,
+  data: { verdictsPieces: unknown; verdictGlobal: string; complementsProposes?: unknown },
+) => gestionVerifier(`/api/gestion/dossiers/${documentId}/completude/verifier`, data);
 export const validerCompletude = (documentId: string, notificationDecisionFileId?: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/completude/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});
 export const renvoyerCompletude = (documentId: string, commentaire: string) =>
@@ -102,6 +122,10 @@ export const proposerEligibilite = (
   documentId: string,
   data: { verdictsCriteres: unknown; verdictGlobal: string; motifRejet?: string; observationsUgp?: string },
 ) => gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/proposer`, data);
+export const verifierEligibilite = (
+  documentId: string,
+  data: { verdictsCriteres: unknown; verdictGlobal: string },
+) => gestionVerifier(`/api/gestion/dossiers/${documentId}/eligibilite/verifier`, data);
 export const validerEligibilite = (documentId: string, notificationDecisionFileId?: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});
 export const renvoyerEligibilite = (documentId: string, commentaire: string) =>

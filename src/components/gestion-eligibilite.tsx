@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
-import type { GestionDossierDetail } from '@/lib/portal-types';
+import type { GestionContradiction, GestionDossierDetail } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
   proposerEligibiliteAction,
   renvoyerEligibiliteAction,
   uploadNotificationSigneeAction,
   validerEligibiliteAction,
+  verifierEligibiliteAction,
 } from '@/app/(gestion)/actions';
 import { GestionJournal } from '@/components/gestion-journal';
 
@@ -41,6 +42,8 @@ export function GestionEligibilite({
   const [verdict, setVerdict] = useState<Verdict>(instr?.verdictGlobal || '');
   const [motif, setMotif] = useState(instr?.motifRejet || '');
   const [observations, setObservations] = useState(instr?.observationsUgp || '');
+  const [alerte, setAlerte] = useState<GestionContradiction[] | null>(null);
+  const contradictions = dossier.contradictionsEligibilite || [];
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [commentaire, setCommentaire] = useState('');
   const [pending, setPending] = useState(false);
@@ -49,8 +52,8 @@ export function GestionEligibilite({
 
   const nbNonConforme = Object.values(etats).filter((v) => v?.etat === 'non_conforme').length;
 
-  function setCrit(id: string, etat: Etat) { setEtats((p) => ({ ...p, [id]: { etat, justification: p[id]?.justification } })); }
-  function setJust(id: string, justification: string) { setEtats((p) => ({ ...p, [id]: { etat: p[id]?.etat || 'non_conforme', justification } })); }
+  function setCrit(id: string, etat: Etat) { setAlerte(null); setEtats((p) => ({ ...p, [id]: { etat, justification: p[id]?.justification } })); }
+  function setJust(id: string, justification: string) { setAlerte(null); setEtats((p) => ({ ...p, [id]: { etat: p[id]?.etat || 'non_conforme', justification } })); }
 
   async function onPropose() {
     setError(null);
@@ -62,12 +65,43 @@ export function GestionEligibilite({
         return;
       }
     }
+    if (!observations.trim()) {
+      setError("Les observations à l'attention de l'UGP sont obligatoires (écrivez « RAS » s'il n'y a rien à signaler).");
+      return;
+    }
+    // Verification « a blanc » par le serveur avant d'envoyer (voir la completude).
     setPending(true);
+    const check = await verifierEligibiliteAction({
+      documentId: dossier.documentId,
+      verdictsCriteres: constatsSaisis(),
+      verdictGlobal: verdict as 'eligible' | 'rejet',
+    });
+    if (!check.ok) {
+      setPending(false);
+      setError(check.error || 'Vérification impossible.');
+      return;
+    }
+    if (check.contradictions.length) {
+      setPending(false);
+      setAlerte(check.contradictions);
+      return;
+    }
+    await proposer();
+  }
+
+  function constatsSaisis() {
     const payload: Record<string, { etat: string; justification?: string }> = {};
     for (const [id, v] of Object.entries(etats)) if (v?.etat) payload[id] = { etat: v.etat, justification: v.justification };
+    return payload;
+  }
+
+  async function proposer() {
+    setError(null);
+    setAlerte(null);
+    setPending(true);
     const result = await proposerEligibiliteAction({
       documentId: dossier.documentId,
-      verdictsCriteres: payload,
+      verdictsCriteres: constatsSaisis(),
       verdictGlobal: verdict as 'eligible' | 'rejet',
       ...(verdict === 'rejet' ? { motifRejet: motif } : {}),
       observationsUgp: observations,
@@ -127,6 +161,15 @@ export function GestionEligibilite({
       ) : null}
       {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b></div> : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
+      {instr?.workflow === 'propose' && contradictions.length ? (
+        <div className="gx-flash err">
+          ⚖ <b>À arbitrer.</b> Le verdict proposé contredit les constats de l&apos;instructeur :
+          <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+            {contradictions.map((c, i) => <li key={i}>{c.message}</li>)}
+          </ul>
+          Lisez les observations de l&apos;instructeur ci-dessous avant de valider.
+        </div>
+      ) : null}
       {validationMode ? <div className="gx-validation-banner">⚖️ <b>Mode validation UGP.</b> Verdict proposé par {instr?.proposePar || dossier.prisEnChargePar?.nom}.</div> : null}
 
       <div className="gx-card">
@@ -153,23 +196,37 @@ export function GestionEligibilite({
         <div className="gx-card gx-verdict">
           <div className="gx-block-title">Verdict proposé</div>
           <label className={`gx-vopt${verdict === 'eligible' ? ' on' : ''}`}>
-            <input type="radio" name="ve" checked={verdict === 'eligible'} onChange={() => setVerdict('eligible')} />
+            <input type="radio" name="ve" checked={verdict === 'eligible'} onChange={() => { setVerdict('eligible'); setAlerte(null); }} />
             <span><b>Éligible</b> — le dossier passe à l&apos;évaluation technique et financière.</span>
           </label>
           <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`}>
-            <input type="radio" name="ve" checked={verdict === 'rejet'} onChange={() => setVerdict('rejet')} />
+            <input type="radio" name="ve" checked={verdict === 'rejet'} onChange={() => { setVerdict('rejet'); setAlerte(null); }} />
             <span><b>Rejet motivé</b>{nbNonConforme ? ` — ${nbNonConforme} critère(s) non conforme(s)` : ''}.</span>
           </label>
           {verdict === 'rejet' ? (
             <div className="gx-subform"><label>Motif officiel (synthèse)</label><textarea rows={2} placeholder="Motif communiqué au candidat…" value={motif} onChange={(e) => setMotif(e.target.value)} /></div>
           ) : null}
           <div className="gx-subform" style={{ marginLeft: 0, marginTop: 12 }}>
-            <label>Observations à l&apos;attention de l&apos;UGP <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(facultatif — non transmises au candidat)</span></label>
-            <textarea rows={3} placeholder="Motivez votre choix : critère limite, réserves, éléments qui compensent, points à arbitrer…" value={observations} onChange={(e) => setObservations(e.target.value)} />
+            <label>Observations à l&apos;attention de l&apos;UGP <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — écrivez « RAS » s&apos;il n&apos;y a rien à signaler — non transmises au candidat)</span></label>
+            <textarea rows={3} placeholder="Motivez votre choix : critère limite, réserves, éléments qui compensent, points à arbitrer… ou « RAS »." value={observations} onChange={(e) => { setObservations(e.target.value); setAlerte(null); }} />
           </div>
-          <div style={{ marginTop: 12 }}>
-            <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending} onClick={onPropose}>{pending ? 'Envoi…' : 'Proposer à la validation UGP'}</button>
-          </div>
+          {alerte ? (
+            <div className="gx-flash err" style={{ marginTop: 12 }}>
+              ⚖ <b>Votre verdict contredit vos constats.</b>
+              <ul style={{ margin: '6px 0 6px 18px', padding: 0 }}>
+                {alerte.map((c, i) => <li key={i}>{c.message}</li>)}
+              </ul>
+              Ce dossier sera signalé à l&apos;UGP comme <b>à arbitrer</b>. Votre observation doit expliquer ce choix.
+              <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => setAlerte(null)}>Revenir au dossier</button>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending} onClick={proposer}>{pending ? 'Envoi…' : 'Proposer quand même'}</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 12 }}>
+              <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending || !observations.trim()} onClick={onPropose}>{pending ? 'Vérification…' : 'Proposer à la validation UGP'}</button>
+            </div>
+          )}
         </div>
       ) : null}
 

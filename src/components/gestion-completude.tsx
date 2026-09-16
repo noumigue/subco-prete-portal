@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
-import type { GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
+import type { GestionContradiction, GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
   proposerCompletudeAction,
   renvoyerCompletudeAction,
   uploadNotificationSigneeAction,
   validerCompletudeAction,
+  verifierCompletudeAction,
 } from '@/app/(gestion)/actions';
 import { GestionJournal } from '@/components/gestion-journal';
 
@@ -68,6 +69,10 @@ export function GestionCompletude({
   const [message, setMessage] = useState<string>(instr?.complementsProposes?.message || '');
   const [motif, setMotif] = useState<string>(instr?.motifRejet || '');
   const [observations, setObservations] = useState<string>(instr?.observationsUgp || '');
+  // Contradictions renvoyees par la verification « a blanc » : tant qu'elles sont affichees,
+  // l'instructeur choisit entre revenir au dossier et proposer quand meme.
+  const [alerte, setAlerte] = useState<GestionContradiction[] | null>(null);
+  const contradictions = dossier.contradictionsCompletude || [];
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [commentaire, setCommentaire] = useState('');
   const [pending, setPending] = useState(false);
@@ -78,22 +83,57 @@ export function GestionCompletude({
   const [cplPieces, setCplPieces] = useState<Set<string>>(new Set(instr?.complementsProposes?.pieces || fautives.map((p) => p.id)));
 
   function setPiece(id: string, etat: Etat) {
+    setAlerte(null);
     setEtats((prev) => ({ ...prev, [id]: { etat, note: prev[id]?.note } }));
     if (etat === 'presente') setCplPieces((s) => { const n = new Set(s); n.delete(id); return n; });
     else setCplPieces((s) => new Set(s).add(id));
   }
   function setNote(id: string, note: string) {
+    setAlerte(null);
     setEtats((prev) => ({ ...prev, [id]: { etat: prev[id]?.etat || 'absente', note } }));
   }
 
-  async function onPropose() {
-    setError(null);
-    setPending(true);
+  function constatsSaisis() {
     const payloadPieces: Record<string, { etat: string; note?: string }> = {};
     for (const [id, v] of Object.entries(etats)) if (v?.etat) payloadPieces[id] = { etat: v.etat, note: v.note };
+    return payloadPieces;
+  }
+
+  // 1er temps : verification « a blanc » par le serveur. S'il releve des contradictions,
+  // on les montre et on attend le choix de l'instructeur ; sinon on propose directement.
+  async function onPropose() {
+    setError(null);
+    if (!observations.trim()) {
+      setError("Les observations à l'attention de l'UGP sont obligatoires (écrivez « RAS » s'il n'y a rien à signaler).");
+      return;
+    }
+    setPending(true);
+    const check = await verifierCompletudeAction({
+      documentId: dossier.documentId,
+      verdictsPieces: constatsSaisis(),
+      verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
+      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], echeance, message } } : {}),
+    });
+    if (!check.ok) {
+      setPending(false);
+      setError(check.error || 'Vérification impossible.');
+      return;
+    }
+    if (check.contradictions.length) {
+      setPending(false);
+      setAlerte(check.contradictions);
+      return;
+    }
+    await proposer();
+  }
+
+  async function proposer() {
+    setError(null);
+    setAlerte(null);
+    setPending(true);
     const result = await proposerCompletudeAction({
       documentId: dossier.documentId,
-      verdictsPieces: payloadPieces,
+      verdictsPieces: constatsSaisis(),
       verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
       ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], echeance, message } } : {}),
       ...(verdict === 'rejet' ? { motifRejet: motif } : {}),
@@ -156,6 +196,15 @@ export function GestionCompletude({
       ) : null}
       {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b> Verdict proposé — aucune modification possible avant la décision de l&apos;UGP.</div> : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
+      {instr?.workflow === 'propose' && contradictions.length ? (
+        <div className="gx-flash err">
+          ⚖ <b>À arbitrer.</b> Le verdict proposé contredit les constats de l&apos;instructeur :
+          <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+            {contradictions.map((c, i) => <li key={i}>{c.message}</li>)}
+          </ul>
+          Lisez les observations de l&apos;instructeur ci-dessous avant de valider.
+        </div>
+      ) : null}
       {validationMode ? <div className="gx-validation-banner">⚖️ <b>Mode validation UGP.</b> Verdict proposé par {instr?.proposePar || dossier.prisEnChargePar?.nom}. Votre validation déclenche les effets visibles côté candidat (statut, notification, compléments).</div> : null}
 
       {/* Check-list des pièces */}
@@ -197,18 +246,18 @@ export function GestionCompletude({
         <div className="gx-card gx-verdict">
           <div className="gx-block-title">Verdict proposé</div>
           <label className={`gx-vopt${verdict === 'complet' ? ' on' : ''}`}>
-            <input type="radio" name="vd" checked={verdict === 'complet'} onChange={() => setVerdict('complet')} />
+            <input type="radio" name="vd" checked={verdict === 'complet'} onChange={() => { setVerdict('complet'); setAlerte(null); }} />
             <span><b>Complet</b> — le dossier passe à l&apos;analyse d&apos;éligibilité.</span>
           </label>
           <label className={`gx-vopt${verdict === 'complements' ? ' on' : ''}`}>
-            <input type="radio" name="vd" checked={verdict === 'complements'} onChange={() => setVerdict('complements')} />
+            <input type="radio" name="vd" checked={verdict === 'complements'} onChange={() => { setVerdict('complements'); setAlerte(null); }} />
             <span><b>Demande de compléments</b> — pièces manquantes ou non conformes à fournir.</span>
           </label>
           {verdict === 'complements' ? (
             <div className="gx-subform">
               {fautives.length ? fautives.map((p) => (
                 <label className="gx-pchk" key={p.id}>
-                  <input type="checkbox" checked={cplPieces.has(p.id)} onChange={(e) => setCplPieces((s) => { const n = new Set(s); if (e.target.checked) n.add(p.id); else n.delete(p.id); return n; })} />
+                  <input type="checkbox" checked={cplPieces.has(p.id)} onChange={(e) => { setAlerte(null); setCplPieces((s) => { const n = new Set(s); if (e.target.checked) n.add(p.id); else n.delete(p.id); return n; }); }} />
                   {p.libelle}
                 </label>
               )) : <span style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Marquez d&apos;abord des pièces ✖ / ⚠ ci-dessus.</span>}
@@ -220,21 +269,35 @@ export function GestionCompletude({
             </div>
           ) : null}
           <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`}>
-            <input type="radio" name="vd" checked={verdict === 'rejet'} onChange={() => setVerdict('rejet')} />
+            <input type="radio" name="vd" checked={verdict === 'rejet'} onChange={() => { setVerdict('rejet'); setAlerte(null); }} />
             <span><b>Rejet</b> — dossier écarté à la complétude (motif obligatoire).</span>
           </label>
           {verdict === 'rejet' ? (
             <div className="gx-subform"><label>Motif</label><textarea rows={2} placeholder="Motif officiel…" value={motif} onChange={(e) => setMotif(e.target.value)} /></div>
           ) : null}
           <div className="gx-subform" style={{ marginLeft: 0, marginTop: 12 }}>
-            <label>Observations à l&apos;attention de l&apos;UGP <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(facultatif — non transmises au candidat)</span></label>
-            <textarea rows={3} placeholder="Motivez votre choix : pièces partiellement conformes, éléments qui compensent, points à arbitrer…" value={observations} onChange={(e) => setObservations(e.target.value)} />
+            <label>Observations à l&apos;attention de l&apos;UGP <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — écrivez « RAS » s&apos;il n&apos;y a rien à signaler — non transmises au candidat)</span></label>
+            <textarea rows={3} placeholder="Motivez votre choix : pièces partiellement conformes, éléments qui compensent, points à arbitrer… ou « RAS »." value={observations} onChange={(e) => { setObservations(e.target.value); setAlerte(null); }} />
           </div>
-          <div style={{ marginTop: 12 }}>
-            <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending} onClick={onPropose}>
-              {pending ? 'Envoi…' : 'Proposer à la validation UGP'}
-            </button>
-          </div>
+          {alerte ? (
+            <div className="gx-flash err" style={{ marginTop: 12 }}>
+              ⚖ <b>Votre verdict contredit vos constats.</b>
+              <ul style={{ margin: '6px 0 6px 18px', padding: 0 }}>
+                {alerte.map((c, i) => <li key={i}>{c.message}</li>)}
+              </ul>
+              Ce dossier sera signalé à l&apos;UGP comme <b>à arbitrer</b>. Votre observation doit expliquer ce choix.
+              <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => setAlerte(null)}>Revenir au dossier</button>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending} onClick={proposer}>{pending ? 'Envoi…' : 'Proposer quand même'}</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 12 }}>
+              <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending || !observations.trim()} onClick={onPropose}>
+                {pending ? 'Vérification…' : 'Proposer à la validation UGP'}
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
 

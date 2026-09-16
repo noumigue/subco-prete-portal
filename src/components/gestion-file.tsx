@@ -56,6 +56,8 @@ export function GestionFile({
 }) {
   const [tab, setTab] = useState<Tab>('completude');
   const [onlyMine, setOnlyMine] = useState(false);
+  // UGP : ne garder que les dossiers dont le verdict propose contredit les constats.
+  const [onlyArbitrer, setOnlyArbitrer] = useState(false);
   // Filtre instructeur « Mes dossiers » : non memorise, il repart decoche a chaque visite.
   const [mesDossiers, setMesDossiers] = useState(false);
 
@@ -69,6 +71,7 @@ export function GestionFile({
 
   let items = visibles.filter((d) => tabOf(d) === tab);
   if (role === 'ugp' && onlyMine) items = items.filter((d) => d.enValidation);
+  if (role === 'ugp' && onlyArbitrer) items = items.filter((d) => (d.aArbitrer?.length || 0) > 0);
 
   return (
     <>
@@ -84,6 +87,12 @@ export function GestionFile({
           <label className="gx-chk">
             <input type="checkbox" style={{ width: 'auto' }} checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
             En attente de ma validation
+          </label>
+        ) : null}
+        {role === 'ugp' ? (
+          <label className="gx-chk">
+            <input type="checkbox" style={{ width: 'auto' }} checked={onlyArbitrer} onChange={(e) => setOnlyArbitrer(e.target.checked)} />
+            À arbitrer seulement
           </label>
         ) : (
           <label className="gx-chk">
@@ -102,7 +111,7 @@ export function GestionFile({
       </div>
 
       {items.length === 0 ? (
-        <div className="gx-empty">{role === 'instructeur' && mesDossiers ? 'Aucun de vos dossiers à cette étape.' : 'Aucun dossier à cette étape.'}</div>
+        <div className="gx-empty">{role === 'instructeur' && mesDossiers ? 'Aucun de vos dossiers à cette étape.' : role === 'ugp' && onlyArbitrer ? 'Aucun dossier à arbitrer à cette étape.' : 'Aucun dossier à cette étape.'}</div>
       ) : (
         items.map((d) => {
           const phase = tabOf(d);
@@ -120,6 +129,11 @@ export function GestionFile({
                 </div>
               </div>
               <Pill d={d} />
+              {role === 'ugp' && d.aArbitrer?.length ? (
+                <span className="gx-pill gx-pill-rej" title={d.aArbitrer.map((x) => x.message).join('\n')}>
+                  ⚖ À arbitrer{d.aArbitrer.length > 1 ? ` (${d.aArbitrer.length})` : ''}
+                </span>
+              ) : null}
               <div className="gx-actions">
                 {phase === 'recu' && role === 'instructeur' ? (
                   <form action={priseEnChargeAction}>
