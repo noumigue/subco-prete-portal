@@ -413,6 +413,8 @@ export type GestionInstructionCompletude = {
   verdictGlobal: 'complet' | 'complements' | 'rejet' | null;
   complementsProposes: { pieces?: string[]; echeance?: string; message?: string } | null;
   motifRejet: string | null;
+  // Observations internes du Cabinet a l'attention de l'UGP (jamais transmises au candidat).
+  observationsUgp: string | null;
   workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye';
   proposePar: string | null;
   commentaireRenvoi: string | null;
@@ -423,6 +425,7 @@ export type GestionInstructionEligibilite = {
   verdictsCriteres: Record<string, { etat: 'conforme' | 'non_conforme'; justification?: string }>;
   verdictGlobal: 'eligible' | 'rejet' | null;
   motifRejet: string | null;
+  observationsUgp: string | null;
   workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye';
   proposePar: string | null;
   commentaireRenvoi: string | null;

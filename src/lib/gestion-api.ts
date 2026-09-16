@@ -91,7 +91,7 @@ export const reassigner = (documentId: string) => gestionPost(`/api/gestion/doss
 
 export const proposerCompletude = (
   documentId: string,
-  data: { verdictsPieces: unknown; verdictGlobal: string; complementsProposes?: unknown; motifRejet?: string },
+  data: { verdictsPieces: unknown; verdictGlobal: string; complementsProposes?: unknown; motifRejet?: string; observationsUgp?: string },
 ) => gestionPost(`/api/gestion/dossiers/${documentId}/completude/proposer`, data);
 export const validerCompletude = (documentId: string, notificationDecisionFileId?: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/completude/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});
@@ -100,7 +100,7 @@ export const renvoyerCompletude = (documentId: string, commentaire: string) =>
 
 export const proposerEligibilite = (
   documentId: string,
-  data: { verdictsCriteres: unknown; verdictGlobal: string; motifRejet?: string },
+  data: { verdictsCriteres: unknown; verdictGlobal: string; motifRejet?: string; observationsUgp?: string },
 ) => gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/proposer`, data);
 export const validerEligibilite = (documentId: string, notificationDecisionFileId?: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});

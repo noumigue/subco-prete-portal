@@ -144,6 +144,7 @@ export type ProposerCompletudeInput = {
   verdictGlobal: 'complet' | 'complements' | 'rejet';
   complementsProposes?: { pieces: string[]; echeance?: string; message?: string };
   motifRejet?: string;
+  observationsUgp?: string;
 };
 
 export async function proposerCompletudeAction(input: ProposerCompletudeInput): Promise<{ ok: boolean; error?: string }> {
@@ -152,6 +153,7 @@ export async function proposerCompletudeAction(input: ProposerCompletudeInput): 
     verdictGlobal: input.verdictGlobal,
     complementsProposes: input.complementsProposes,
     motifRejet: input.motifRejet,
+    observationsUgp: input.observationsUgp,
   });
   revalidatePath('/gestion/dossiers');
   return result;
@@ -175,6 +177,7 @@ export type ProposerEligibiliteInput = {
   verdictsCriteres: Record<string, { etat: string; justification?: string }>;
   verdictGlobal: 'eligible' | 'rejet';
   motifRejet?: string;
+  observationsUgp?: string;
 };
 
 export async function proposerEligibiliteAction(input: ProposerEligibiliteInput): Promise<{ ok: boolean; error?: string }> {
@@ -182,6 +185,7 @@ export async function proposerEligibiliteAction(input: ProposerEligibiliteInput)
     verdictsCriteres: input.verdictsCriteres,
     verdictGlobal: input.verdictGlobal,
     motifRejet: input.motifRejet,
+    observationsUgp: input.observationsUgp,
   });
   revalidatePath('/gestion/dossiers');
   return result;

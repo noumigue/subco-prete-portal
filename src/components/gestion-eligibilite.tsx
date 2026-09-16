@@ -40,6 +40,7 @@ export function GestionEligibilite({
   );
   const [verdict, setVerdict] = useState<Verdict>(instr?.verdictGlobal || '');
   const [motif, setMotif] = useState(instr?.motifRejet || '');
+  const [observations, setObservations] = useState(instr?.observationsUgp || '');
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [commentaire, setCommentaire] = useState('');
   const [pending, setPending] = useState(false);
@@ -69,6 +70,7 @@ export function GestionEligibilite({
       verdictsCriteres: payload,
       verdictGlobal: verdict as 'eligible' | 'rejet',
       ...(verdict === 'rejet' ? { motifRejet: motif } : {}),
+      observationsUgp: observations,
     });
     setPending(false);
     if (result.ok) router.push('/gestion/dossiers?propose=1');
@@ -161,6 +163,10 @@ export function GestionEligibilite({
           {verdict === 'rejet' ? (
             <div className="gx-subform"><label>Motif officiel (synthèse)</label><textarea rows={2} placeholder="Motif communiqué au candidat…" value={motif} onChange={(e) => setMotif(e.target.value)} /></div>
           ) : null}
+          <div className="gx-subform" style={{ marginLeft: 0, marginTop: 12 }}>
+            <label>Observations à l&apos;attention de l&apos;UGP <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(facultatif — non transmises au candidat)</span></label>
+            <textarea rows={3} placeholder="Motivez votre choix : critère limite, réserves, éléments qui compensent, points à arbitrer…" value={observations} onChange={(e) => setObservations(e.target.value)} />
+          </div>
           <div style={{ marginTop: 12 }}>
             <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending} onClick={onPropose}>{pending ? 'Envoi…' : 'Proposer à la validation UGP'}</button>
           </div>
@@ -174,6 +180,12 @@ export function GestionEligibilite({
             <b>{instr.verdictGlobal === 'eligible' ? 'Éligible — passage à l’évaluation' : 'Rejet motivé'}</b>
             {instr.verdictGlobal === 'rejet' ? <><br />Motif : {instr.motifRejet || '—'}</> : null}
           </div>
+          {instr.observationsUgp ? (
+            <div className="gx-recap" style={{ marginTop: 10 }}>
+              <b>Observations de l&apos;instructeur à l&apos;attention de l&apos;UGP</b>
+              <div style={{ whiteSpace: 'pre-wrap', marginTop: 4 }}>{instr.observationsUgp}</div>
+            </div>
+          ) : null}
           {validationMode ? (
             <>
               {instr.verdictGlobal === 'rejet' ? (
@@ -185,9 +197,9 @@ export function GestionEligibilite({
               </div>
               {renvoiOpen ? (
                 <div className="gx-subform" style={{ marginLeft: 0 }}>
-                  <label>Commentaire de renvoi</label>
+                  <label>Commentaire de renvoi <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — conservé au journal du dossier)</span></label>
                   <textarea rows={2} value={commentaire} onChange={(e) => setCommentaire(e.target.value)} placeholder="Ce qui doit être revu…" />
-                  <div style={{ marginTop: 8 }}><button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={onRenvoyer}>Confirmer le renvoi</button></div>
+                  <div style={{ marginTop: 8 }}><button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending || !commentaire.trim()} onClick={onRenvoyer}>Confirmer le renvoi</button></div>
                 </div>
               ) : null}
             </>
