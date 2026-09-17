@@ -25,9 +25,20 @@ function tabOf(d: GestionDossierRow): Tab {
   return 'recu';
 }
 
+// Seuil au-dela duquel l'attente est signalee. Le delai du candidat ne court plus pendant ce
+// temps (il part de la validation), mais chaque jour d'attente retarde sa reponse.
+const ATTENTE_SEUIL = 2;
+
 function Pill({ d }: { d: GestionDossierRow }) {
   if (tabOf(d) === 'clos') return <span className="gx-pill gx-pill-rej">{d.statutClos || 'Clos'}</span>;
-  if (d.enValidation) return <span className="gx-pill gx-pill-val">⏳ À valider (UGP)</span>;
+  if (d.enValidation) {
+    const j = d.enAttenteDepuisJours ?? null;
+    return (
+      <span className={`gx-pill ${j != null && j >= ATTENTE_SEUIL ? 'gx-pill-rej' : 'gx-pill-val'}`}>
+        ⏳ À valider (UGP){j != null ? ` · en attente depuis ${j === 0 ? "aujourd'hui" : `${j} j`}` : ''}
+      </span>
+    );
+  }
   // Placé HAUT : c'est un signal actionnable — le candidat modifie son dossier, ne le prenez
   // pas en charge maintenant. La version déposée reste lisible et instruisible, mais elle
   // peut être remplacée d'un instant à l'autre.
@@ -58,6 +69,8 @@ export function GestionFile({
   const [onlyMine, setOnlyMine] = useState(false);
   // UGP : ne garder que les dossiers dont le verdict propose contredit les constats.
   const [onlyArbitrer, setOnlyArbitrer] = useState(false);
+  // UGP : ne garder que les propositions qui attendent depuis au moins ATTENTE_SEUIL jours.
+  const [onlyAttente, setOnlyAttente] = useState(false);
   // Filtre instructeur « Mes dossiers » : non memorise, il repart decoche a chaque visite.
   const [mesDossiers, setMesDossiers] = useState(false);
 
@@ -72,6 +85,7 @@ export function GestionFile({
   let items = visibles.filter((d) => tabOf(d) === tab);
   if (role === 'ugp' && onlyMine) items = items.filter((d) => d.enValidation);
   if (role === 'ugp' && onlyArbitrer) items = items.filter((d) => (d.aArbitrer?.length || 0) > 0);
+  if (role === 'ugp' && onlyAttente) items = items.filter((d) => d.enValidation && (d.enAttenteDepuisJours ?? 0) >= ATTENTE_SEUIL);
 
   return (
     <>
@@ -94,6 +108,12 @@ export function GestionFile({
             <input type="checkbox" style={{ width: 'auto' }} checked={onlyArbitrer} onChange={(e) => setOnlyArbitrer(e.target.checked)} />
             À arbitrer seulement
           </label>
+        ) : null}
+        {role === 'ugp' ? (
+          <label className="gx-chk">
+            <input type="checkbox" style={{ width: 'auto' }} checked={onlyAttente} onChange={(e) => setOnlyAttente(e.target.checked)} />
+            En attente depuis {ATTENTE_SEUIL} j et plus
+          </label>
         ) : (
           <label className="gx-chk">
             <input type="checkbox" style={{ width: 'auto' }} checked={mesDossiers} onChange={(e) => setMesDossiers(e.target.checked)} />
@@ -111,7 +131,7 @@ export function GestionFile({
       </div>
 
       {items.length === 0 ? (
-        <div className="gx-empty">{role === 'instructeur' && mesDossiers ? 'Aucun de vos dossiers à cette étape.' : role === 'ugp' && onlyArbitrer ? 'Aucun dossier à arbitrer à cette étape.' : 'Aucun dossier à cette étape.'}</div>
+        <div className="gx-empty">{role === 'instructeur' && mesDossiers ? 'Aucun de vos dossiers à cette étape.' : role === 'ugp' && onlyArbitrer ? 'Aucun dossier à arbitrer à cette étape.' : role === 'ugp' && onlyAttente ? `Aucune proposition en attente depuis ${ATTENTE_SEUIL} jours ou plus à cette étape.` : 'Aucun dossier à cette étape.'}</div>
       ) : (
         items.map((d) => {
           const phase = tabOf(d);

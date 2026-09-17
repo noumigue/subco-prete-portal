@@ -113,8 +113,14 @@ export const verifierCompletude = (
   documentId: string,
   data: { verdictsPieces: unknown; verdictGlobal: string; complementsProposes?: unknown },
 ) => gestionVerifier(`/api/gestion/dossiers/${documentId}/completude/verifier`, data);
-export const validerCompletude = (documentId: string, notificationDecisionFileId?: number) =>
-  gestionPost(`/api/gestion/dossiers/${documentId}/completude/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});
+export const validerCompletude = (documentId: string, data: { notificationDecisionFileId?: number; echeance?: string } = {}) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/completude/valider`, {
+    ...(data.notificationDecisionFileId ? { notificationDecisionFileId: data.notificationDecisionFileId } : {}),
+    ...(data.echeance ? { echeance: data.echeance } : {}),
+  });
+// Prolongation d'une echeance deja notifiee au candidat (UGP, motivee).
+export const prolongerComplements = (documentId: string, data: { jours: number; motif: string }) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/complements/prolonger`, data);
 export const renvoyerCompletude = (documentId: string, commentaire: string) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/completude/renvoyer`, { commentaire });
 

@@ -384,6 +384,8 @@ export type GestionDossierRow = {
   prisEnChargePar: { id: number; nom: string } | null;
   enValidation: boolean;
   aArbitrer?: GestionContradiction[];
+  // Jours ecoules depuis la proposition, pour les dossiers en attente de validation UGP.
+  enAttenteDepuisJours?: number | null;
   enValidationPhase: 'completude' | 'eligibilite' | null;
   complementEnCours: boolean;
   complementRecu?: boolean;
@@ -406,6 +408,8 @@ export type GestionComplement = {
   documentId: string;
   pieceDemandee: string;
   echeance: string | null;
+  // Delai accorde au candidat, en jours ouvres (null sur les demandes anterieures au calcul).
+  delaiJours?: number | null;
   statut: 'demande' | 'fourni';
   origine?: 'ugp' | 'candidat';
   fichierUrl: string | null;
@@ -416,7 +420,10 @@ export type GestionInstructionCompletude = {
   documentId: string;
   verdictsPieces: Record<string, { etat: 'presente' | 'absente' | 'non_conforme'; note?: string }>;
   verdictGlobal: 'complet' | 'complements' | 'rejet' | null;
-  complementsProposes: { pieces?: string[]; echeance?: string; message?: string } | null;
+  // Le cabinet propose une DUREE (`delaiJours`, en jours ouvres) : l'echeance reelle est
+  // calculee a la validation UGP. `echeanceIndicative` n'est que la date qu'avait sous les
+  // yeux l'instructeur ; `echeance` reste lue pour les propositions d'avant ce changement.
+  complementsProposes: { pieces?: string[]; delaiJours?: number; echeanceIndicative?: string; echeance?: string; message?: string } | null;
   motifRejet: string | null;
   // Observations internes du Cabinet a l'attention de l'UGP (jamais transmises au candidat).
   observationsUgp: string | null;
@@ -440,6 +447,7 @@ export type GestionReferentiels = {
   typePieces: { id: string; libelle: string; groupe: string; exigence: string }[];
   criteres: { id: string; libelle: string; refManuel: string | null }[];
   delaiComplementsJours: number;
+  delaiComplementsMinimumJours?: number;
 };
 
 export type GestionActe = { date: string | null; auteur: string; texte: string };
@@ -447,6 +455,8 @@ export type GestionActe = { date: string | null; auteur: string; texte: string }
 export type GestionDossierDetail = GestionDossierRow & {
   donneesProjet: unknown;
   contradictionsCompletude?: GestionContradiction[];
+  // Echeance que porterait la demande si l'UGP validait aujourd'hui.
+  echeancePrevue?: string | null;
   contradictionsEligibilite?: GestionContradiction[];
   piecesFichiers?: Record<string, GestionPieceFichier>;
   motifDecisionCourt: string | null;

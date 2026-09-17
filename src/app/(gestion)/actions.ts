@@ -47,6 +47,7 @@ import {
   mesureValider,
   ouvrirAppel,
   priseEnCharge,
+  prolongerComplements,
   proposerCompletude,
   proposerEligibilite,
   publierDecisions,
@@ -144,7 +145,7 @@ export type ProposerCompletudeInput = {
   documentId: string;
   verdictsPieces: Record<string, { etat: string; note?: string }>;
   verdictGlobal: 'complet' | 'complements' | 'rejet';
-  complementsProposes?: { pieces: string[]; echeance?: string; message?: string };
+  complementsProposes?: { pieces: string[]; delaiJours?: number; message?: string };
   motifRejet?: string;
   observationsUgp?: string;
 };
@@ -161,8 +162,16 @@ export async function proposerCompletudeAction(input: ProposerCompletudeInput): 
   return result;
 }
 
-export async function validerCompletudeAction(input: { documentId: string; notificationDecisionFileId?: number }): Promise<{ ok: boolean; error?: string }> {
-  const result = await validerCompletude(input.documentId, input.notificationDecisionFileId);
+export async function validerCompletudeAction(input: { documentId: string; notificationDecisionFileId?: number; echeance?: string }): Promise<{ ok: boolean; error?: string }> {
+  const result = await validerCompletude(input.documentId, { notificationDecisionFileId: input.notificationDecisionFileId, echeance: input.echeance });
+  revalidatePath('/gestion/dossiers');
+  return result;
+}
+
+// Prolonge l'echeance des pieces deja reclamees au candidat (UGP) : motif obligatoire,
+// journalise et notifie. Sert quand la demande part en retard ou n'a pas pu etre recue.
+export async function prolongerComplementsAction(input: { documentId: string; jours: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const result = await prolongerComplements(input.documentId, { jours: input.jours, motif: input.motif });
   revalidatePath('/gestion/dossiers');
   return result;
 }

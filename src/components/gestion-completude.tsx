@@ -6,6 +6,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { GestionContradiction, GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
+  prolongerComplementsAction,
   proposerCompletudeAction,
   renvoyerCompletudeAction,
   uploadNotificationSigneeAction,
@@ -18,10 +19,23 @@ const GROUP_LABEL: Record<string, string> = { administratif: 'Administratives', 
 type Etat = 'presente' | 'absente' | 'non_conforme';
 type Verdict = 'complet' | 'complements' | 'rejet' | '';
 
-function addDays(days: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + (days || 10));
+// Apercu de l'echeance cote ecran. Le serveur refait le calcul a la validation et fait foi :
+// ce qui est affiche ici dit « si l'UGP validait aujourd'hui ». Miroir de utils/portal-delais.
+function ajouterJoursOuvres(depart: Date, jours: number) {
+  const d = new Date(Date.UTC(depart.getFullYear(), depart.getMonth(), depart.getDate(), 12));
+  let reste = Math.max(0, Math.floor(jours || 0));
+  while (reste > 0) {
+    d.setUTCDate(d.getUTCDate() + 1);
+    const n = d.getUTCDay();
+    if (n >= 1 && n <= 5) reste -= 1;
+  }
   return d.toISOString().slice(0, 10);
+}
+
+function jourLisible(jour: string | null | undefined) {
+  if (!jour) return '—';
+  const [a, m, j] = String(jour).slice(0, 10).split('-');
+  return a && m && j ? `${j}/${m}/${a}` : String(jour);
 }
 
 export function GestionCompletude({
@@ -65,7 +79,15 @@ export function GestionCompletude({
     () => (instr?.verdictsPieces as Record<string, { etat: Etat; note?: string }>) || {},
   );
   const [verdict, setVerdict] = useState<Verdict>(instr?.verdictGlobal || '');
-  const [echeance, setEcheance] = useState<string>(instr?.complementsProposes?.echeance || addDays(dossier.referentiels.delaiComplementsJours));
+  const delaiMin = dossier.referentiels.delaiComplementsMinimumJours ?? 2;
+  const [delaiJours, setDelaiJours] = useState<number>(
+    instr?.complementsProposes?.delaiJours || dossier.referentiels.delaiComplementsJours || 3,
+  );
+  // Echeance telle que l'UGP la fixera en validant : proposee par le serveur, modifiable ici.
+  const [echeanceValidation, setEcheanceValidation] = useState<string>(dossier.echeancePrevue || '');
+  const [prolongOpen, setProlongOpen] = useState(false);
+  const [prolongJours, setProlongJours] = useState<number>(dossier.referentiels.delaiComplementsJours || 3);
+  const [prolongMotif, setProlongMotif] = useState('');
   const [message, setMessage] = useState<string>(instr?.complementsProposes?.message || '');
   const [motif, setMotif] = useState<string>(instr?.motifRejet || '');
   const [observations, setObservations] = useState<string>(instr?.observationsUgp || '');
@@ -112,7 +134,7 @@ export function GestionCompletude({
       documentId: dossier.documentId,
       verdictsPieces: constatsSaisis(),
       verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
-      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], echeance, message } } : {}),
+      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], delaiJours, message } } : {}),
     });
     if (!check.ok) {
       setPending(false);
@@ -135,7 +157,7 @@ export function GestionCompletude({
       documentId: dossier.documentId,
       verdictsPieces: constatsSaisis(),
       verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
-      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], echeance, message } } : {}),
+      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], delaiJours, message } } : {}),
       ...(verdict === 'rejet' ? { motifRejet: motif } : {}),
       observationsUgp: observations,
     });
@@ -155,10 +177,23 @@ export function GestionCompletude({
       const uploaded = await uploadNotificationSigneeAction(fd);
       fileId = uploaded?.id;
     }
-    const result = await validerCompletudeAction({ documentId: dossier.documentId, notificationDecisionFileId: fileId });
+    const result = await validerCompletudeAction({
+      documentId: dossier.documentId,
+      notificationDecisionFileId: fileId,
+      ...(instr?.verdictGlobal === 'complements' && echeanceValidation ? { echeance: echeanceValidation } : {}),
+    });
     setPending(false);
     if (result.ok) router.push('/gestion/dossiers?valide=1');
     else setError(result.error || 'Validation refusée.');
+  }
+
+  async function onProlonger() {
+    setError(null);
+    setPending(true);
+    const result = await prolongerComplementsAction({ documentId: dossier.documentId, jours: prolongJours, motif: prolongMotif });
+    setPending(false);
+    if (result.ok) { setProlongOpen(false); setProlongMotif(''); router.refresh(); }
+    else setError(result.error || 'Prolongation refusée.');
   }
 
   async function onRenvoyer() {
@@ -262,10 +297,18 @@ export function GestionCompletude({
                 </label>
               )) : <span style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Marquez d&apos;abord des pièces ✖ / ⚠ ci-dessus.</span>}
               <div className="gx-inline2" style={{ marginTop: 9 }}>
-                <div><label>Échéance</label><input type="date" value={echeance} onChange={(e) => setEcheance(e.target.value)} /></div>
+                <div>
+                  <label>Délai accordé au candidat (jours ouvrés)</label>
+                  <input type="number" min={delaiMin} step={1} value={delaiJours}
+                    onChange={(e) => { setAlerte(null); setDelaiJours(Math.max(delaiMin, Math.floor(Number(e.target.value) || 0))); }} />
+                </div>
                 <div><label>Message au candidat</label><input type="text" placeholder="Consigne courte…" value={message} onChange={(e) => setMessage(e.target.value)} /></div>
               </div>
-              <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '8px 0 0' }}>Délai par défaut issu du référentiel (à confirmer UGP — Annexe 11).</p>
+              <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '8px 0 0' }}>
+                Le délai court à partir de la <b>validation par l&apos;UGP</b>, au moment où le candidat est prévenu : soit
+                jusqu&apos;au <b>{jourLisible(ajouterJoursOuvres(new Date(), delaiJours))}</b> si l&apos;UGP validait aujourd&apos;hui.
+                Minimum {delaiMin} jours ouvrés · valeur par défaut réglée dans le référentiel.
+              </p>
             </div>
           ) : null}
           <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`}>
@@ -308,7 +351,13 @@ export function GestionCompletude({
           <div className="gx-recap">
             <b>{instr.verdictGlobal === 'complet' ? 'Complet — passage à l’éligibilité' : instr.verdictGlobal === 'complements' ? 'Demande de compléments' : 'Rejet (complétude)'}</b>
             {instr.verdictGlobal === 'complements' ? (
-              <><br />Pièces : {(instr.complementsProposes?.pieces || []).map((id) => pieceLabel[id]).filter(Boolean).join(' · ') || '—'}<br />Échéance : {instr.complementsProposes?.echeance || '—'} · Message : {instr.complementsProposes?.message || '—'}</>
+              <>
+                <br />Pièces : {(instr.complementsProposes?.pieces || []).map((id) => pieceLabel[id]).filter(Boolean).join(' · ') || '—'}
+                <br />Délai proposé : {instr.complementsProposes?.delaiJours
+                  ? `${instr.complementsProposes.delaiJours} jours ouvrés`
+                  : `non précisé — délai par défaut appliqué (${dossier.referentiels.delaiComplementsJours} jours ouvrés)`}
+                {' · '}Message : {instr.complementsProposes?.message || '—'}
+              </>
             ) : null}
             {instr.verdictGlobal === 'rejet' ? <><br />Motif : {instr.motifRejet || '—'}</> : null}
           </div>
@@ -320,6 +369,18 @@ export function GestionCompletude({
           ) : null}
           {validationMode ? (
             <>
+              {instr.verdictGlobal === 'complements' ? (
+                <div className="gx-subform" style={{ marginLeft: 0, marginTop: 12 }}>
+                  <label>Échéance envoyée au candidat</label>
+                  <input type="date" value={echeanceValidation} onChange={(e) => setEcheanceValidation(e.target.value)} />
+                  <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '6px 0 0' }}>
+                    Calculée à partir d&apos;aujourd&apos;hui et du délai proposé
+                    {instr.complementsProposes?.delaiJours ? ` (${instr.complementsProposes.delaiJours} jours ouvrés)` : ''} :
+                    le délai du candidat part de <b>votre validation</b>, pas de la date de la proposition. Vous pouvez la modifier
+                    (au moins {delaiMin} jours ouvrés).
+                  </p>
+                </div>
+              ) : null}
               {instr.verdictGlobal === 'rejet' ? (
                 <div style={{ marginTop: 12 }}><label>Notification de décision signée (optionnel)</label><input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.heic,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" /></div>
               ) : null}
@@ -374,7 +435,7 @@ export function GestionCompletude({
                 <span className={`gx-pill ${c.statut === 'fourni' ? 'gx-pill-ok' : 'gx-pill-val'}`}>{c.statut === 'fourni' ? 'Reçu' : 'En attente'}</span>
               )}
               <span className="gx-cpl-piece">{c.pieceDemandee}</span>
-              <span className="gx-cpl-ech">{c.origine === 'candidat' ? 'Ajout spontané' : `Échéance : ${c.echeance || '—'}`}</span>
+              <span className="gx-cpl-ech">{c.origine === 'candidat' ? 'Ajout spontané' : `Échéance : ${jourLisible(c.echeance)}`}</span>
               {c.statut === 'fourni' && c.fichierUrl ? (
                 <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(c.fichierUrl) || '#'} target="_blank" rel="noopener noreferrer">⤓ Pièce déposée</a>
               ) : (
@@ -382,6 +443,30 @@ export function GestionCompletude({
               )}
             </div>
           ))}
+          {role === 'ugp' && dossier.complements.some((c) => c.statut === 'demande' && c.origine !== 'candidat') ? (
+            <div style={{ marginTop: 10 }}>
+              {prolongOpen ? (
+                <div className="gx-subform" style={{ marginLeft: 0 }}>
+                  <label>Nouveau délai (jours ouvrés, à partir d&apos;aujourd&apos;hui)</label>
+                  <input type="number" min={delaiMin} step={1} value={prolongJours}
+                    onChange={(e) => setProlongJours(Math.max(delaiMin, Math.floor(Number(e.target.value) || 0)))} />
+                  <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '6px 0 0' }}>
+                    Nouvelle échéance : <b>{jourLisible(ajouterJoursOuvres(new Date(), prolongJours))}</b> — le candidat en est informé par e-mail.
+                  </p>
+                  <label style={{ marginTop: 8 }}>Motif <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — inscrit au journal et repris dans l&apos;e-mail)</span></label>
+                  <textarea rows={2} value={prolongMotif} onChange={(e) => setProlongMotif(e.target.value)} placeholder="Ex. : demande validée après la date initialement prévue." />
+                  <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending || !prolongMotif.trim()} onClick={onProlonger}>
+                      {pending ? 'Envoi…' : 'Prolonger & prévenir le candidat'}
+                    </button>
+                    <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => setProlongOpen(false)}>Annuler</button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" onClick={() => setProlongOpen(true)}>Prolonger l&apos;échéance</button>
+              )}
+            </div>
+          ) : null}
           <p className="gx-m7-hint">Dépôt en <b>ajout</b> (le dossier soumis figé n&apos;est jamais altéré). À réception, ré-examinez la complétude.
             Les lignes « Ajoutée par le candidat » n&apos;ont été réclamées par personne : l&apos;opérateur a complété son dossier de lui-même avant la clôture.</p>
         </div>
