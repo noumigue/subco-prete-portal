@@ -379,10 +379,17 @@ export type GestionDossierRow = {
   numeroDossier: string | null;
   titreProjet: string;
   dateDepot: string | null;
-  organisation: { nom: string; filiere: string | null } | null;
+  organisation: { nom: string; filiere: string | null; province?: string | null } | null;
   statut: { code?: string; phase?: string; groupe?: string; libelle?: string } | null;
   prisEnChargePar: { id: number; nom: string } | null;
   enValidation: boolean;
+  // Instruction de l'etape en cours (completude ou eligibilite) : etat du travail et, quand la
+  // proposition attend l'UGP, le verdict propose. Nulle aux autres etapes.
+  instruction?: { workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye' | null; verdictPropose: string | null };
+  // Echeance la plus proche des pieces reclamees au candidat et pas encore recues.
+  echeanceComplement?: string | null;
+  // Libelles des criteres d'eligibilite constates non conformes.
+  criteresNonConformes?: string[];
   aArbitrer?: GestionContradiction[];
   // Jours ecoules depuis la proposition, pour les dossiers en attente de validation UGP.
   enAttenteDepuisJours?: number | null;

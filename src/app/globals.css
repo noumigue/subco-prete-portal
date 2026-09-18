@@ -7299,6 +7299,25 @@ a.docs-item:hover .docs-item-dl {
 .gx-filters select { width: auto; padding: 7px 10px; font-size: 13px; }
 .gx-chk { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; }
 
+/* ---- zone de filtres de la file (une question par ligne) ---- */
+.gx-fz { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); padding: 12px 14px; margin-bottom: 14px; display: grid; gap: 10px; }
+.gx-fz-search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--sage-border); border-radius: 8px; padding: 0 10px; background: #fff; }
+.gx-fz-search input { border: 0; outline: 0; padding: 8px 0; font-size: 13px; width: 100%; background: transparent; font-family: inherit; }
+.gx-fz-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.gx-fz-lbl { font-size: 12px; color: var(--muted-warm); min-width: 132px; }
+.gx-fz-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--sage-border); background: #fff; color: var(--ink-warm); cursor: pointer; font-family: inherit; }
+.gx-fz-chip .gx-n { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 0 6px; background: var(--sage-tile); color: var(--muted-warm); }
+.gx-fz-chip.on { background: var(--pine); border-color: var(--pine); color: #fff; }
+.gx-fz-chip.on .gx-n { background: rgba(255,255,255,.22); color: #fff; }
+.gx-fz-chip:disabled { opacity: .45; cursor: default; }
+.gx-fz-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.gx-fz-dot.ok { background: var(--emerald); } .gx-fz-dot.warn { background: var(--gold); } .gx-fz-dot.bad { background: var(--gx-red-tx); }
+.gx-fz-dot.info { background: #378add; } .gx-fz-dot.idle { background: #9aa6a0; }
+.gx-fz-more select { width: auto; padding: 5px 8px; font-size: 12.5px; }
+.gx-fz-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line-warm); padding-top: 9px; font-size: 12.5px; color: var(--muted-warm); }
+.gx-fz-foot button { border: 0; background: none; color: var(--pine); font-weight: 600; cursor: pointer; font-size: 12.5px; font-family: inherit; }
+@media (max-width: 640px) { .gx-fz-lbl { min-width: 100%; } }
+
 .gx-drow { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); box-shadow: var(--shadow-soft); padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .gx-drow .gx-main { flex: 1; min-width: 230px; }
 .gx-drow .gx-num { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: var(--pine); font-size: 13.5px; }
