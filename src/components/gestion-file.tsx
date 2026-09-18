@@ -116,6 +116,17 @@ function Chip({ on, onClick, dot, children, n }: { on: boolean; onClick: () => v
   );
 }
 
+// Une ligne de filtres = une question : libelle dans la colonne de gauche, reponses a droite.
+// Les puces restent dans leur colonne quand elles passent a la ligne.
+function Ligne({ label, more, children }: { label: string; more?: boolean; children: React.ReactNode }) {
+  return (
+    <div className={`gx-fz-row${more ? ' gx-fz-more' : ''}`}>
+      <span className="gx-fz-lbl">{label}</span>
+      <div className="gx-fz-opts">{children}</div>
+    </div>
+  );
+}
+
 type Tri = 'depot_asc' | 'depot_desc' | 'attente' | 'numero';
 
 export function GestionFile({
@@ -286,7 +297,7 @@ export function GestionFile({
       </div>
 
       <div className="gx-fz">
-        <label className="gx-fz-search">
+        <div className="gx-fz-search">
           <span aria-hidden="true">🔍</span>
           <input
             type="search"
@@ -295,49 +306,45 @@ export function GestionFile({
             placeholder="Numéro de dossier ou nom de l'organisation (00336, Iterambere…)"
             aria-label="Rechercher un dossier"
           />
-        </label>
+        </div>
 
+        <div className="gx-fz-grid">
         {ugp ? (
           etapeInstruite ? (
-            <div className="gx-fz-row">
-              <span className="gx-fz-lbl">Afficher</span>
+            <Ligne label="Afficher">
               <Chip on={scope === 'tous'} onClick={() => { setScope('tous'); setVerdict(''); }} n={nTous}>Tous les dossiers</Chip>
               <Chip on={scope === 'a_valider'} onClick={() => setScope('a_valider')} n={aValider.length}>À valider par l&apos;UGP</Chip>
-            </div>
+            </Ligne>
           ) : null
         ) : (
-          <div className="gx-fz-row">
-            <span className="gx-fz-lbl">Afficher</span>
+          <Ligne label="Afficher">
             <Chip on={scope === 'mes'} onClick={() => setScope('mes')}>Mes dossiers</Chip>
             <Chip on={scope === 'tous'} onClick={() => setScope('tous')}>Tous les dossiers</Chip>
-          </div>
+          </Ligne>
         )}
 
         {vueAValider ? (
-          <div className="gx-fz-row">
-            <span className="gx-fz-lbl">Verdict proposé</span>
+          <Ligne label="Verdict proposé">
             <Chip on={!verdict} onClick={() => setVerdict('')} n={base.length}>Tous</Chip>
             {verdicts.map((v) => (
               <Chip key={v} on={verdict === v} onClick={() => setVerdict(v)} dot={v === 'rejet' ? 'bad' : v === 'complements' ? 'warn' : 'ok'} n={nVerdict(v)}>
                 {VERDICT_PLURIEL[v]}
               </Chip>
             ))}
-          </div>
+          </Ligne>
         ) : null}
 
         {etapeInstruite && !ugp ? (
-          <div className="gx-fz-row">
-            <span className="gx-fz-lbl">Où en est mon travail</span>
+          <Ligne label="Mon travail">
             <Chip on={!travail} onClick={() => setTravail('')} n={base.length}>Tous</Chip>
             {travaux.map(([k, label, dot]) => (
               <Chip key={k} on={travail === k} onClick={() => setTravail(k)} dot={dot} n={nTravail(k)}>{label}</Chip>
             ))}
-          </div>
+          </Ligne>
         ) : null}
 
         {etapeInstruite ? (
-          <div className="gx-fz-row">
-            <span className="gx-fz-lbl">Signaux</span>
+          <Ligne label="Signaux">
             <Chip on={arbitrer} onClick={() => setArbitrer((v) => !v)} n={nArbitrer}>⚖ À arbitrer</Chip>
             {ugp ? (
               <Chip on={attente} onClick={() => setAttente((v) => !v)} n={nAttente}>⏳ En attente {ATTENTE_SEUIL} j et plus</Chip>
@@ -350,11 +357,10 @@ export function GestionFile({
                 <Chip on={pieceAjoutee} onClick={() => setPieceAjoutee((v) => !v)} n={nAjout}>＋ Pièce ajoutée par le candidat</Chip>
               </>
             )}
-          </div>
+          </Ligne>
         ) : null}
 
-        <div className="gx-fz-row gx-fz-more">
-          <span className="gx-fz-lbl">Plus de critères</span>
+        <Ligne label="Plus de critères" more>
           <select value={filiere} onChange={(e) => setFiliere(e.target.value)} aria-label="Filière">
             <option value="">Filière : toutes</option>
             {options.filieres.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -381,6 +387,8 @@ export function GestionFile({
             {ugp ? <option value="attente">Trier : attente UGP la plus longue</option> : null}
             <option value="numero">Trier : numéro de dossier</option>
           </select>
+        </Ligne>
+
         </div>
 
         <div className="gx-fz-foot">

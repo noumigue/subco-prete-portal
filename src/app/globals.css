@@ -7301,10 +7301,13 @@ a.docs-item:hover .docs-item-dl {
 
 /* ---- zone de filtres de la file (une question par ligne) ---- */
 .gx-fz { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); padding: 12px 14px; margin-bottom: 14px; display: grid; gap: 10px; }
-.gx-fz-search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--sage-border); border-radius: 8px; padding: 0 10px; background: #fff; }
-.gx-fz-search input { border: 0; outline: 0; padding: 8px 0; font-size: 13px; width: 100%; background: transparent; font-family: inherit; }
-.gx-fz-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.gx-fz-lbl { font-size: 12px; color: var(--muted-warm); min-width: 132px; }
+.gx .gx-fz-search { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 400; font-size: 13px; border: 1px solid var(--sage-border); border-radius: 8px; padding: 0 10px; background: #fff; }
+.gx .gx-fz-search input { border: 0; outline: 0; padding: 8px 0; font-size: 13px; width: 100%; background: transparent; font-family: inherit; }
+.gx-fz-grid { display: grid; }
+.gx-fz-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); }
+.gx-fz-row + .gx-fz-row { border-top: 1px solid var(--line-warm); }
+.gx-fz-lbl { display: flex; align-items: center; font-size: 13px; font-weight: 700; color: var(--pine); padding: 8px 12px 8px 0; border-right: 2px solid var(--emerald); }
+.gx-fz-opts { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding: 7px 0 7px 12px; }
 .gx-fz-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--sage-border); background: #fff; color: var(--ink-warm); cursor: pointer; font-family: inherit; }
 .gx-fz-chip .gx-n { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 0 6px; background: var(--sage-tile); color: var(--muted-warm); }
 .gx-fz-chip.on { background: var(--pine); border-color: var(--pine); color: #fff; }
@@ -7316,7 +7319,7 @@ a.docs-item:hover .docs-item-dl {
 .gx-fz-more select { width: auto; padding: 5px 8px; font-size: 12.5px; }
 .gx-fz-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line-warm); padding-top: 9px; font-size: 12.5px; color: var(--muted-warm); }
 .gx-fz-foot button { border: 0; background: none; color: var(--pine); font-weight: 600; cursor: pointer; font-size: 12.5px; font-family: inherit; }
-@media (max-width: 640px) { .gx-fz-lbl { min-width: 100%; } }
+@media (max-width: 640px) { .gx-fz-row { grid-template-columns: 1fr; } .gx-fz-lbl { border-right: 0; border-bottom: 2px solid var(--emerald); padding: 6px 0; } .gx-fz-opts { padding: 7px 0; } }
 
 .gx-drow { background: #fff; border: 1px solid var(--line-warm); border-radius: var(--gx-radius); box-shadow: var(--shadow-soft); padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .gx-drow .gx-main { flex: 1; min-width: 230px; }
