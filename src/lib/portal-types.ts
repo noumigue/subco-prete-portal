@@ -430,7 +430,8 @@ export type GestionInstructionCompletude = {
   // Le cabinet propose une DUREE (`delaiJours`, en jours ouvres) : l'echeance reelle est
   // calculee a la validation UGP. `echeanceIndicative` n'est que la date qu'avait sous les
   // yeux l'instructeur ; `echeance` reste lue pour les propositions d'avant ce changement.
-  complementsProposes: { pieces?: string[]; delaiJours?: number; echeanceIndicative?: string; echeance?: string; message?: string } | null;
+  // `dejaDemandees` : libelles des pieces deja attendues au moment de la proposition (jamais renvoyees).
+  complementsProposes: { pieces?: string[]; dejaDemandees?: string[]; delaiJours?: number; echeanceIndicative?: string; echeance?: string; message?: string } | null;
   motifRejet: string | null;
   // Observations internes du Cabinet a l'attention de l'UGP (jamais transmises au candidat).
   observationsUgp: string | null;
@@ -464,6 +465,9 @@ export type GestionDossierDetail = GestionDossierRow & {
   contradictionsCompletude?: GestionContradiction[];
   // Echeance que porterait la demande si l'UGP validait aujourd'hui.
   echeancePrevue?: string | null;
+  // Pieces deja reclamees au candidat et encore attendues. Tant que `active`, l'instructeur ne
+  // peut que completer la demande (le serveur refuse tout autre verdict).
+  demandeEnCours?: { active: boolean; echeance: string | null; pieces: string[] };
   contradictionsEligibilite?: GestionContradiction[];
   piecesFichiers?: Record<string, GestionPieceFichier>;
   motifDecisionCourt: string | null;

@@ -104,6 +104,16 @@ export function GestionCompletude({
   const fautives = pieces.filter((p) => etats[p.id]?.etat === 'absente' || etats[p.id]?.etat === 'non_conforme');
   const [cplPieces, setCplPieces] = useState<Set<string>>(new Set(instr?.complementsProposes?.pieces || fautives.map((p) => p.id)));
 
+  // Pieces deja reclamees au candidat et encore attendues. Tant que l'echeance court, on ne peut
+  // que COMPLETER la demande : les autres verdicts attendent le depot ou l'echeance (le serveur
+  // refuse de toute facon). Evite de renvoyer les memes pieces et le meme e-mail au candidat.
+  const demande = dossier.demandeEnCours;
+  const demandeActive = Boolean(demande?.active) && editable;
+  const cle = (l: string | undefined) => String(l || '').trim().toLowerCase();
+  const dejaDemandees = new Set((demande?.active ? demande.pieces : []).map(cle));
+  const estDejaDemandee = (id: string) => dejaDemandees.has(cle(pieceLabel[id]));
+  const piecesNouvelles = [...cplPieces].filter((id) => !estDejaDemandee(id));
+
   function setPiece(id: string, etat: Etat) {
     setAlerte(null);
     setEtats((prev) => ({ ...prev, [id]: { etat, note: prev[id]?.note } }));
@@ -134,7 +144,7 @@ export function GestionCompletude({
       documentId: dossier.documentId,
       verdictsPieces: constatsSaisis(),
       verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
-      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], delaiJours, message } } : {}),
+      ...(verdict === 'complements' ? { complementsProposes: { pieces: piecesNouvelles, delaiJours, message } } : {}),
     });
     if (!check.ok) {
       setPending(false);
@@ -157,7 +167,7 @@ export function GestionCompletude({
       documentId: dossier.documentId,
       verdictsPieces: constatsSaisis(),
       verdictGlobal: verdict as 'complet' | 'complements' | 'rejet',
-      ...(verdict === 'complements' ? { complementsProposes: { pieces: [...cplPieces], delaiJours, message } } : {}),
+      ...(verdict === 'complements' ? { complementsProposes: { pieces: piecesNouvelles, delaiJours, message } } : {}),
       ...(verdict === 'rejet' ? { motifRejet: motif } : {}),
       observationsUgp: observations,
     });
@@ -230,6 +240,12 @@ export function GestionCompletude({
         </div>
       ) : null}
       {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b> Verdict proposé — aucune modification possible avant la décision de l&apos;UGP.</div> : null}
+      {demandeActive ? (
+        <div className="gx-validation-banner">
+          📬 <b>Pièces attendues du candidat{demande?.echeance ? ` jusqu'au ${jourLisible(demande.echeance)}` : ''} :</b> {demande?.pieces.join(' · ')}.
+          {' '}Vous pouvez seulement <b>ajouter une pièce</b> à cette demande. Les autres verdicts seront possibles après le dépôt des pièces ou l&apos;échéance.
+        </div>
+      ) : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
       {instr?.workflow === 'propose' && contradictions.length ? (
         <div className="gx-flash err">
@@ -280,22 +296,32 @@ export function GestionCompletude({
       {editable ? (
         <div className="gx-card gx-verdict">
           <div className="gx-block-title">Verdict proposé</div>
-          <label className={`gx-vopt${verdict === 'complet' ? ' on' : ''}`}>
-            <input type="radio" name="vd" checked={verdict === 'complet'} onChange={() => { setVerdict('complet'); setAlerte(null); }} />
-            <span><b>Complet</b> — le dossier passe à l&apos;analyse d&apos;éligibilité.</span>
+          <label className={`gx-vopt${verdict === 'complet' ? ' on' : ''}`} style={demandeActive ? { opacity: 0.5 } : undefined}>
+            <input type="radio" name="vd" disabled={demandeActive} checked={verdict === 'complet'} onChange={() => { setVerdict('complet'); setAlerte(null); }} />
+            <span><b>Complet</b> — le dossier passe à l&apos;analyse d&apos;éligibilité.{demandeActive ? ' (possible après le dépôt des pièces ou l’échéance)' : ''}</span>
           </label>
           <label className={`gx-vopt${verdict === 'complements' ? ' on' : ''}`}>
             <input type="radio" name="vd" checked={verdict === 'complements'} onChange={() => { setVerdict('complements'); setAlerte(null); }} />
-            <span><b>Demande de compléments</b> — pièces manquantes ou non conformes à fournir.</span>
+            <span><b>{demandeActive ? 'Ajouter une pièce à la demande en cours' : 'Demande de compléments'}</b> — pièces manquantes ou non conformes à fournir.</span>
           </label>
           {verdict === 'complements' ? (
             <div className="gx-subform">
               {fautives.length ? fautives.map((p) => (
-                <label className="gx-pchk" key={p.id}>
-                  <input type="checkbox" checked={cplPieces.has(p.id)} onChange={(e) => { setAlerte(null); setCplPieces((s) => { const n = new Set(s); if (e.target.checked) n.add(p.id); else n.delete(p.id); return n; }); }} />
-                  {p.libelle}
-                </label>
+                estDejaDemandee(p.id) ? (
+                  <label className="gx-pchk" key={p.id} style={{ opacity: 0.6 }}>
+                    <input type="checkbox" checked disabled />
+                    {p.libelle} <span style={{ fontSize: 11.5, color: 'var(--muted-warm)' }}>— déjà demandée{demande?.echeance ? ` (jusqu'au ${jourLisible(demande.echeance)})` : ''}, ne sera pas renvoyée</span>
+                  </label>
+                ) : (
+                  <label className="gx-pchk" key={p.id}>
+                    <input type="checkbox" checked={cplPieces.has(p.id)} onChange={(e) => { setAlerte(null); setCplPieces((s) => { const n = new Set(s); if (e.target.checked) n.add(p.id); else n.delete(p.id); return n; }); }} />
+                    {p.libelle}
+                  </label>
+                )
               )) : <span style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Marquez d&apos;abord des pièces ✖ / ⚠ ci-dessus.</span>}
+              {demandeActive && !piecesNouvelles.length ? (
+                <p style={{ fontSize: 12, color: 'var(--gx-red-tx)', margin: '6px 0 0' }}>Cochez au moins une pièce qui n&apos;est pas déjà demandée : sinon, il n&apos;y a rien de nouveau à envoyer au candidat.</p>
+              ) : null}
               <div className="gx-inline2" style={{ marginTop: 9 }}>
                 <div>
                   <label>Délai accordé au candidat (jours ouvrés)</label>
@@ -311,9 +337,9 @@ export function GestionCompletude({
               </p>
             </div>
           ) : null}
-          <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`}>
-            <input type="radio" name="vd" checked={verdict === 'rejet'} onChange={() => { setVerdict('rejet'); setAlerte(null); }} />
-            <span><b>Rejet</b> — dossier écarté à la complétude (motif obligatoire).</span>
+          <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`} style={demandeActive ? { opacity: 0.5 } : undefined}>
+            <input type="radio" name="vd" disabled={demandeActive} checked={verdict === 'rejet'} onChange={() => { setVerdict('rejet'); setAlerte(null); }} />
+            <span><b>Rejet</b> — dossier écarté à la complétude (motif obligatoire).{demandeActive ? ' (possible après le dépôt des pièces ou l’échéance)' : ''}</span>
           </label>
           {verdict === 'rejet' ? (
             <div className="gx-subform"><label>Motif</label><textarea rows={2} placeholder="Motif officiel…" value={motif} onChange={(e) => setMotif(e.target.value)} /></div>
@@ -336,7 +362,7 @@ export function GestionCompletude({
             </div>
           ) : (
             <div style={{ marginTop: 12 }}>
-              <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending || !observations.trim()} onClick={onPropose}>
+              <button type="button" className="gx-btn gx-btn-primary" disabled={!verdict || pending || !observations.trim() || (demandeActive && (verdict !== 'complements' || !piecesNouvelles.length))} onClick={onPropose}>
                 {pending ? 'Vérification…' : 'Proposer à la validation UGP'}
               </button>
             </div>
@@ -352,7 +378,10 @@ export function GestionCompletude({
             <b>{instr.verdictGlobal === 'complet' ? 'Complet — passage à l’éligibilité' : instr.verdictGlobal === 'complements' ? 'Demande de compléments' : 'Rejet (complétude)'}</b>
             {instr.verdictGlobal === 'complements' ? (
               <>
-                <br />Pièces : {(instr.complementsProposes?.pieces || []).map((id) => pieceLabel[id]).filter(Boolean).join(' · ') || '—'}
+                <br />{instr.complementsProposes?.dejaDemandees?.length ? 'Nouvelles pièces (envoyées au candidat)' : 'Pièces'} : {(instr.complementsProposes?.pieces || []).map((id) => pieceLabel[id]).filter(Boolean).join(' · ') || '—'}
+                {instr.complementsProposes?.dejaDemandees?.length ? (
+                  <><br />Déjà demandées, non renvoyées : {instr.complementsProposes.dejaDemandees.join(' · ')}</>
+                ) : null}
                 <br />Délai proposé : {instr.complementsProposes?.delaiJours
                   ? `${instr.complementsProposes.delaiJours} jours ouvrés`
                   : `non précisé — délai par défaut appliqué (${dossier.referentiels.delaiComplementsJours} jours ouvrés)`}
