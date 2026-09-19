@@ -453,7 +453,8 @@ export type GestionInstructionEligibilite = {
 
 export type GestionReferentiels = {
   typePieces: { id: string; libelle: string; groupe: string; exigence: string }[];
-  criteres: { id: string; libelle: string; refManuel: string | null }[];
+  // `groupe` : bloc de la grille (candidat / infrastructure) ; `acquis` : coche d'office (ex. dossier complet).
+  criteres: { id: string; libelle: string; refManuel: string | null; groupe?: 'candidat' | 'infrastructure' | null; acquis?: boolean }[];
   delaiComplementsJours: number;
   delaiComplementsMinimumJours?: number;
 };

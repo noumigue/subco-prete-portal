@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
-import type { GestionContradiction, GestionDossierDetail } from '@/lib/portal-types';
+import { useMemo, useRef, useState } from 'react';
+import type { GestionContradiction, GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
   proposerEligibiliteAction,
@@ -16,6 +16,12 @@ import { GestionJournal } from '@/components/gestion-journal';
 
 type Etat = 'conforme' | 'non_conforme';
 type Verdict = 'eligible' | 'rejet' | '';
+
+// Blocs de la grille validee par l'UGP le 18/09/2026 (version reduite de l'Annexe 5).
+const GROUPES: { cle: 'candidat' | 'infrastructure'; titre: string }[] = [
+  { cle: 'candidat', titre: 'Éligibilité du candidat' },
+  { cle: 'infrastructure', titre: "Éligibilité de l'infrastructure" },
+];
 
 export function GestionEligibilite({
   dossier,
@@ -36,9 +42,31 @@ export function GestionEligibilite({
   const lectureSeule = role !== 'ugp' && dossier.prisEnChargePar?.id !== currentUserId;
   const editable = !lectureSeule && !validationMode && !proposedWaiting && dossier.statut?.phase === 'eligibilite';
 
-  const [etats, setEtats] = useState<Record<string, { etat: Etat; justification?: string }>>(
-    () => (instr?.verdictsCriteres as Record<string, { etat: Etat; justification?: string }>) || {},
-  );
+  const [etats, setEtats] = useState<Record<string, { etat: Etat; justification?: string }>>(() => {
+    const init = { ...((instr?.verdictsCriteres as Record<string, { etat: Etat; justification?: string }>) || {}) };
+    // Criteres acquis d'office (« Dossier complet ») : toujours conformes, le serveur les force aussi.
+    for (const c of criteres) if (c.acquis) init[c.id] = { etat: 'conforme', justification: 'Acquis : complétude validée' };
+    return init;
+  });
+
+  // Pieces deposees par le candidat (et complements recus), pour verifier les criteres sans
+  // repasser par l'ecran de completude.
+  const piecesDossier = useMemo(() => {
+    const deposees = (dossier.donneesProjet as PortalDonneesProjet | null)?.pieces || [];
+    const fichiers = dossier.piecesFichiers || {};
+    const libelle = Object.fromEntries(dossier.referentiels.typePieces.map((p) => [p.id, p.libelle]));
+    const ordre = dossier.referentiels.typePieces.map((p) => p.id);
+    return deposees
+      .filter((d) => d.depose && d.fileId)
+      .map((d) => ({
+        id: d.id,
+        libelle: libelle[d.id] || d.nomFichier || 'Pièce déposée',
+        nom: fichiers[String(d.fileId)]?.nom || d.nomFichier || 'Fichier',
+        url: fichiers[String(d.fileId)]?.url || null,
+      }))
+      .sort((a, b) => ordre.indexOf(a.id) - ordre.indexOf(b.id));
+  }, [dossier.donneesProjet, dossier.piecesFichiers, dossier.referentiels.typePieces]);
+  const complementsRecus = (dossier.complements || []).filter((c) => c.statut === 'fourni' && c.fichierUrl);
   const [verdict, setVerdict] = useState<Verdict>(instr?.verdictGlobal || '');
   const [motif, setMotif] = useState(instr?.motifRejet || '');
   const [observations, setObservations] = useState(instr?.observationsUgp || '');
@@ -144,7 +172,7 @@ export function GestionEligibilite({
         <div>
           <h1>{dossier.organisation?.nom} <span className="gx-num" style={{ fontSize: 13 }}>{dossier.numeroDossier}</span></h1>
           <div className="gx-sub">
-            Étape : analyse d&apos;éligibilité (8.7) · grille Annexe 5
+            Étape : analyse d&apos;éligibilité (8.7) · grille validée par l&apos;UGP (Annexe 5)
             {dossier.pdfPermanentUrl ? (
               <> · <a className="gx-back" style={{ margin: 0 }} href={portalMediaUrl(dossier.pdfPermanentUrl) || '#'} target="_blank" rel="noopener">Consulter le dossier ↗</a></>
             ) : null}
@@ -173,23 +201,61 @@ export function GestionEligibilite({
       {validationMode ? <div className="gx-validation-banner">⚖️ <b>Mode validation UGP.</b> Verdict proposé par {instr?.proposePar || dossier.prisEnChargePar?.nom}.</div> : null}
 
       <div className="gx-card">
-        <div className="gx-block-title">Critères d&apos;éligibilité (§5)</div>
-        {criteres.map((c, i) => {
-          const st = etats[c.id]?.etat;
-          const disabled = !editable;
+        <div className="gx-block-title">Pièces du dossier<span className="gx-tot">{piecesDossier.length} déposée(s){complementsRecus.length ? ` · ${complementsRecus.length} complément(s) reçu(s)` : ''}</span></div>
+        {piecesDossier.length || complementsRecus.length ? (
+          <>
+            {piecesDossier.map((p) => (
+              <div className="gx-cpl-row" key={p.id}>
+                <span className="gx-cpl-piece">{p.libelle}</span>
+                {p.url ? (
+                  <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(p.url) || '#'} target="_blank" rel="noopener noreferrer" title={`Ouvrir « ${p.nom} »`}>⤓ {p.nom}</a>
+                ) : <span className="gx-cpl-wait">Fichier indisponible</span>}
+              </div>
+            ))}
+            {complementsRecus.map((c) => (
+              <div className="gx-cpl-row" key={c.documentId}>
+                <span className="gx-pill gx-pill-ok">{c.origine === 'candidat' ? 'Ajoutée par le candidat' : 'Complément reçu'}</span>
+                <span className="gx-cpl-piece">{c.pieceDemandee}</span>
+                <a className="gx-btn gx-btn-ghost gx-btn-sm" href={portalMediaUrl(c.fichierUrl) || '#'} target="_blank" rel="noopener noreferrer">⤓ Pièce déposée</a>
+              </div>
+            ))}
+          </>
+        ) : <span style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Aucune pièce déposée.</span>}
+      </div>
+
+      <div className="gx-card">
+        <div className="gx-block-title">Critères d&apos;éligibilité<span className="gx-tot">Grille validée par l&apos;UGP le 18/09/2026 — Annexe 5</span></div>
+        {GROUPES.map((g) => {
+          const liste = criteres.filter((c) => (c.groupe || 'candidat') === g.cle);
+          if (!liste.length) return null;
           return (
-            <div className="gx-crow" key={c.id}>
-              <div className="gx-cname">{i + 1}. {c.libelle}{c.refManuel ? <span className="gx-ref"> · {c.refManuel}</span> : null}</div>
-              <span className="gx-biseg">
-                <button type="button" className={st === 'conforme' ? 'c' : ''} disabled={disabled} onClick={() => setCrit(c.id, 'conforme')}>Conforme</button>
-                <button type="button" className={st === 'non_conforme' ? 'n' : ''} disabled={disabled} onClick={() => setCrit(c.id, 'non_conforme')}>Non conforme</button>
-              </span>
-              {st === 'non_conforme' ? (
-                <div className={`gx-pnote${!disabled && !(etats[c.id]?.justification || '').trim() ? ' req' : ''}`}><input type="text" placeholder="Justification (obligatoire)…" value={etats[c.id]?.justification || ''} disabled={disabled} onChange={(e) => setJust(c.id, e.target.value)} /></div>
-              ) : null}
+            <div key={g.cle}>
+              <div className="gx-grp-title">{g.titre}</div>
+              {liste.map((c, i) => {
+                const st = etats[c.id]?.etat;
+                const disabled = !editable || Boolean(c.acquis);
+                return (
+                  <div className="gx-crow" key={c.id}>
+                    <div className="gx-cname">{i + 1}. {c.libelle}{c.refManuel ? <span className="gx-ref"> · {c.refManuel}</span> : null}</div>
+                    {c.acquis ? (
+                      <span className="gx-pill gx-pill-ok" title="La complétude a déjà été validée par l'UGP">✔ Acquis — complétude validée</span>
+                    ) : (
+                      <span className="gx-biseg">
+                        <button type="button" className={st === 'conforme' ? 'c' : ''} disabled={disabled} onClick={() => setCrit(c.id, 'conforme')}>Conforme</button>
+                        <button type="button" className={st === 'non_conforme' ? 'n' : ''} disabled={disabled} onClick={() => setCrit(c.id, 'non_conforme')}>Non conforme</button>
+                      </span>
+                    )}
+                    {!c.acquis && st === 'non_conforme' ? (
+                      <div className={`gx-pnote${!disabled && !(etats[c.id]?.justification || '').trim() ? ' req' : ''}`}><input type="text" placeholder="Justification (obligatoire)…" value={etats[c.id]?.justification || ''} disabled={disabled} onChange={(e) => setJust(c.id, e.target.value)} /></div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
+        <p className="gx-m7-hint">Capacité financière, capacité de gestion, conflit d&apos;intérêt, faisabilité technique, viabilité économique et conformité E&amp;S
+          sont examinés lors de l&apos;évaluation technique, pas à cette étape.</p>
       </div>
 
       {editable ? (
