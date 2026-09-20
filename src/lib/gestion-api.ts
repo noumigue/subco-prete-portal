@@ -136,6 +136,10 @@ export const validerEligibilite = (documentId: string, notificationDecisionFileI
   gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/valider`, notificationDecisionFileId ? { notificationDecisionFileId } : {});
 export const renvoyerEligibilite = (documentId: string, commentaire: string) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/renvoyer`, { commentaire });
+// Reouverture de la completude depuis l'eligibilite (UGP, motivee). Ne touche pas aux constats
+// d'eligibilite deja saisis.
+export const rouvrirCompletude = (documentId: string, motif: string) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/eligibilite/rouvrir-completude`, { motif });
 
 export const ouvrirAppel = (documentId: string) => gestionPost(`/api/gestion/appels/${documentId}/ouvrir`);
 export const cloreAppel = (documentId: string) => gestionPost(`/api/gestion/appels/${documentId}/clore`);

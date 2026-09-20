@@ -8,6 +8,7 @@ import { portalMediaUrl } from '@/lib/portal-media';
 import {
   proposerEligibiliteAction,
   renvoyerEligibiliteAction,
+  rouvrirCompletudeAction,
   uploadNotificationSigneeAction,
   validerEligibiliteAction,
   verifierEligibiliteAction,
@@ -74,6 +75,10 @@ export function GestionEligibilite({
   const contradictions = dossier.contradictionsEligibilite || [];
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [commentaire, setCommentaire] = useState('');
+  // Reouverture de la completude (UGP) : impossible tant qu'une proposition attend sa validation.
+  const [reouvertureOpen, setReouvertureOpen] = useState(false);
+  const [motifReouverture, setMotifReouverture] = useState('');
+  const propositionEnAttente = instr?.workflow === 'propose';
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -154,6 +159,15 @@ export function GestionEligibilite({
     setPending(false);
     if (result.ok) router.push('/gestion/dossiers?valide=1');
     else setError(result.error || 'Validation refusée.');
+  }
+
+  async function onRouvrirCompletude() {
+    setError(null);
+    setPending(true);
+    const result = await rouvrirCompletudeAction({ documentId: dossier.documentId, motif: motifReouverture });
+    setPending(false);
+    if (result.ok) router.push('/gestion/dossiers?reouvert=1');
+    else setError(result.error || 'Réouverture refusée.');
   }
 
   async function onRenvoyer() {
@@ -327,6 +341,38 @@ export function GestionEligibilite({
               ) : null}
             </>
           ) : null}
+        </div>
+      ) : null}
+
+      {role === 'ugp' && dossier.statut?.phase === 'eligibilite' ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Revenir à la complétude</div>
+          <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: 0 }}>
+            À utiliser si une pièce se révèle manquante ou non conforme <b>après</b> la validation de la complétude.
+            Le dossier repart chez l&apos;instructeur, qui pourra demander la pièce au candidat.
+            Les constats d&apos;éligibilité déjà saisis sont <b>conservés</b>, et le candidat n&apos;est pas notifié
+            (il le sera à la demande de pièces).
+          </p>
+          {propositionEnAttente ? (
+            <p style={{ fontSize: 12.5, color: 'var(--gx-red-tx)', marginTop: 10 }}>
+              Une proposition d&apos;éligibilité attend votre validation : validez-la ou renvoyez-la à l&apos;instructeur avant de rouvrir la complétude.
+            </p>
+          ) : reouvertureOpen ? (
+            <div className="gx-subform" style={{ marginLeft: 0 }}>
+              <label>Motif <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — inscrit au journal et montré à l&apos;instructeur)</span></label>
+              <textarea rows={2} value={motifReouverture} onChange={(e) => setMotifReouverture(e.target.value)} placeholder="Ex. : attestation de non-redevance fiscale expirée, à redemander au candidat." />
+              <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending || !motifReouverture.trim()} onClick={onRouvrirCompletude}>
+                  {pending ? 'Réouverture…' : 'Confirmer la réouverture'}
+                </button>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => setReouvertureOpen(false)}>Annuler</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 10 }}>
+              <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" onClick={() => setReouvertureOpen(true)}>↩︎ Rouvrir la complétude</button>
+            </div>
+          )}
         </div>
       ) : null}
 

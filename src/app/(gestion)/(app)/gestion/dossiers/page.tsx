@@ -19,7 +19,8 @@ export default async function GestionDossiersPage({
         : params.propose === '1' ? 'Proposé à la validation UGP.'
           : params.valide === '1' ? 'Validé — les effets côté candidat sont appliqués.'
             : params.renvoye === '1' ? "Renvoyé à l'instructeur."
-              : null;
+              : params.reouvert === '1' ? "Complétude rouverte — le dossier est revenu à l'instructeur."
+                : null;
   const flashError = typeof params.error === 'string' ? params.error : null;
 
   return <GestionFile dossiers={dossiers} role={role} currentUserId={session?.userId ?? null} flash={flash} flashError={flashError} />;

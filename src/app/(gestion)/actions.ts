@@ -55,6 +55,7 @@ import {
   recuser,
   renvoyerCompletude,
   renvoyerEligibilite,
+  rouvrirCompletude,
   renvoyerRapport,
   saveDecision,
   saveRapportDossier,
@@ -220,6 +221,14 @@ export async function verifierEligibiliteAction(input: Omit<ProposerEligibiliteI
 
 export async function validerEligibiliteAction(input: { documentId: string; notificationDecisionFileId?: number }): Promise<{ ok: boolean; error?: string }> {
   const result = await validerEligibilite(input.documentId, input.notificationDecisionFileId);
+  revalidatePath('/gestion/dossiers');
+  return result;
+}
+
+// Ramene un dossier de l'eligibilite vers la completude (UGP) : motif obligatoire, journalise,
+// sans notification au candidat. Les constats d'eligibilite sont conserves.
+export async function rouvrirCompletudeAction(input: { documentId: string; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const result = await rouvrirCompletude(input.documentId, input.motif);
   revalidatePath('/gestion/dossiers');
   return result;
 }
