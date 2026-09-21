@@ -158,6 +158,7 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
           {/* Porte E&S */}
           <div className={`gx-es${esKo ? ' ko' : ''}`}>
             <div className="gx-esh">Porte préalable — Conformité environnementale et sociale (A6, éliminatoire · §6.2.1)</div>
+            {detail.bareme.porteEs?.description ? <div className="gx-cd" style={{ marginBottom: 6 }}>À vérifier : {detail.bareme.porteEs.description}</div> : null}
             <div style={{ fontSize: 12.5, color: 'var(--muted-warm)', marginBottom: 9 }}>La conformité E&S est une condition préalable, non un critère noté. Un projet non conforme est écarté avant notation.</div>
             <span className="gx-biseg">
               <button type="button" className={esConforme === true ? 'c' : ''} disabled={readonly} onClick={() => setEsConforme(true)}>Conforme → admis à la notation</button>
