@@ -65,6 +65,12 @@ export default async function FollowUpPage({
   const currentPhase = candidature?.statut?.phase || 'recu';
   const currentIndex = phases.indexOf(currentPhase);
   const complement = candidature?.complements?.find((item) => item.statut === 'demande');
+  // TOUTES les pieces reclamees et encore attendues. Jusqu'au 21/09 la page n'en montrait qu'une :
+  // le candidat decouvrait la suivante apres chaque depot, sans jamais savoir combien il en
+  // restait — et risquait de manquer l'echeance.
+  const demandes = (candidature?.complements || []).filter((item) => item.statut === 'demande');
+  const recues = (candidature?.complements || []).filter((item) => item.statut === 'fourni' && item.origine !== 'candidat');
+  const echeanceDemandes = demandes.map((item) => item.echeance).filter(Boolean).sort()[0] || null;
   const isSelected = candidature?.statut?.groupe === 'selectionne';
   const isRejected = candidature?.statut?.groupe === 'non_retenu';
   const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
@@ -185,22 +191,42 @@ export default async function FollowUpPage({
         </div>
       </section>
 
-      {complement ? (
+      {demandes.length ? (
         <section className="operator-action-card">
-          <div className="operator-action-head">⚠ Une pièce complémentaire est demandée</div>
-          <p>L&apos;UGP a besoin de <strong>{complement.pieceDemandee}</strong> pour poursuivre la vérification de votre dossier. À fournir avant le <strong>{complement.echeance || 'À confirmer'}</strong>.</p>
-          <form action={depositComplementAction} className="operator-action-form">
-            <input type="hidden" name="complementId" value={complement.documentId} />
-            <input type="hidden" name="candidatureId" value={documentId} />
-            <label className="operator-action-drop">
-              Déposez ici la pièce demandée (PDF ou image)
-              <input type="file" name="fichier" accept=".pdf,image/*" required />
-            </label>
-            <div className="operator-action-foot">
-              <span className="operator-action-hint">Ce dépôt s&apos;ajoute au dossier ; il ne modifie pas votre candidature déjà déposée.</span>
-              <button type="submit" className="operator-amber-btn">Envoyer la pièce</button>
-            </div>
-          </form>
+          <div className="operator-action-head">
+            ⚠ {demandes.length === 1 ? 'Une pièce complémentaire est demandée' : `${demandes.length} pièces complémentaires sont demandées`}
+          </div>
+          <p>
+            Pour poursuivre la vérification de votre dossier, l&apos;UGP a besoin de{' '}
+            {demandes.length === 1 ? 'la pièce suivante' : <>toutes les pièces ci-dessous</>}, à fournir avant le{' '}
+            <strong>{formatDay(echeanceDemandes) || 'à confirmer'}</strong>.
+            {demandes.length > 1 ? <> Déposez-les une par une : chaque pièce a son propre bouton d&apos;envoi.</> : null}
+          </p>
+          <ol className="operator-demandes-liste">
+            {demandes.map((item) => (
+              <li key={item.documentId} className="operator-demande-item">
+                <div className="operator-demande-titre"><strong>{item.pieceDemandee}</strong></div>
+                <form action={depositComplementAction} className="operator-action-form">
+                  <input type="hidden" name="complementId" value={item.documentId} />
+                  <input type="hidden" name="candidatureId" value={documentId} />
+                  <label className="operator-action-drop">
+                    Déposez ici « {item.pieceDemandee} » (PDF ou image)
+                    <input type="file" name="fichier" accept=".pdf,image/*" required />
+                  </label>
+                  <div className="operator-action-foot">
+                    <span className="operator-action-hint">À fournir avant le {formatDay(item.echeance) || 'à confirmer'}.</span>
+                    <button type="submit" className="operator-amber-btn">Envoyer cette pièce</button>
+                  </div>
+                </form>
+              </li>
+            ))}
+          </ol>
+          {recues.length ? (
+            <p className="operator-action-hint" style={{ marginTop: '0.6rem' }}>
+              Déjà reçue{recues.length > 1 ? 's' : ''} : {recues.map((item) => item.pieceDemandee).join(' · ')} ✓
+            </p>
+          ) : null}
+          <p className="operator-action-hint">Ces dépôts s&apos;ajoutent au dossier ; ils ne modifient pas votre candidature déjà déposée.</p>
         </section>
       ) : null}
 
