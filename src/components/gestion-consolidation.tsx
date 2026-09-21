@@ -120,6 +120,22 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
         <div className="gx-es"><div className="gx-esh" style={{ color: 'var(--emerald-dark)' }}>✓ Aucun écart ≥ 20 % en attente</div><div style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Consolidation prête à être figée.</div></div>
       ) : null}
 
+      {(data.forcesFaiblesses || []).length ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Forces et faiblesses relevées par les évaluateurs</div>
+          {(data.forcesFaiblesses || []).map((ev) => (
+            <div key={ev.rang} style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 700, fontSize: 13 }}>{ev.nom}</div>
+              <div className="gx-inline2">
+                <div><b style={{ fontSize: 12.5 }}>Forces</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)', fontSize: 13 }}>{ev.forces.length ? ev.forces.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
+                <div><b style={{ fontSize: 12.5 }}>Faiblesses</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)', fontSize: 13 }}>{ev.faiblesses.length ? ev.faiblesses.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
+              </div>
+            </div>
+          ))}
+          <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: 0 }}>Reprises sans doublon dans le rapport d&apos;évaluation, où le Cabinet les synthétise.</p>
+        </div>
+      ) : null}
+
       <div className="gx-card">
         <div className="gx-block-title">Notes consolidées</div>
         <div style={{ overflowX: 'auto' }}>

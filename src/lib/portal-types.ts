@@ -523,6 +523,8 @@ export type GestionFicheDetail = {
     bonus: Record<string, number>;
     statut: 'brouillon' | 'soumise';
     signeLe: string | null;
+    forces?: string[];
+    faiblesses?: string[];
   } | null;
   bareme: { blocA: GestionBaremeCritere[]; blocB: GestionBaremeCritere[]; bonus: GestionBaremeCritere[]; porteEs: GestionBaremeCritere | null };
   parametres: { seuilBase: number; bandes: { min: number; label: string }[]; porteEsDifferee?: boolean };
@@ -584,6 +586,7 @@ export type GestionConsolidation = {
   statut?: 'en_cours' | 'figee';
   evaluateurs?: { id: number; nom: string }[];
   porteEs?: GestionPorteEs;
+  forcesFaiblesses?: { rang: number; nom: string; forces: string[]; faiblesses: string[] }[];
   arbitrageEs?: 'conforme' | 'non_conforme' | null;
 };
 

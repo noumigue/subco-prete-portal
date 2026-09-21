@@ -263,7 +263,7 @@ export async function cloreAppelAction(formData: FormData) {
 }
 
 // ——— M5 phase 2 : évaluation (fiche de scoring, évaluateur) ———
-type FichePayload = { esConforme?: boolean | null; notes?: unknown; bonus?: unknown };
+type FichePayload = { esConforme?: boolean | null; notes?: unknown; bonus?: unknown; forces?: string[]; faiblesses?: string[] };
 
 export async function declarerCoiAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
   const r = await declarerCoi(documentId);

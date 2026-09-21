@@ -41,6 +41,9 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
     return init;
   });
   const [esConforme, setEsConforme] = useState<boolean | null>(detail.fiche?.esConforme ?? null);
+  const [forcesTxt, setForcesTxt] = useState((detail.fiche?.forces || []).join('\n'));
+  const [faiblessesTxt, setFaiblessesTxt] = useState((detail.fiche?.faiblesses || []).join('\n'));
+  const lignes = (t: string) => t.split('\n').map((l) => l.trim()).filter(Boolean);
   const [sign, setSign] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +63,9 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
     const n = notes[c.code]?.note;
     return n !== undefined && n !== '' && (notes[c.code]?.commentaire || '').trim() !== '';
   });
-  const canSubmit = (porteDifferee || esConforme !== null) && (esKo || (notationComplete && sign));
+  // 6.3.3 : au moins une force et une faiblesse, matière du rapport d'évaluation.
+  const analyseComplete = lignes(forcesTxt).length > 0 && lignes(faiblessesTxt).length > 0;
+  const canSubmit = (porteDifferee || esConforme !== null) && (esKo || (notationComplete && analyseComplete && sign));
 
   function payload() {
     const outNotes: Record<string, { note: number; commentaire: string }> = {};
@@ -70,7 +75,7 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
     }
     const outBonus: Record<string, number> = {};
     for (const c of bareme.bonus) if (bonus[c.code] !== undefined && bonus[c.code] !== '') outBonus[c.code] = Number(bonus[c.code]);
-    return { esConforme: porteDifferee ? null : esConforme, notes: outNotes, bonus: outBonus };
+    return { esConforme: porteDifferee ? null : esConforme, notes: outNotes, bonus: outBonus, forces: lignes(forcesTxt), faiblesses: lignes(faiblessesTxt) };
   }
 
   async function onConfirmCoi() {
@@ -185,6 +190,19 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
                 {bareme.blocA.filter((c) => c.type === 'note').map((c) => <CritLine key={c.code} c={c} />)}</div>
               <div className="gx-card"><div className="gx-block-title">Bloc B — Candidat <span className="gx-tot">Total B : {totB} / 40</span></div>
                 {bareme.blocB.map((c) => <CritLine key={c.code} c={c} />)}</div>
+              <div className="gx-card"><div className="gx-block-title">Forces et faiblesses du dossier</div>
+                <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>Une idée par ligne. Au moins une force et une faiblesse : elles alimentent le rapport d&apos;évaluation (Manuel §6.3.3).</p>
+                <div className="gx-inline2">
+                  <div>
+                    <div className="gx-cmt-lbl">Forces</div>
+                    <textarea rows={4} value={forcesTxt} disabled={readonly} placeholder="Ex. : débouchés confirmés par des contrats" onChange={(e) => setForcesTxt(e.target.value)} />
+                  </div>
+                  <div>
+                    <div className="gx-cmt-lbl">Faiblesses</div>
+                    <textarea rows={4} value={faiblessesTxt} disabled={readonly} placeholder="Ex. : titre d'occupation du site non fourni" onChange={(e) => setFaiblessesTxt(e.target.value)} />
+                  </div>
+                </div>
+              </div>
               <div className="gx-card"><div className="gx-block-title">Bonus d&apos;inclusion (plafond +10) <span className="gx-tot">Bonus : {totBonus} / 10</span></div>
                 {bareme.bonus.map((c) => (
                   <div className="gx-crit" key={c.code}>

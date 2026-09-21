@@ -164,9 +164,9 @@ export async function getConsolidation(documentId: string): Promise<GestionConso
 
 export const declarerCoi = (documentId: string) => gestionPost(`/api/gestion/evaluations/${documentId}/coi`);
 export const recuser = (documentId: string) => gestionPost(`/api/gestion/evaluations/${documentId}/recuser`);
-export const enregistrerFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown }) =>
+export const enregistrerFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown; forces?: string[]; faiblesses?: string[] }) =>
   gestionPost(`/api/gestion/evaluations/${documentId}/enregistrer`, data);
-export const soumettreFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown }) =>
+export const soumettreFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown; forces?: string[]; faiblesses?: string[] }) =>
   gestionPost(`/api/gestion/evaluations/${documentId}/soumettre`, data);
 
 export const assignerEvaluateur = (documentId: string, evaluateurId: number, rang: number) =>

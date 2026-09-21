@@ -27,6 +27,10 @@ export function GestionRapportView({ rapport, appelId, role }: { rapport: Gestio
     else setError(r.error || 'Action refusée.');
   }
   const setReco = (d: GestionRapportDossier, reco: string) => run(() => saveRapportDossierAction(appelId, { candidatureId: d.candidatureId, reco }));
+  const setListe = (d: GestionRapportDossier, key: 'forces' | 'faiblesses', text: string) => {
+    const lignes = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    return run(() => saveRapportDossierAction(appelId, { candidatureId: d.candidatureId, [key]: lignes }), false);
+  };
   const setConditions = (d: GestionRapportDossier, text: string) => {
     const conditions = text.split('\n').map((l) => l.trim()).filter(Boolean).map((texte) => ({ texte, type: 'autre' }));
     return run(() => saveRapportDossierAction(appelId, { candidatureId: d.candidatureId, conditions }), false);
@@ -51,7 +55,7 @@ export function GestionRapportView({ rapport, appelId, role }: { rapport: Gestio
               {rapport.dossiers.map((d) => (
                 <RowGroup key={d.candidatureId} d={d} editable={editable} expanded={!!expanded[d.candidatureId]}
                   onToggle={() => setExpanded((p) => ({ ...p, [d.candidatureId]: !p[d.candidatureId] }))}
-                  onReco={(v) => setReco(d, v)} onConditions={(t) => setConditions(d, t)} pending={pending} />
+                  onReco={(v) => setReco(d, v)} onConditions={(t) => setConditions(d, t)} onListe={(k, t) => setListe(d, k, t)} pending={pending} />
               ))}
             </tbody>
           </table>
@@ -89,8 +93,8 @@ export function GestionRapportView({ rapport, appelId, role }: { rapport: Gestio
   );
 }
 
-function RowGroup({ d, editable, expanded, onToggle, onReco, onConditions, pending }: {
-  d: GestionRapportDossier; editable: boolean; expanded: boolean; onToggle: () => void; onReco: (v: string) => void; onConditions: (t: string) => void; pending: boolean;
+function RowGroup({ d, editable, expanded, onToggle, onReco, onConditions, onListe, pending }: {
+  d: GestionRapportDossier; editable: boolean; expanded: boolean; onToggle: () => void; onReco: (v: string) => void; onConditions: (t: string) => void; onListe: (k: 'forces' | 'faiblesses', t: string) => void; pending: boolean;
 }) {
   return (
     <>
@@ -111,8 +115,19 @@ function RowGroup({ d, editable, expanded, onToggle, onReco, onConditions, pendi
         <tr><td colSpan={9}>
           <div className="gx-recap" style={{ margin: '4px 0 8px' }}>
             <div className="gx-inline2">
-              <div><b>Forces</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)' }}>{d.forces.length ? d.forces.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
-              <div><b>Faiblesses</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)' }}>{d.faiblesses.length ? d.faiblesses.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
+              {editable ? (
+                <>
+                  <div><b>Forces</b> <span style={{ fontSize: 11.5, color: 'var(--muted-warm)' }}>(reprises des fiches, une par ligne)</span>
+                    <textarea rows={3} defaultValue={d.forces.join('\n')} onBlur={(e) => onListe('forces', e.target.value)} /></div>
+                  <div><b>Faiblesses</b> <span style={{ fontSize: 11.5, color: 'var(--muted-warm)' }}>(reprises des fiches, une par ligne)</span>
+                    <textarea rows={3} defaultValue={d.faiblesses.join('\n')} onBlur={(e) => onListe('faiblesses', e.target.value)} /></div>
+                </>
+              ) : (
+                <>
+                  <div><b>Forces</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)' }}>{d.forces.length ? d.forces.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
+                  <div><b>Faiblesses</b><ul style={{ margin: '4px 0', paddingLeft: 18, color: 'var(--muted-warm)' }}>{d.faiblesses.length ? d.faiblesses.map((f, i) => <li key={i}>{f}</li>) : <li style={{ listStyle: 'none' }}>—</li>}</ul></div>
+                </>
+              )}
             </div>
             {d.reco === 'conditionnelle' ? (
               <div style={{ marginTop: 6 }}>
