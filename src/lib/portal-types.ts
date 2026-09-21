@@ -525,7 +525,7 @@ export type GestionFicheDetail = {
     signeLe: string | null;
   } | null;
   bareme: { blocA: GestionBaremeCritere[]; blocB: GestionBaremeCritere[]; bonus: GestionBaremeCritere[]; porteEs: GestionBaremeCritere | null };
-  parametres: { seuilBase: number; bandes: { min: number; label: string }[] };
+  parametres: { seuilBase: number; bandes: { min: number; label: string }[]; porteEsDifferee?: boolean };
   arbitrageEs?: 'conforme' | 'non_conforme' | null;
   arbitrageEsMotif?: string | null;
 };
@@ -594,6 +594,7 @@ export type GestionPorteEs = {
   motif: string | null;
   desaccordNonArbitre: boolean;
   ecarte: boolean;
+  differee?: boolean;
 };
 
 // ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———
@@ -613,6 +614,7 @@ export type GestionRapportDossier = {
   totalFinal: number;
   bande: string;
   hasHarmon: boolean;
+  esStatut?: 'conforme' | 'non_conforme' | 'differee' | null;
   reco: 'selection' | 'conditionnelle' | 'attente' | 'rejet';
   motifReco: string | null;
   conditions: GestionCondition[];

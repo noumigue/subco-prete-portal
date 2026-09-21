@@ -53,12 +53,14 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
   const base = totA + totB;
   const final = Math.min(100, base) + totBonus;
 
-  const esKo = esConforme === false;
+  // Porte E&S differee (decision UGP 21/09) : pas de verdict E&S a l'evaluation.
+  const porteDifferee = !!parametres.porteEsDifferee;
+  const esKo = !porteDifferee && esConforme === false;
   const notationComplete = notesCriteres.every((c) => {
     const n = notes[c.code]?.note;
     return n !== undefined && n !== '' && (notes[c.code]?.commentaire || '').trim() !== '';
   });
-  const canSubmit = esConforme !== null && (esKo || (notationComplete && sign));
+  const canSubmit = (porteDifferee || esConforme !== null) && (esKo || (notationComplete && sign));
 
   function payload() {
     const outNotes: Record<string, { note: number; commentaire: string }> = {};
@@ -68,7 +70,7 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
     }
     const outBonus: Record<string, number> = {};
     for (const c of bareme.bonus) if (bonus[c.code] !== undefined && bonus[c.code] !== '') outBonus[c.code] = Number(bonus[c.code]);
-    return { esConforme, notes: outNotes, bonus: outBonus };
+    return { esConforme: porteDifferee ? null : esConforme, notes: outNotes, bonus: outBonus };
   }
 
   async function onConfirmCoi() {
@@ -156,6 +158,12 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
       ) : (
         <>
           {/* Porte E&S */}
+          {porteDifferee ? (
+            <div className="gx-es">
+              <div className="gx-esh">Conformité environnementale et sociale (A6) : non évaluée à ce stade</div>
+              <div style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Décision UGP : la conformité E&amp;S sera vérifiée avant le comité. Notez le projet sur les blocs A et B.</div>
+            </div>
+          ) : (
           <div className={`gx-es${esKo ? ' ko' : ''}`}>
             <div className="gx-esh">Porte préalable — Conformité environnementale et sociale (A6, éliminatoire · §6.2.1)</div>
             {detail.bareme.porteEs?.description ? <div className="gx-cd" style={{ marginBottom: 6 }}>À vérifier : {detail.bareme.porteEs.description}</div> : null}
@@ -169,6 +177,7 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
             </span>
             {esKo ? <div style={{ marginTop: 10, fontWeight: 600, color: 'var(--gx-red-tx)' }}>Projet écarté du processus de sélection. La notation ne s&apos;applique pas.</div> : null}
           </div>
+          )}
 
           {!esKo ? (
             <>

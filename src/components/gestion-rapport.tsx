@@ -99,7 +99,7 @@ function RowGroup({ d, editable, expanded, onToggle, onReco, onConditions, pendi
         <td><div className="gx-num">{d.num}</div><div style={{ fontSize: 13, fontWeight: 600 }}>{d.op}</div><div style={{ fontSize: 12, color: 'var(--muted-warm)' }}>{d.proj}</div></td>
         <td className="n">{d.totalA}</td><td className="n">{d.totalB}</td><td className="n">+{d.bonus}</td>
         <td className="n" style={{ fontSize: 15 }}>{d.totalFinal}{d.hasHarmon ? <span title="écart harmonisé" style={{ color: 'var(--gold)' }}> *</span> : null}</td>
-        <td><span className={`gx-band ${bandClass(d.totalHorsBonus)}`}>{d.bande}</span></td>
+        <td><span className={`gx-band ${bandClass(d.totalHorsBonus)}`}>{d.bande}</span>{d.esStatut === 'differee' ? <div style={{ fontSize: 11.5, color: 'var(--gx-amber-tx)', marginTop: 4 }}>E&amp;S à vérifier avant le comité</div> : null}</td>
         <td>{editable ? (
           <select value={d.reco} disabled={pending} onChange={(e) => onReco(e.target.value)} style={{ padding: '5px 8px', fontSize: 12.5 }}>
             {Object.keys(RECO_LBL).map((k) => <option key={k} value={k}>{RECO_LBL[k]}</option>)}

@@ -86,6 +86,9 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
           </div>
         </div>
       ) : null}
+      {porteEs?.differee ? (
+        <div className="gx-flash">Conformité E&amp;S : à vérifier avant le comité (porte E&amp;S non évaluée à ce stade).</div>
+      ) : null}
       {porteEs?.arbitrage === 'conforme' ? (
         <div className="gx-flash">Porte E&S arbitrée « conforme » par l&apos;UGP.{porteEs.motif ? <> Motif : « {porteEs.motif} »</> : null}</div>
       ) : null}
