@@ -160,9 +160,12 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
             <div className="gx-esh">Porte préalable — Conformité environnementale et sociale (A6, éliminatoire · §6.2.1)</div>
             {detail.bareme.porteEs?.description ? <div className="gx-cd" style={{ marginBottom: 6 }}>À vérifier : {detail.bareme.porteEs.description}</div> : null}
             <div style={{ fontSize: 12.5, color: 'var(--muted-warm)', marginBottom: 9 }}>La conformité E&S est une condition préalable, non un critère noté. Un projet non conforme est écarté avant notation.</div>
+            {detail.arbitrageEs === 'conforme' ? (
+              <div className="gx-flash" style={{ marginBottom: 9 }}>L&apos;UGP a arbitré la porte E&S : <b>projet conforme</b>. Merci de le noter critère par critère.{detail.arbitrageEsMotif ? <> Motif : « {detail.arbitrageEsMotif} »</> : null}</div>
+            ) : null}
             <span className="gx-biseg">
               <button type="button" className={esConforme === true ? 'c' : ''} disabled={readonly} onClick={() => setEsConforme(true)}>Conforme → admis à la notation</button>
-              <button type="button" className={esConforme === false ? 'n' : ''} disabled={readonly} onClick={() => setEsConforme(false)}>Non conforme → écarté</button>
+              <button type="button" className={esConforme === false ? 'n' : ''} disabled={readonly || detail.arbitrageEs === 'conforme'} onClick={() => setEsConforme(false)}>Non conforme → écarté</button>
             </span>
             {esKo ? <div style={{ marginTop: 10, fontWeight: 600, color: 'var(--gx-red-tx)' }}>Projet écarté du processus de sélection. La notation ne s&apos;applique pas.</div> : null}
           </div>

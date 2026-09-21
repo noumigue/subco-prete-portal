@@ -38,6 +38,7 @@ import {
   demanderComplementJustif,
   enregistrerFiche,
   figerConsolidation,
+  arbitrerEs,
   genererPv,
   harmoniser,
   jalonDateReelle,
@@ -297,6 +298,12 @@ export async function harmoniserAction(input: { documentId: string; critereCode:
 export async function troisiemeEvaluateurAction(input: { documentId: string; evaluateurId: number }): Promise<{ ok: boolean; error?: string }> {
   const r = await troisiemeEvaluateur(input.documentId, input.evaluateurId);
   revalidatePath(`/gestion/dossiers/${input.documentId}/consolidation`);
+  return r;
+}
+export async function arbitrerEsAction(input: { documentId: string; decision: 'conforme' | 'non_conforme'; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const r = await arbitrerEs(input.documentId, input.decision, input.motif);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/consolidation`);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
   return r;
 }
 export async function figerConsolidationAction(documentId: string): Promise<{ ok: boolean; error?: string }> {

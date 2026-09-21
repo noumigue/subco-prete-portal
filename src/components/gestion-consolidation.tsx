@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionConsolidation as ConsData, GestionConsolidationRow } from '@/lib/portal-types';
-import { figerConsolidationAction, harmoniserAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
+import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
 
 function bandClass(total: number) {
   if (total >= 80) return 'gx-band-a';
@@ -19,6 +19,10 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   const ecarts = data.ecartsNonTraites || [];
   const totals = data.totals!;
   const aTroisieme = !!data.aTroisieme;
+  const porteEs = data.porteEs;
+  const desaccordEs = !!porteEs?.desaccordNonArbitre;
+  const ecarteEs = !!porteEs?.ecarte;
+  const [motifEs, setMotifEs] = useState('');
 
   const [harmonVals, setHarmonVals] = useState<Record<string, string>>({});
   const [troisieme, setTroisieme] = useState<number | ''>('');
@@ -56,6 +60,36 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
       {error ? <div className="gx-flash err">{error}</div> : null}
       {figee ? <div className="gx-flash">✓ Consolidation figée — versée au rapport d&apos;évaluation (temps 2). Lecture seule.</div> : null}
 
+      {!figee && desaccordEs ? (
+        <div className="gx-es ko">
+          <div className="gx-esh">⚠ Désaccord E&S à arbitrer</div>
+          <div style={{ fontSize: 13, color: 'var(--gx-red-tx)', marginBottom: 8 }}>
+            Les évaluateurs divergent sur la porte E&S (A6) : conforme pour {porteEs!.conformes.map((e) => e.nom).join(', ')} ; non conforme pour {porteEs!.nonConformes.map((e) => e.nom).join(', ')}.
+            Le figeage est bloqué tant que l&apos;UGP n&apos;a pas tranché.
+          </div>
+          <ul style={{ fontSize: 12.5, margin: '0 0 10px', paddingLeft: 18 }}>
+            <li><b>Non conforme</b> : le projet est écarté (aucune note retenue), la consolidation peut être figée.</li>
+            <li><b>Conforme</b> : la fiche de l&apos;évaluateur qui avait conclu « non conforme » lui revient pour qu&apos;il note le projet (double notation).</li>
+          </ul>
+          <textarea rows={2} style={{ width: '100%' }} placeholder="Motif de l'arbitrage (obligatoire)" value={motifEs} onChange={(e) => setMotifEs(e.target.value)} />
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+            <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending || !motifEs.trim()} onClick={() => run(() => arbitrerEsAction({ documentId: data.documentId!, decision: 'conforme', motif: motifEs.trim() }))}>Arbitrer : conforme</button>
+            <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending || !motifEs.trim()} onClick={() => run(() => arbitrerEsAction({ documentId: data.documentId!, decision: 'non_conforme', motif: motifEs.trim() }))}>Arbitrer : non conforme (écarté)</button>
+          </div>
+        </div>
+      ) : null}
+      {ecarteEs ? (
+        <div className="gx-es ko">
+          <div className="gx-esh">Projet écarté à la porte E&S (A6)</div>
+          <div style={{ fontSize: 13, color: 'var(--gx-red-tx)' }}>
+            {porteEs?.arbitrage === 'non_conforme' ? <>Arbitrage UGP : non conforme.{porteEs.motif ? <> Motif : « {porteEs.motif} »</> : null}</> : 'Les évaluateurs ont conclu « non conforme ».'} Aucune note n&apos;est retenue.
+          </div>
+        </div>
+      ) : null}
+      {porteEs?.arbitrage === 'conforme' ? (
+        <div className="gx-flash">Porte E&S arbitrée « conforme » par l&apos;UGP.{porteEs.motif ? <> Motif : « {porteEs.motif} »</> : null}</div>
+      ) : null}
+
       {!figee && ecarts.length ? (
         <div className="gx-es ko">
           <div className="gx-esh">⚠ {ecarts.length} écart(s) ≥ 20 % à traiter</div>
@@ -79,7 +113,7 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
             </div>
           ) : null}
         </div>
-      ) : !figee ? (
+      ) : !figee && !desaccordEs && !ecarteEs ? (
         <div className="gx-es"><div className="gx-esh" style={{ color: 'var(--emerald-dark)' }}>✓ Aucun écart ≥ 20 % en attente</div><div style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Consolidation prête à être figée.</div></div>
       ) : null}
 
@@ -124,8 +158,8 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
         <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '10px 0 0' }}>* note harmonisée. Départage ex æquo (6.5.1) appliqué au classement : Bloc A → impact socio-éco → cofinancement → inclusion.</p>
         {!figee ? (
           <div style={{ marginTop: 14 }}>
-            <button type="button" className="gx-btn gx-btn-primary" disabled={pending || ecarts.length > 0} onClick={() => run(() => figerConsolidationAction(data.documentId!))}>
-              {ecarts.length ? 'Traitez les écarts pour figer' : (pending ? 'Figeage…' : 'Figer la consolidation')}
+            <button type="button" className="gx-btn gx-btn-primary" disabled={pending || ecarts.length > 0 || desaccordEs} onClick={() => run(() => figerConsolidationAction(data.documentId!))}>
+              {desaccordEs ? 'Arbitrez la porte E&S pour figer' : ecarts.length ? 'Traitez les écarts pour figer' : (pending ? 'Figeage…' : 'Figer la consolidation')}
             </button>
           </div>
         ) : null}

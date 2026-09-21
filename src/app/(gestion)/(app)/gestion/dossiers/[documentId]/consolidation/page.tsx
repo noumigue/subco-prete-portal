@@ -25,7 +25,9 @@ export default async function ConsolidationPage({
         <Link className="gx-back" href="/gestion/dossiers">← File des dossiers</Link>
         <h1 className="gx-page-title">Consolidation</h1>
         <div className="gx-card"><p style={{ margin: 0, fontSize: 13.5, color: 'var(--muted-warm)' }}>
-          La consolidation n&apos;est accessible qu&apos;une fois les deux fiches de scoring soumises (E3).
+          {data.arbitrageEs === 'conforme'
+            ? "Porte E&S arbitrée « conforme » : l'évaluateur qui avait conclu « non conforme » doit maintenant noter le projet. La consolidation rouvrira à sa signature."
+            : <>La consolidation n&apos;est accessible qu&apos;une fois les deux fiches de scoring soumises (E3).</>}
         </p></div>
       </>
     );

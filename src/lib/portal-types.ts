@@ -526,6 +526,8 @@ export type GestionFicheDetail = {
   } | null;
   bareme: { blocA: GestionBaremeCritere[]; blocB: GestionBaremeCritere[]; bonus: GestionBaremeCritere[]; porteEs: GestionBaremeCritere | null };
   parametres: { seuilBase: number; bandes: { min: number; label: string }[] };
+  arbitrageEs?: 'conforme' | 'non_conforme' | null;
+  arbitrageEsMotif?: string | null;
 };
 
 export type GestionEvaluateurSlot = { evaluateurId: number | null; nom: string | null; ficheStatut: 'brouillon' | 'soumise' | null } | null;
@@ -581,6 +583,17 @@ export type GestionConsolidation = {
   ecartPct?: number;
   statut?: 'en_cours' | 'figee';
   evaluateurs?: { id: number; nom: string }[];
+  porteEs?: GestionPorteEs;
+  arbitrageEs?: 'conforme' | 'non_conforme' | null;
+};
+
+export type GestionPorteEs = {
+  conformes: { rang: number; nom: string }[];
+  nonConformes: { rang: number; nom: string }[];
+  arbitrage: 'conforme' | 'non_conforme' | null;
+  motif: string | null;
+  desaccordNonArbitre: boolean;
+  ecarte: boolean;
 };
 
 // ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———

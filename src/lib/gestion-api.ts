@@ -175,6 +175,8 @@ export const harmoniser = (documentId: string, critereCode: string, noteRetenue:
   gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/harmoniser`, { critereCode, noteRetenue });
 export const troisiemeEvaluateur = (documentId: string, evaluateurId: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/troisieme`, { evaluateurId });
+export const arbitrerEs = (documentId: string, decision: 'conforme' | 'non_conforme', motif: string) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/arbitrer-es`, { decision, motif });
 export const figerConsolidation = (documentId: string) => gestionPost(`/api/gestion/dossiers/${documentId}/consolidation/figer`);
 
 // ——— M5 phase 2 temps 2 : rapport, Comité, décisions, publication ———
