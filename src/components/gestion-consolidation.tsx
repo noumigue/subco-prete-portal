@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionConsolidation as ConsData, GestionConsolidationRow } from '@/lib/portal-types';
+import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
 import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
 
 function bandClass(total: number) {
@@ -59,6 +60,8 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
       <p className="gx-page-sub">Notes des deux évaluateurs (soumises), moyenne par critère, écarts signalés (E4).</p>
       {error ? <div className="gx-flash err">{error}</div> : null}
       {figee ? <div className="gx-flash">✓ Consolidation figée — versée au rapport d&apos;évaluation (temps 2). Lecture seule.</div> : null}
+
+      <GestionPiecesDossier donnees={data.piecesDossier} />
 
       {!figee && desaccordEs ? (
         <div className="gx-es ko">

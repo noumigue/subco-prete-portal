@@ -510,11 +510,25 @@ export type GestionMesEvaluationRow = {
   ficheStatut: 'brouillon' | 'soumise' | null;
 };
 
+// Pieces du dossier pour les ecrans d'evaluation : une ligne par type de piece du referentiel.
+export type GestionPiecesDossier = {
+  pieces: {
+    libelle: string;
+    groupe: string;
+    exigence: string | null;
+    depot: { url: string; nom: string } | null;
+    complement: { url: string; nom: string; recuLe: string | null } | null;
+  }[];
+  autres: { libelle: string; url: string; nom: string; spontanee: boolean }[];
+};
+
 export type GestionFicheDetail = {
   documentId: string;
   numeroDossier: string | null;
   organisation: { nom: string; filiere: string | null } | null;
   pdfPermanentUrl: string | null;
+  // Absent tant que l'evaluateur n'a pas declare l'absence de conflit d'interets.
+  piecesDossier?: GestionPiecesDossier | null;
   rang: number;
   fiche: {
     coiDeclare: boolean;
@@ -572,6 +586,7 @@ export type GestionConsolidationTotals = {
 
 export type GestionConsolidation = {
   ready: boolean;
+  piecesDossier?: GestionPiecesDossier | null;
   documentId?: string;
   numeroDossier?: string | null;
   organisation?: { nom: string } | null;

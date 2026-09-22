@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import type { GestionBaremeCritere, GestionFicheDetail } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
+import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
 import { declarerCoiAction, enregistrerFicheAction, recuserAction, soumettreFicheAction } from '@/app/(gestion)/actions';
 
 type Notes = Record<string, { note: string; commentaire: string }>;
@@ -110,12 +111,16 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
   const setNote = (code: string, note: string) => setNotes((p) => ({ ...p, [code]: { note, commentaire: p[code]?.commentaire || '' } }));
   const setCmt = (code: string, commentaire: string) => setNotes((p) => ({ ...p, [code]: { note: p[code]?.note || '', commentaire } }));
 
-  function CritLine({ c }: { c: GestionBaremeCritere }) {
+  // Rendu d'une ligne de critere. Appele comme une FONCTION, surtout pas comme un composant
+  // (<CritLine />) : un composant declare dans le rendu est recree a chaque frappe, React
+  // demonte alors toutes les lignes — le champ perdait le focus apres un caractere et la page
+  // sautait en haut du bloc (signale le 22/09).
+  function critLine(c: GestionBaremeCritere) {
     const val = notes[c.code]?.note ?? '';
     const cmt = notes[c.code]?.commentaire ?? '';
     const need = val !== '' && cmt.trim() === '';
     return (
-      <div className="gx-crit">
+      <div className="gx-crit" key={c.code}>
         <div className="gx-ch">
           <div><div className="gx-cn">{c.code}. {c.libelle}</div><div className="gx-cd">{c.description}</div></div>
           <div className="gx-noteinput">
@@ -139,11 +144,14 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
         <h1>Fiche de scoring — {detail.organisation?.nom} <span className="gx-num" style={{ fontSize: 13 }}>{detail.numeroDossier}</span></h1>
         <div className="gx-sub">
           Évaluateur {detail.rang} · grille Annexe 6
-          {detail.pdfPermanentUrl ? <> · <a className="gx-back" style={{ margin: 0 }} href={portalMediaUrl(detail.pdfPermanentUrl) || '#'} target="_blank" rel="noopener">Consulter le dossier ↗</a></> : null}
+          {detail.pdfPermanentUrl ? <> · <a className="gx-back" style={{ margin: 0 }} href={portalMediaUrl(detail.pdfPermanentUrl) || '#'} target="_blank" rel="noopener">Consulter le formulaire (PDF) ↗</a></> : null}
         </div>
       </div>
 
       {error ? <div className="gx-flash err">{error}</div> : null}
+
+      {/* Pieces du dossier : transmises par le serveur seulement apres la declaration d'absence de conflit d'interets. */}
+      {!coiNeeded ? <GestionPiecesDossier donnees={detail.piecesDossier} /> : null}
 
       {coiNeeded ? (
         <>
@@ -187,9 +195,9 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
           {!esKo ? (
             <>
               <div className="gx-card"><div className="gx-block-title">Bloc A — Infrastructure <span className="gx-tot">Total A : {totA} / 60</span></div>
-                {bareme.blocA.filter((c) => c.type === 'note').map((c) => <CritLine key={c.code} c={c} />)}</div>
+                {bareme.blocA.filter((c) => c.type === 'note').map((c) => critLine(c))}</div>
               <div className="gx-card"><div className="gx-block-title">Bloc B — Candidat <span className="gx-tot">Total B : {totB} / 40</span></div>
-                {bareme.blocB.map((c) => <CritLine key={c.code} c={c} />)}</div>
+                {bareme.blocB.map((c) => critLine(c))}</div>
               <div className="gx-card"><div className="gx-block-title">Forces et faiblesses du dossier</div>
                 <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>Une idée par ligne. Au moins une force et une faiblesse : elles alimentent le rapport d&apos;évaluation (Manuel §6.3.3).</p>
                 <div className="gx-inline2">

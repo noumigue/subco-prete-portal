@@ -7337,6 +7337,14 @@ a.docs-item:hover .docs-item-dl {
 .gx-empty { background: #fff; border: 1px dashed var(--sage-border); border-radius: var(--gx-radius); padding: 26px; text-align: center; color: var(--muted-warm); font-size: 13.5px; }
 .gx-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+/* ---- bloc « Pieces du dossier » (evaluation) ---- */
+.gx-pdoss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 4px 18px; }
+.gx-pdoss-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line-warm); font-size: 13px; }
+.gx-pdoss-lib { min-width: 0; }
+.gx-pdoss-dl { white-space: nowrap; color: var(--pine); font-weight: 600; text-decoration: none; }
+.gx-pdoss-vide { white-space: nowrap; font-size: 11.5px; color: var(--muted-warm); background: var(--sage-tile); border-radius: 999px; padding: 1px 8px; }
+.gx-pdoss-toggle { border: 0; background: none; color: var(--pine); font-weight: 600; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0; }
+
 /* ---- instruction ---- */
 .gx-dhead { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid var(--line-warm); padding-bottom: 13px; margin-bottom: 14px; }
 .gx-dhead h1 { font-size: 19px; color: var(--pine); margin: 0 0 3px; }
