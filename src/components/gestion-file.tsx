@@ -21,6 +21,18 @@ const ATTENTE_SEUIL = 2;
 // Une echeance candidat a 2 jours ou moins (ou depassee) merite l'attention de l'instructeur.
 const ECHEANCE_PROCHE_JOURS = 2;
 
+// Onglet Evaluation (UGP) : etats de la notation, dans l'ordre du circuit.
+type EtatEval = 'a_designer' | 'un_evaluateur' | 'notation' | 'a_consolider' | 'figee';
+const ETATS_EVAL: [EtatEval, string, string][] = [
+  ['a_designer', 'Évaluateurs à désigner', 'bad'],
+  ['un_evaluateur', 'Un seul évaluateur', 'warn'],
+  ['notation', 'Notation en cours', 'info'],
+  ['a_consolider', 'À consolider', 'ok'],
+  ['figee', 'Consolidation figée', 'idle'],
+];
+// Des evaluateurs designes sans fiche soumise depuis ce nombre de jours : a relancer.
+const SANS_FICHE_SEUIL = 3;
+
 const VERDICT_LABEL: Record<string, string> = {
   complet: 'Complet',
   complements: 'À compléter',
@@ -77,6 +89,14 @@ function norm(s: string | null | undefined) {
 
 function Pill({ d }: { d: GestionDossierRow }) {
   if (tabOf(d) === 'clos') return <span className="gx-pill gx-pill-rej">{d.statutClos || 'Clos'}</span>;
+  if (tabOf(d) === 'evaluation' && d.evaluation) {
+    const e = d.evaluation;
+    if (e.etat === 'a_designer') return <span className="gx-pill gx-pill-rej">Évaluateurs à désigner</span>;
+    if (e.etat === 'un_evaluateur') return <span className="gx-pill gx-pill-val">Un seul évaluateur{e.recuseARemplacer ? ' (récusation)' : ''}</span>;
+    if (e.etat === 'notation') return <span className="gx-pill gx-pill-comp">Notation {e.fichesSoumises}/{Math.max(2, e.assignes)} soumise{e.fichesSoumises > 1 ? 's' : ''}</span>;
+    if (e.etat === 'a_consolider') return <span className="gx-pill gx-pill-val">À consolider{e.ecartsNonHarmonises ? ` · ${e.ecartsNonHarmonises} écart(s)` : ''}</span>;
+    return <span className="gx-pill gx-pill-ok">Figée{e.totalFinal != null ? ` · ${Math.round(e.totalFinal * 10) / 10}/100` : ''}</span>;
+  }
   if (d.instruction?.workflow === 'renvoye') return <span className="gx-pill gx-pill-rej">↩ Renvoyé par l&apos;UGP</span>;
   if (d.enValidation) {
     const j = d.enAttenteDepuisJours ?? null;
@@ -127,7 +147,7 @@ function Ligne({ label, more, children }: { label: string; more?: boolean; child
   );
 }
 
-type Tri = 'depot_asc' | 'depot_desc' | 'attente' | 'numero';
+type Tri = 'depot_asc' | 'depot_desc' | 'attente' | 'numero' | 'entree_eval';
 
 export function GestionFile({
   dossiers,
@@ -163,31 +183,44 @@ export function GestionFile({
   const [critere, setCritere] = useState('');
   const [verdictSelect, setVerdictSelect] = useState('');
   const [tri, setTri] = useState<Tri>(triDefaut);
+  // Onglet Evaluation (UGP) : l'UGP arrive sur les dossiers qui attendent ses evaluateurs.
+  const [etatEval, setEtatEval] = useState<'' | EtatEval>('a_designer');
+  const [sigRecuse, setSigRecuse] = useState(false);
+  const [sigEcart, setSigEcart] = useState(false);
+  const [sigEs, setSigEs] = useState(false);
+  const [sigSansFiche, setSigSansFiche] = useState(false);
+  const [evaluateur, setEvaluateur] = useState('');
 
   function reinitialiser() {
     setRecherche(''); setScope(scopeDefaut); setVerdict(''); setTravail('');
     setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false);
-    setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(triDefaut);
+    setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(tab === 'evaluation' && ugp ? 'entree_eval' : triDefaut);
+    setEtatEval('a_designer'); setSigRecuse(false); setSigEcart(false); setSigEs(false); setSigSansFiche(false); setEvaluateur('');
   }
   function changerOnglet(t: Tab) {
     setTab(t);
     // Les verdicts et l'avancement ne sont pas les memes d'une etape a l'autre.
-    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect('');
+    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect(''); setEvaluateur('');
+    // Tri par defaut propre a chaque onglet : entree en evaluation pour l'UGP a l'evaluation.
+    if (t === 'evaluation' && ugp) setTri('entree_eval');
+    else if (tri === 'entree_eval') setTri(triDefaut);
   }
 
   const estAMoi = (d: GestionDossierRow) => currentUserId != null && d.prisEnChargePar?.id === currentUserId;
   const etapeInstruite = tab === 'completude' || tab === 'eligibilite';
+  const etapeEval = ugp && tab === 'evaluation';
 
   // Listes de « Plus de critères », tirees des dossiers eux-memes.
   const options = useMemo(() => {
-    const f = new Set<string>(), p = new Set<string>(), c = new Set<string>();
+    const f = new Set<string>(), p = new Set<string>(), c = new Set<string>(), ev = new Set<string>();
     for (const d of dossiers) {
       if (d.organisation?.filiere) f.add(d.organisation.filiere);
       if (d.organisation?.province) p.add(d.organisation.province);
       for (const x of d.criteresNonConformes || []) c.add(x);
+      for (const e of d.evaluation?.evaluateurs || []) if (e.nom) ev.add(e.nom);
     }
     const trie = (s: Set<string>) => [...s].sort((a, b) => a.localeCompare(b, 'fr'));
-    return { filieres: trie(f), provinces: trie(p), criteres: trie(c) };
+    return { filieres: trie(f), provinces: trie(p), criteres: trie(c), evaluateurs: trie(ev) };
   }, [dossiers]);
 
   // 1. Recherche + « Mes dossiers » (instructeur) : s'appliquent aussi aux compteurs d'onglets.
@@ -207,6 +240,7 @@ export function GestionFile({
   if (province) base = base.filter((d) => d.organisation?.province === province);
   if (critere) base = base.filter((d) => (d.criteresNonConformes || []).includes(critere));
   if (verdictSelect) base = base.filter((d) => d.instruction?.verdictPropose === verdictSelect);
+  if (etapeEval && evaluateur) base = base.filter((d) => (d.evaluation?.evaluateurs || []).some((e) => e.nom === evaluateur));
 
   // 3. UGP — « Afficher » : tous / à valider (étapes instruites seulement).
   const nTous = base.length;
@@ -228,7 +262,11 @@ export function GestionFile({
       ];
   const nTravail = (t: Travail) => base.filter((d) => travailOf(d) === t).length;
 
+  // Onglet Evaluation (UGP) : etat de la notation.
+  const nEtatEval = (e: EtatEval) => base.filter((d) => d.evaluation?.etat === e).length;
+
   let items = base;
+  if (etapeEval && etatEval) items = items.filter((d) => d.evaluation?.etat === etatEval);
   if (vueAValider && verdict) items = items.filter((d) => d.instruction?.verdictPropose === verdict);
   if (etapeInstruite && !ugp && travail) items = items.filter((d) => travailOf(d) === travail);
 
@@ -238,6 +276,17 @@ export function GestionFile({
   const nEcheance = items.filter(echeanceProche).length;
   const nModif = items.filter((d) => d.modificationEnCours).length;
   const nAjout = items.filter((d) => d.pieceAjoutee).length;
+  const sansFiche = (d: GestionDossierRow) => (d.evaluation?.sansFicheDepuisJours ?? -1) >= SANS_FICHE_SEUIL;
+  const nRecuse = items.filter((d) => d.evaluation?.recuseARemplacer).length;
+  const nEcart = items.filter((d) => (d.evaluation?.ecartsNonHarmonises || 0) > 0).length;
+  const nEs = items.filter((d) => d.evaluation?.desaccordEs).length;
+  const nSansFiche = items.filter(sansFiche).length;
+  if (etapeEval) {
+    if (sigRecuse) items = items.filter((d) => d.evaluation?.recuseARemplacer);
+    if (sigEcart) items = items.filter((d) => (d.evaluation?.ecartsNonHarmonises || 0) > 0);
+    if (sigEs) items = items.filter((d) => d.evaluation?.desaccordEs);
+    if (sigSansFiche) items = items.filter(sansFiche);
+  }
   if (etapeInstruite) {
     if (arbitrer) items = items.filter((d) => (d.aArbitrer?.length || 0) > 0);
     if (attente) items = items.filter((d) => d.enValidation && (d.enAttenteDepuisJours ?? 0) >= ATTENTE_SEUIL);
@@ -251,6 +300,7 @@ export function GestionFile({
   items = [...items].sort((a, b) => {
     if (tri === 'depot_desc') return depot(b).localeCompare(depot(a));
     if (tri === 'numero') return String(a.numeroDossier || '').localeCompare(String(b.numeroDossier || ''));
+    if (tri === 'entree_eval') return String(a.evaluation?.entreeEvaluationLe || '9').localeCompare(String(b.evaluation?.entreeEvaluationLe || '9')) || depot(a).localeCompare(depot(b));
     if (tri === 'attente') return (b.enAttenteDepuisJours ?? -1) - (a.enAttenteDepuisJours ?? -1) || depot(a).localeCompare(depot(b));
     return depot(a).localeCompare(depot(b));
   });
@@ -266,6 +316,12 @@ export function GestionFile({
     etapeInstruite && echeance ? 'échéance proche ou dépassée' : null,
     etapeInstruite && modifEnCours ? 'candidat en train de modifier' : null,
     etapeInstruite && pieceAjoutee ? 'pièce ajoutée' : null,
+    etapeEval && etatEval ? ETATS_EVAL.find(([k]) => k === etatEval)?.[1].toLowerCase() : null,
+    etapeEval && sigRecuse ? 'évaluateur récusé' : null,
+    etapeEval && sigEcart ? 'écart à harmoniser' : null,
+    etapeEval && sigEs ? 'désaccord E&S' : null,
+    etapeEval && sigSansFiche ? `aucune fiche depuis ${SANS_FICHE_SEUIL} j` : null,
+    etapeEval && evaluateur ? `évaluateur : ${evaluateur}` : null,
     filiere || null,
     province || null,
     critere ? `non conforme : ${critere}` : null,
@@ -360,7 +416,30 @@ export function GestionFile({
           </Ligne>
         ) : null}
 
+        {etapeEval ? (
+          <Ligne label="Notation">
+            <Chip on={!etatEval} onClick={() => setEtatEval('')} n={base.length}>Tous</Chip>
+            {ETATS_EVAL.map(([k, label, dot]) => (
+              <Chip key={k} on={etatEval === k} onClick={() => setEtatEval(k)} dot={dot} n={nEtatEval(k)}>{label}</Chip>
+            ))}
+          </Ligne>
+        ) : null}
+        {etapeEval ? (
+          <Ligne label="Signaux">
+            <Chip on={sigRecuse} onClick={() => setSigRecuse((v) => !v)} n={nRecuse}>↺ Évaluateur récusé, à remplacer</Chip>
+            <Chip on={sigEcart} onClick={() => setSigEcart((v) => !v)} n={nEcart}>⚖ Écart à harmoniser</Chip>
+            <Chip on={sigEs} onClick={() => setSigEs((v) => !v)} n={nEs}>⚠ Désaccord E&amp;S à arbitrer</Chip>
+            <Chip on={sigSansFiche} onClick={() => setSigSansFiche((v) => !v)} n={nSansFiche}>⏳ Aucune fiche depuis {SANS_FICHE_SEUIL} j</Chip>
+          </Ligne>
+        ) : null}
+
         <Ligne label="Plus de critères" more>
+          {etapeEval && options.evaluateurs.length ? (
+            <select value={evaluateur} onChange={(e) => setEvaluateur(e.target.value)} aria-label="Évaluateur">
+              <option value="">Évaluateur : tous</option>
+              {options.evaluateurs.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          ) : null}
           <select value={filiere} onChange={(e) => setFiliere(e.target.value)} aria-label="Filière">
             <option value="">Filière : toutes</option>
             {options.filieres.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -384,7 +463,8 @@ export function GestionFile({
           <select value={tri} onChange={(e) => setTri(e.target.value as Tri)} aria-label="Trier">
             <option value="depot_asc">Trier : dépôt le plus ancien</option>
             <option value="depot_desc">Trier : dépôt le plus récent</option>
-            {ugp ? <option value="attente">Trier : attente UGP la plus longue</option> : null}
+            {ugp && etapeInstruite ? <option value="attente">Trier : attente UGP la plus longue</option> : null}
+            {etapeEval ? <option value="entree_eval">Trier : entrée en évaluation la plus ancienne</option> : null}
             <option value="numero">Trier : numéro de dossier</option>
           </select>
         </Ligne>
@@ -414,7 +494,9 @@ export function GestionFile({
                   {d.organisation?.filiere ? <span>{d.organisation.filiere}</span> : null}
                   {d.organisation?.province ? <span>{d.organisation.province}</span> : null}
                   {d.dateDepot ? <span>déposé le {new Date(d.dateDepot).toLocaleDateString('fr-FR')}</span> : null}
-                  {d.prisEnChargePar ? <span>pris en charge : <b>{d.prisEnChargePar.nom}</b></span> : null}
+                  {phase === 'evaluation' && d.evaluation?.evaluateurs.length ? (
+                    <span>évaluateurs : <b>{d.evaluation.evaluateurs.map((e) => e.nom).join(', ')}</b></span>
+                  ) : d.prisEnChargePar ? <span>pris en charge : <b>{d.prisEnChargePar.nom}</b></span> : null}
                 </div>
               </div>
               <Pill d={d} />
@@ -459,9 +541,14 @@ export function GestionFile({
                   <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/${instructionPath}`}>Consulter</Link>
                 ) : null}
 
-                {phase === 'evaluation' && ugp ? (
-                  <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/evaluation`}>Évaluation</Link>
-                ) : null}
+                {phase === 'evaluation' && ugp ? (() => {
+                  const e = d.evaluation?.etat;
+                  if (e === 'a_consolider' || e === 'figee') {
+                    return <Link className={`gx-btn gx-btn-sm ${e === 'a_consolider' ? 'gx-btn-gold' : 'gx-btn-ghost'}`} href={`/gestion/dossiers/${d.documentId}/consolidation`}>{e === 'a_consolider' ? 'Consolider' : 'Consulter'}</Link>;
+                  }
+                  const designer = !e || e === 'a_designer' || e === 'un_evaluateur';
+                  return <Link className={`gx-btn gx-btn-sm ${designer ? 'gx-btn-gold' : 'gx-btn-ghost'}`} href={`/gestion/dossiers/${d.documentId}/evaluation`}>{designer ? 'Désigner' : 'Suivre'}</Link>;
+                })() : null}
                 {phase === 'evaluation' && role === 'instructeur' ? <span className="gx-pill gx-pill-comp">Voir « Mes évaluations »</span> : null}
                 {phase === 'clos' ? (
                   <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/completude`}>Consulter</Link>

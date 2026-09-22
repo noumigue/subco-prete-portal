@@ -390,6 +390,19 @@ export type GestionDossierRow = {
   echeanceComplement?: string | null;
   // Libelles des criteres d'eligibilite constates non conformes.
   criteresNonConformes?: string[];
+  // Etat de la notation (dossiers en evaluation seulement), pour les filtres de l'UGP.
+  evaluation?: {
+    etat: 'a_designer' | 'un_evaluateur' | 'notation' | 'a_consolider' | 'figee';
+    evaluateurs: { id: number | null; nom: string }[];
+    assignes: number;
+    fichesSoumises: number;
+    recuseARemplacer: boolean;
+    ecartsNonHarmonises: number;
+    desaccordEs: boolean;
+    sansFicheDepuisJours: number | null;
+    totalFinal: number | null;
+    entreeEvaluationLe: string | null;
+  } | null;
   aArbitrer?: GestionContradiction[];
   // Jours ecoules depuis la proposition, pour les dossiers en attente de validation UGP.
   enAttenteDepuisJours?: number | null;
