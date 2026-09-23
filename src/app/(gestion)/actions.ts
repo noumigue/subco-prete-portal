@@ -6,6 +6,7 @@ import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset 
 import { uploadPortalFile } from '@/lib/portal-api';
 import {
   annulerRenvoiEvaluation,
+  annulerFicheSignee,
   assignerEvaluateur,
   libererPlaceEvaluateur,
   verifierCompletude,
@@ -288,6 +289,12 @@ export async function soumettreFicheAction(documentId: string, data: FichePayloa
 }
 
 // ——— M5 phase 2 : assignation & consolidation (UGP) ———
+export async function annulerFicheSigneeAction(input: { documentId: string; rang: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const r = await annulerFicheSignee(input.documentId, input.rang, input.motif);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/consolidation`);
+  return r;
+}
 export async function libererPlaceEvaluateurAction(input: { documentId: string; rang: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
   const r = await libererPlaceEvaluateur(input.documentId, input.rang, input.motif);
   revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);

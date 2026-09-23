@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionEvaluateurSlot, GestionEvaluationAssign as AssignData } from '@/lib/portal-types';
-import { assignerEvaluateurAction, libererPlaceEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
+import { annulerFicheSigneeAction, assignerEvaluateurAction, libererPlaceEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
 
 function FicheEtat({ slot }: { slot: GestionEvaluateurSlot }) {
   if (!slot?.evaluateurId) return <span className="gx-pill gx-pill-comp">Non assigné</span>;
@@ -20,6 +20,9 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
   // Liberer une place : possible tant que la fiche n'est pas signee.
   const [liberOpen, setLiberOpen] = useState<number | null>(null);
   const [motifLiber, setMotifLiber] = useState('');
+  // Annulation d'une fiche signee : la fiche est conservee pour l'audit, la place se libere.
+  const [annulOpen, setAnnulOpen] = useState<number | null>(null);
+  const [motifAnnul, setMotifAnnul] = useState('');
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [motifRenvoi, setMotifRenvoi] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,6 +42,14 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
     setPending(null);
     if (r.ok) router.refresh();
     else setError(r.error || 'Assignation refusée.');
+  }
+
+  async function annuler(rang: number) {
+    setBusy(true); setError(null);
+    const r = await annulerFicheSigneeAction({ documentId: data.documentId, rang, motif: motifAnnul.trim() });
+    setBusy(false);
+    if (r.ok) { setAnnulOpen(null); setMotifAnnul(''); router.refresh(); }
+    else setError(r.error || 'Annulation refusée.');
   }
 
   async function liberer(rang: number) {
@@ -67,9 +78,28 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
             {data.evaluateurs.map((ev) => <option key={ev.id} value={ev.id}>{ev.nom}</option>)}
           </select>
           <FicheEtat slot={slot} />
-          {signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche signée — la notation est acquise, cette place ne change plus.</span> : null}
+          {signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche signée — la notation est acquise.</span> : null}
           {locked && !signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche commencée — la place est verrouillée.</span> : null}
         </div>
+        {signee ? (
+          annulOpen === rang ? (
+            <div className="gx-subform" style={{ marginLeft: 0, marginTop: 10 }}>
+              <label style={{ color: 'var(--gx-red-tx)' }}>Annuler cette fiche signée</label>
+              <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 8px' }}>
+                À réserver aux cas graves : conflit d&apos;intérêts découvert après coup, fiche viciée, départ de l&apos;évaluateur.
+                La fiche est <b>conservée</b> et marquée annulée (pièce d&apos;audit) ; la place se libère et un nouvel évaluateur repart d&apos;une fiche vierge.
+                Les harmonisations déjà saisies sont effacées{data.consolidationStatut === 'figee' ? <>, et <b>la consolidation figée est annulée</b> : total et bande disparaissent</> : null}.
+              </p>
+              <textarea rows={2} value={motifAnnul} onChange={(e) => setMotifAnnul(e.target.value)} placeholder="Motif de l'annulation (obligatoire) — inscrit au journal." />
+              <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={busy || !motifAnnul.trim()} onClick={() => annuler(rang)}>{busy ? 'Annulation…' : 'Confirmer l\u2019annulation'}</button>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={busy} onClick={() => setAnnulOpen(null)}>Renoncer</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" style={{ marginTop: 10 }} onClick={() => { setAnnulOpen(rang); setMotifAnnul(''); }}>Annuler la fiche signée…</button>
+          )
+        ) : null}
         {locked && !signee ? (
           liberOpen === rang ? (
             <div className="gx-subform" style={{ marginLeft: 0, marginTop: 10 }}>
@@ -142,7 +172,8 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
       <p className="gx-annot">
         <b>E2 — assignation par l&apos;UGP.</b> Évaluateur 1 &amp; 2 parmi les experts (comptes internes). L&apos;évaluateur déclare l&apos;absence de conflit d&apos;intérêts
         (§5.8.1) à l&apos;ouverture de sa fiche ; une récusation revient ici pour réassignation. Le 3ᵉ évaluateur se désigne depuis la consolidation, en cas d&apos;écart.
-        <br /><b>Place verrouillée</b> dès que l&apos;évaluateur ouvre sa fiche : pour en changer, il se récuse, ou l&apos;UGP libère la place avec un motif. Une fiche signée ne se libère pas.
+        <br /><b>Place verrouillée</b> dès que l&apos;évaluateur ouvre sa fiche : pour en changer, il se récuse, ou l&apos;UGP libère la place avec un motif.
+        Une fiche <b>signée</b> ne se libère pas : elle s&apos;annule, motif à l&apos;appui — elle reste au dossier comme pièce d&apos;audit, la consolidation figée est défaite et les harmonisations effacées.
       </p>
     </>
   );
