@@ -26,6 +26,10 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   const [motifEs, setMotifEs] = useState('');
 
   const [harmonVals, setHarmonVals] = useState<Record<string, string>>({});
+  // La note retenue arrive pre-remplie avec la moyenne des deux evaluateurs : c'est la base de
+  // la discussion technique (6.3.2). L'UGP la modifie si l'harmonisation aboutit ailleurs.
+  const moyenne = (n1: number | null, n2: number | null) =>
+    n1 == null || n2 == null ? '' : String(Math.round(((n1 + n2) / 2) * 2) / 2);
   const [troisieme, setTroisieme] = useState<number | ''>('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,13 +103,16 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
       {!figee && ecarts.length ? (
         <div className="gx-es ko">
           <div className="gx-esh">⚠ {ecarts.length} écart(s) ≥ 20 % à traiter</div>
-          <div style={{ fontSize: 13, color: 'var(--gx-red-tx)', marginBottom: 10 }}>Sur les critères en écart, harmonisez la note retenue après discussion technique, ou sollicitez un 3ᵉ évaluateur (6.3.2).</div>
+          <div style={{ fontSize: 13, color: 'var(--gx-red-tx)', marginBottom: 10 }}>Sur les critères en écart, harmonisez la note retenue après discussion technique, ou sollicitez un 3ᵉ évaluateur (6.3.2). La moyenne des deux évaluateurs est pré-remplie : ajustez-la si la discussion aboutit à une autre note (demi-points acceptés).</div>
           {ecarts.map((e) => (
             <div key={e.code} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '5px 0' }}>
               <b style={{ minWidth: 42 }}>{e.code}</b>
               <span style={{ flex: 1, minWidth: 160, fontSize: 13 }}>{e.libelle}</span>
-              <input type="number" min={0} step={1} placeholder="note retenue" style={{ width: 120 }} value={harmonVals[e.code] ?? ''} onChange={(ev) => setHarmonVals((p) => ({ ...p, [e.code]: ev.target.value }))} />
-              <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending || harmonVals[e.code] === undefined || harmonVals[e.code] === ''} onClick={() => run(() => harmoniserAction({ documentId: data.documentId!, critereCode: e.code, noteRetenue: Number(harmonVals[e.code]) }))}>Retenir</button>
+              <span style={{ fontSize: 12.5, color: 'var(--gx-red-tx)', minWidth: 190 }}>
+                {e.n1 ?? '—'} et {e.n2 ?? '—'} — moyenne <b>{moyenne(e.n1, e.n2) || '—'}</b>
+              </span>
+              <input type="number" min={0} step={0.5} placeholder="note retenue" style={{ width: 120 }} value={harmonVals[e.code] ?? moyenne(e.n1, e.n2)} onChange={(ev) => setHarmonVals((p) => ({ ...p, [e.code]: ev.target.value }))} />
+              <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={pending || (harmonVals[e.code] ?? moyenne(e.n1, e.n2)) === ''} onClick={() => run(() => harmoniserAction({ documentId: data.documentId!, critereCode: e.code, noteRetenue: Number(harmonVals[e.code] ?? moyenne(e.n1, e.n2)) }))}>Retenir</button>
             </div>
           ))}
           {!aTroisieme ? (

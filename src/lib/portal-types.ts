@@ -616,7 +616,7 @@ export type GestionConsolidation = {
   rows?: { blocA: GestionConsolidationRow[]; blocB: GestionConsolidationRow[] };
   bonusRows?: GestionConsolidationRow[];
   totals?: GestionConsolidationTotals;
-  ecartsNonTraites?: { code: string; libelle: string; ecart: number; seuil: number }[];
+  ecartsNonTraites?: { code: string; libelle: string; n1: number | null; n2: number | null; ecart: number; seuil: number }[];
   ecartPct?: number;
   statut?: 'en_cours' | 'figee';
   evaluateurs?: { id: number; nom: string }[];
