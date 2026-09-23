@@ -22,13 +22,16 @@ export default async function MesEvaluationsPage() {
               <div className="gx-meta">
                 {d.organisation?.filiere ? <span>{d.organisation.filiere}</span> : null}
                 <span>Évaluateur {d.rang}</span>
+                {d.retire ? <span>Renvoyé à l&apos;éligibilité par l&apos;UGP — votre fiche est conservée</span> : null}
               </div>
             </div>
-            {d.ficheStatut === 'soumise'
-              ? <span className="gx-pill gx-pill-ok">✓ Soumise &amp; signée</span>
-              : <span className="gx-pill gx-pill-val">À remplir</span>}
-            <Link className={`gx-btn gx-btn-sm ${d.ficheStatut === 'soumise' ? 'gx-btn-ghost' : 'gx-btn-primary'}`} href={`/gestion/evaluations/${d.documentId}`}>
-              {d.ficheStatut === 'soumise' ? 'Consulter' : 'Remplir la fiche'}
+            {d.retire
+              ? <span className="gx-pill gx-pill-comp">Retiré de l&apos;évaluation</span>
+              : d.ficheStatut === 'soumise'
+                ? <span className="gx-pill gx-pill-ok">✓ Soumise &amp; signée</span>
+                : <span className="gx-pill gx-pill-val">À remplir</span>}
+            <Link className={`gx-btn gx-btn-sm ${d.ficheStatut === 'soumise' || d.retire ? 'gx-btn-ghost' : 'gx-btn-primary'}`} href={`/gestion/evaluations/${d.documentId}`}>
+              {d.retire ? 'Consulter' : d.ficheStatut === 'soumise' ? 'Consulter' : 'Remplir la fiche'}
             </Link>
           </div>
         ))

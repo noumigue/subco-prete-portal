@@ -28,8 +28,10 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
   const { bareme, parametres } = detail;
   const notesCriteres = useMemo(() => [...bareme.blocA.filter((c) => c.type === 'note'), ...bareme.blocB], [bareme]);
 
-  const readonly = detail.fiche?.statut === 'soumise';
+  const retire = !!detail.retire;
+  const readonly = detail.fiche?.statut === 'soumise' || retire;
   const coiNeeded = !readonly && !detail.fiche?.coiDeclare;
+  // Dossier renvoye a l'eligibilite : la fiche reste consultable, rien n'est modifiable.
 
   const [notes, setNotes] = useState<Notes>(() => {
     const init: Notes = {};

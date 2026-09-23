@@ -169,6 +169,10 @@ export const enregistrerFiche = (documentId: string, data: { esConforme?: boolea
 export const soumettreFiche = (documentId: string, data: { esConforme?: boolean | null; notes?: unknown; bonus?: unknown; forces?: string[]; faiblesses?: string[] }) =>
   gestionPost(`/api/gestion/evaluations/${documentId}/soumettre`, data);
 
+export const renvoyerVersEligibilite = (documentId: string, motif: string) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/renvoyer-eligibilite`, { motif });
+export const annulerRenvoiEvaluation = (documentId: string) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/annuler-renvoi`);
 export const assignerEvaluateur = (documentId: string, evaluateurId: number, rang: number) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/assigner`, { evaluateurId, rang });
 export const harmoniser = (documentId: string, critereCode: string, noteRetenue: number) =>

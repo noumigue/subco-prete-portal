@@ -18,5 +18,5 @@ export default async function EvaluationAssignPage({
   const data = await getEvaluationAssign(documentId);
   if (!data) notFound();
 
-  return <GestionEvaluationAssign data={data} />;
+  return <GestionEvaluationAssign data={data} role="ugp" />;
 }

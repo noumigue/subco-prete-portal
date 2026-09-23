@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset } from '@/lib/portal-auth';
 import { uploadPortalFile } from '@/lib/portal-api';
 import {
+  annulerRenvoiEvaluation,
   assignerEvaluateur,
   verifierCompletude,
   verifierEligibilite,
@@ -58,6 +59,7 @@ import {
   renvoyerEligibilite,
   rouvrirCompletude,
   renvoyerRapport,
+  renvoyerVersEligibilite,
   saveDecision,
   saveRapportDossier,
   setNonObjection,
@@ -285,6 +287,20 @@ export async function soumettreFicheAction(documentId: string, data: FichePayloa
 }
 
 // ——— M5 phase 2 : assignation & consolidation (UGP) ———
+export async function renvoyerVersEligibiliteAction(input: { documentId: string; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const r = await renvoyerVersEligibilite(input.documentId, input.motif);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/eligibilite`);
+  revalidatePath('/gestion/dossiers');
+  return r;
+}
+export async function annulerRenvoiEvaluationAction(documentId: string): Promise<{ ok: boolean; error?: string }> {
+  const r = await annulerRenvoiEvaluation(documentId);
+  revalidatePath(`/gestion/dossiers/${documentId}/evaluation`);
+  revalidatePath(`/gestion/dossiers/${documentId}/eligibilite`);
+  revalidatePath('/gestion/dossiers');
+  return r;
+}
 export async function assignerEvaluateurAction(input: { documentId: string; evaluateurId: number; rang: number }): Promise<{ ok: boolean; error?: string }> {
   const r = await assignerEvaluateur(input.documentId, input.evaluateurId, input.rang);
   revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);

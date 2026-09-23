@@ -462,6 +462,10 @@ export type GestionInstructionEligibilite = {
   workflow: 'en_cours' | 'propose' | 'valide' | 'renvoye';
   proposePar: string | null;
   commentaireRenvoi: string | null;
+  reexamen?: boolean;
+  reexamenMotif?: string | null;
+  reexamenPar?: string | null;
+  reexamenLe?: string | null;
 };
 
 export type GestionReferentiels = {
@@ -521,6 +525,7 @@ export type GestionMesEvaluationRow = {
   organisation: { nom: string; filiere: string | null } | null;
   rang: number;
   ficheStatut: 'brouillon' | 'soumise' | null;
+  retire?: boolean;
 };
 
 // Pieces du dossier pour les ecrans d'evaluation : une ligne par type de piece du referentiel.
@@ -543,6 +548,7 @@ export type GestionFicheDetail = {
   // Absent tant que l'evaluateur n'a pas declare l'absence de conflit d'interets.
   piecesDossier?: GestionPiecesDossier | null;
   rang: number;
+  retire?: boolean;
   fiche: {
     coiDeclare: boolean;
     esConforme: boolean | null;

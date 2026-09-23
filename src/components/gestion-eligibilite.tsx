@@ -6,6 +6,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { GestionContradiction, GestionDossierDetail, PortalDonneesProjet } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import {
+  annulerRenvoiEvaluationAction,
   proposerEligibiliteAction,
   renvoyerEligibiliteAction,
   rouvrirCompletudeAction,
@@ -42,6 +43,8 @@ export function GestionEligibilite({
   // Meme regle qu'a la completude : hors instructeur en charge (et UGP), consultation seule.
   const lectureSeule = role !== 'ugp' && dossier.prisEnChargePar?.id !== currentUserId;
   const editable = !lectureSeule && !validationMode && !proposedWaiting && dossier.statut?.phase === 'eligibilite';
+  // Reexamen : dossier renvoye de l'evaluation. Constats geles, seule la non-eligibilite est proposable.
+  const reexamen = Boolean(instr?.reexamen);
 
   const [etats, setEtats] = useState<Record<string, { etat: Etat; justification?: string }>>(() => {
     const init = { ...((instr?.verdictsCriteres as Record<string, { etat: Etat; justification?: string }>) || {}) };
@@ -68,7 +71,7 @@ export function GestionEligibilite({
       .sort((a, b) => ordre.indexOf(a.id) - ordre.indexOf(b.id));
   }, [dossier.donneesProjet, dossier.piecesFichiers, dossier.referentiels.typePieces]);
   const complementsRecus = (dossier.complements || []).filter((c) => c.statut === 'fourni' && c.fichierUrl);
-  const [verdict, setVerdict] = useState<Verdict>(instr?.verdictGlobal || '');
+  const [verdict, setVerdict] = useState<Verdict>(instr?.reexamen ? 'rejet' : (instr?.verdictGlobal || ''));
   const [motif, setMotif] = useState(instr?.motifRejet || '');
   const [observations, setObservations] = useState(instr?.observationsUgp || '');
   const [alerte, setAlerte] = useState<GestionContradiction[] | null>(null);
@@ -170,6 +173,15 @@ export function GestionEligibilite({
     else setError(result.error || 'Réouverture refusée.');
   }
 
+  async function onAnnulerRenvoi() {
+    setError(null);
+    setPending(true);
+    const result = await annulerRenvoiEvaluationAction(dossier.documentId);
+    setPending(false);
+    if (result.ok) router.push(`/gestion/dossiers/${dossier.documentId}/evaluation`);
+    else setError(result.error || 'Annulation refusée.');
+  }
+
   async function onRenvoyer() {
     setError(null);
     setPending(true);
@@ -203,6 +215,14 @@ export function GestionEligibilite({
       ) : null}
       {proposedWaiting && !lectureSeule ? <div className="gx-validation-banner">⏳ <b>En attente de validation UGP.</b></div> : null}
       {instr?.workflow === 'renvoye' && instr.commentaireRenvoi ? <div className="gx-validation-banner">↩︎ <b>Renvoyé par l&apos;UGP.</b> {instr.commentaireRenvoi}</div> : null}
+      {reexamen ? (
+        <div className="gx-flash err">
+          ⟲ <b>Dossier renvoyé de l&apos;évaluation</b>{instr?.reexamenPar ? ` par ${instr.reexamenPar}` : ''}{instr?.reexamenLe ? ` le ${new Date(instr.reexamenLe).toLocaleDateString('fr-FR')}` : ''}.
+          {instr?.reexamenMotif ? <> Motif : « {instr.reexamenMotif} »</> : null}
+          <br />Les constats critère par critère sont conservés et gelés. La seule issue est la <b>non-éligibilité</b>, motivée.
+          Les fiches de scoring déjà saisies sont conservées mais ne sont plus prises en compte.
+        </div>
+      ) : null}
       {instr?.workflow === 'propose' && contradictions.length ? (
         <div className="gx-flash err">
           ⚖ <b>À arbitrer.</b> Le verdict proposé contredit les constats de l&apos;instructeur :
@@ -247,7 +267,7 @@ export function GestionEligibilite({
               <div className="gx-grp-title">{g.titre}</div>
               {liste.map((c, i) => {
                 const st = etats[c.id]?.etat;
-                const disabled = !editable || Boolean(c.acquis);
+                const disabled = !editable || Boolean(c.acquis) || reexamen;
                 return (
                   <div className="gx-crow" key={c.id}>
                     <div className="gx-cname">{i + 1}. {c.libelle}{c.refManuel ? <span className="gx-ref"> · {c.refManuel}</span> : null}</div>
@@ -275,10 +295,12 @@ export function GestionEligibilite({
       {editable ? (
         <div className="gx-card gx-verdict">
           <div className="gx-block-title">Verdict proposé</div>
-          <label className={`gx-vopt${verdict === 'eligible' ? ' on' : ''}`}>
-            <input type="radio" name="ve" checked={verdict === 'eligible'} onChange={() => { setVerdict('eligible'); setAlerte(null); }} />
-            <span><b>Éligible</b> — le dossier passe à l&apos;évaluation technique et financière.</span>
-          </label>
+          {reexamen ? null : (
+            <label className={`gx-vopt${verdict === 'eligible' ? ' on' : ''}`}>
+              <input type="radio" name="ve" checked={verdict === 'eligible'} onChange={() => { setVerdict('eligible'); setAlerte(null); }} />
+              <span><b>Éligible</b> — le dossier passe à l&apos;évaluation technique et financière.</span>
+            </label>
+          )}
           <label className={`gx-vopt${verdict === 'rejet' ? ' on' : ''}`}>
             <input type="radio" name="ve" checked={verdict === 'rejet'} onChange={() => { setVerdict('rejet'); setAlerte(null); }} />
             <span><b>Rejet motivé</b>{nbNonConforme ? ` — ${nbNonConforme} critère(s) non conforme(s)` : ''}.</span>
@@ -341,6 +363,19 @@ export function GestionEligibilite({
               ) : null}
             </>
           ) : null}
+        </div>
+      ) : null}
+
+      {role === 'ugp' && reexamen && !propositionEnAttente ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Annuler le renvoi</div>
+          <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>
+            Remet le dossier en évaluation avec ses fiches de scoring, si le renvoi était une erreur.
+            Possible tant qu&apos;aucune proposition de non-éligibilité n&apos;a été faite.
+          </p>
+          <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={onAnnulerRenvoi}>
+            {pending ? 'Annulation…' : 'Remettre le dossier en évaluation'}
+          </button>
         </div>
       ) : null}
 
