@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GestionDossierRow } from '@/lib/portal-types';
 import { priseEnChargeAction, reassignerAction } from '@/app/(gestion)/actions';
 
@@ -165,7 +165,7 @@ export function GestionFile({
 }) {
   const ugp = role === 'ugp';
   // Vue par defaut = le travail du jour : l'UGP arrive sur ce qu'elle a a valider, l'instructeur
-  // sur ses propres dossiers. Rien n'est memorise : chaque visite repart de ces reglages.
+  // sur ses propres dossiers. Ces reglages servent a la 1re visite et a « Tout reinitialiser ».
   const scopeDefaut = ugp ? 'a_valider' : 'mes';
   const triDefaut: Tri = ugp ? 'attente' : 'depot_asc';
 
@@ -194,11 +194,63 @@ export function GestionFile({
   const [sigSansFiche, setSigSansFiche] = useState(false);
   const [evaluateur, setEvaluateur] = useState('');
 
+  // Onglet et filtres retenus d'une visite a l'autre : apres un rechargement (ou un aller-retour
+  // sur un dossier), on revient la ou on travaillait, sans re-cliquer. Memoire LOCALE au
+  // navigateur et propre a chaque compte ; « Tout reinitialiser » la remet a zero.
+  const MEMOIRE_CLE = `gx-file-v1:${role}:${currentUserId ?? 'anon'}`;
+  const restaure = useRef(false);
+
+  useEffect(() => {
+    try {
+      const brut = window.localStorage.getItem(MEMOIRE_CLE);
+      if (brut) {
+        const v = JSON.parse(brut) as Record<string, unknown>;
+        const chaine = (x: unknown) => (typeof x === 'string' ? x : null);
+        const bool = (x: unknown) => x === true;
+        const onglet = chaine(v.tab);
+        if (onglet && TABS.some(([k]) => k === onglet)) setTab(onglet as Tab);
+        if (chaine(v.scope)) setScope(v.scope as string);
+        if (chaine(v.verdict) !== null) setVerdict(v.verdict as string);
+        if (chaine(v.travail) !== null) setTravail(v.travail as '' | Travail);
+        setArbitrer(bool(v.arbitrer)); setAttente(bool(v.attente)); setEcheance(bool(v.echeance));
+        setModifEnCours(bool(v.modifEnCours)); setPieceAjoutee(bool(v.pieceAjoutee)); setReexamen(bool(v.reexamen));
+        if (chaine(v.filiere) !== null) setFiliere(v.filiere as string);
+        if (chaine(v.province) !== null) setProvince(v.province as string);
+        if (chaine(v.critere) !== null) setCritere(v.critere as string);
+        if (chaine(v.verdictSelect) !== null) setVerdictSelect(v.verdictSelect as string);
+        if (chaine(v.tri)) setTri(v.tri as Tri);
+        if (chaine(v.etatEval) !== null) setEtatEval(v.etatEval as '' | EtatEval);
+        setSigRecuse(bool(v.sigRecuse)); setSigEcart(bool(v.sigEcart)); setSigEs(bool(v.sigEs)); setSigSansFiche(bool(v.sigSansFiche));
+        if (chaine(v.evaluateur) !== null) setEvaluateur(v.evaluateur as string);
+      }
+    } catch {
+      // Navigation privee ou stockage bloque : on reste sur les reglages par defaut.
+    }
+    restaure.current = true;
+    // Une seule fois, au montage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!restaure.current) return;
+    try {
+      window.localStorage.setItem(MEMOIRE_CLE, JSON.stringify({
+        tab, scope, verdict, travail, arbitrer, attente, echeance, modifEnCours, pieceAjoutee, reexamen,
+        filiere, province, critere, verdictSelect, tri, etatEval, sigRecuse, sigEcart, sigEs, sigSansFiche, evaluateur,
+      }));
+    } catch {
+      // Stockage indisponible : la memoire est simplement sans effet.
+    }
+  }, [MEMOIRE_CLE, tab, scope, verdict, travail, arbitrer, attente, echeance, modifEnCours, pieceAjoutee, reexamen,
+    filiere, province, critere, verdictSelect, tri, etatEval, sigRecuse, sigEcart, sigEs, sigSansFiche, evaluateur]);
+
   function reinitialiser() {
     setRecherche(''); setScope(scopeDefaut); setVerdict(''); setTravail('');
     setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false); setReexamen(false);
     setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(tab === 'evaluation' && ugp ? 'entree_eval' : triDefaut);
     setEtatEval('a_designer'); setSigRecuse(false); setSigEcart(false); setSigEs(false); setSigSansFiche(false); setEvaluateur('');
+    // L'onglet n'est pas touche : on reinitialise les filtres de l'etape ou l'on travaille.
+    // La memoire est reecrite par l'effet ci-dessus avec ces valeurs remises a zero.
   }
   function changerOnglet(t: Tab) {
     setTab(t);
