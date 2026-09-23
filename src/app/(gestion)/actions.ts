@@ -7,6 +7,7 @@ import { uploadPortalFile } from '@/lib/portal-api';
 import {
   annulerRenvoiEvaluation,
   assignerEvaluateur,
+  libererPlaceEvaluateur,
   verifierCompletude,
   verifierEligibilite,
   assistanceCreer,
@@ -287,6 +288,11 @@ export async function soumettreFicheAction(documentId: string, data: FichePayloa
 }
 
 // ——— M5 phase 2 : assignation & consolidation (UGP) ———
+export async function libererPlaceEvaluateurAction(input: { documentId: string; rang: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
+  const r = await libererPlaceEvaluateur(input.documentId, input.rang, input.motif);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  return r;
+}
 export async function renvoyerVersEligibiliteAction(input: { documentId: string; motif: string }): Promise<{ ok: boolean; error?: string }> {
   const r = await renvoyerVersEligibilite(input.documentId, input.motif);
   revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);

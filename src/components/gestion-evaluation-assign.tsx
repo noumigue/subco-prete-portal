@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionEvaluateurSlot, GestionEvaluationAssign as AssignData } from '@/lib/portal-types';
-import { assignerEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
+import { assignerEvaluateurAction, libererPlaceEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
 
 function FicheEtat({ slot }: { slot: GestionEvaluateurSlot }) {
   if (!slot?.evaluateurId) return <span className="gx-pill gx-pill-comp">Non assigné</span>;
@@ -17,6 +17,9 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
   const [pending, setPending] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Renvoi a l'eligibilite : dossier decouvert non eligible apres coup (UGP seule).
+  // Liberer une place : possible tant que la fiche n'est pas signee.
+  const [liberOpen, setLiberOpen] = useState<number | null>(null);
+  const [motifLiber, setMotifLiber] = useState('');
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [motifRenvoi, setMotifRenvoi] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,8 +41,18 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
     else setError(r.error || 'Assignation refusée.');
   }
 
+  async function liberer(rang: number) {
+    setBusy(true); setError(null);
+    const r = await libererPlaceEvaluateurAction({ documentId: data.documentId, rang, motif: motifLiber.trim() });
+    setBusy(false);
+    if (r.ok) { setLiberOpen(null); setMotifLiber(''); router.refresh(); }
+    else setError(r.error || 'Libération refusée.');
+  }
+
   function Slot({ rang, slot }: { rang: number; slot: GestionEvaluateurSlot }) {
-    const locked = slot?.ficheStatut === 'soumise';
+    const signee = slot?.ficheStatut === 'soumise';
+    // Fiche ouverte (brouillon ou signée) : la place appartient à son titulaire.
+    const locked = !!slot?.ficheStatut;
     return (
       <div className="gx-card">
         <div className="gx-block-title">Évaluateur {rang}</div>
@@ -54,8 +67,23 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
             {data.evaluateurs.map((ev) => <option key={ev.id} value={ev.id}>{ev.nom}</option>)}
           </select>
           <FicheEtat slot={slot} />
-          {locked ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche signée — réassignation impossible.</span> : null}
+          {signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche signée — la notation est acquise, cette place ne change plus.</span> : null}
+          {locked && !signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche commencée — la place est verrouillée.</span> : null}
         </div>
+        {locked && !signee ? (
+          liberOpen === rang ? (
+            <div className="gx-subform" style={{ marginLeft: 0, marginTop: 10 }}>
+              <label>Motif de la libération <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — inscrit au journal ; le brouillon sera supprimé)</span></label>
+              <textarea rows={2} value={motifLiber} onChange={(e) => setMotifLiber(e.target.value)} placeholder="Ex. : évaluateur absent, ne pourra pas rendre sa fiche." />
+              <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={busy || !motifLiber.trim()} onClick={() => liberer(rang)}>{busy ? 'Libération…' : 'Confirmer la libération'}</button>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={busy} onClick={() => setLiberOpen(null)}>Annuler</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" style={{ marginTop: 10 }} onClick={() => { setLiberOpen(rang); setMotifLiber(''); }}>Libérer la place…</button>
+          )
+        ) : null}
       </div>
     );
   }
@@ -114,6 +142,7 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
       <p className="gx-annot">
         <b>E2 — assignation par l&apos;UGP.</b> Évaluateur 1 &amp; 2 parmi les experts (comptes internes). L&apos;évaluateur déclare l&apos;absence de conflit d&apos;intérêts
         (§5.8.1) à l&apos;ouverture de sa fiche ; une récusation revient ici pour réassignation. Le 3ᵉ évaluateur se désigne depuis la consolidation, en cas d&apos;écart.
+        <br /><b>Place verrouillée</b> dès que l&apos;évaluateur ouvre sa fiche : pour en changer, il se récuse, ou l&apos;UGP libère la place avec un motif. Une fiche signée ne se libère pas.
       </p>
     </>
   );
