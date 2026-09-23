@@ -410,6 +410,7 @@ export type GestionDossierRow = {
   complementEnCours: boolean;
   complementRecu?: boolean;
   pieceAjoutee?: boolean;
+  reexamen?: boolean;
   versionDepot?: number;
   dernierDepotLe?: string | null;
   modificationEnCours?: boolean;

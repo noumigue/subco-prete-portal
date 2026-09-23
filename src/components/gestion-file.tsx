@@ -97,6 +97,7 @@ function Pill({ d }: { d: GestionDossierRow }) {
     if (e.etat === 'a_consolider') return <span className="gx-pill gx-pill-val">À consolider{e.ecartsNonHarmonises ? ` · ${e.ecartsNonHarmonises} écart(s)` : ''}</span>;
     return <span className="gx-pill gx-pill-ok">Figée{e.totalFinal != null ? ` · ${Math.round(e.totalFinal * 10) / 10}/100` : ''}</span>;
   }
+  if (d.reexamen) return <span className="gx-pill gx-pill-rej">⟲ Renvoyé de l&apos;évaluation — non-éligibilité à constater</span>;
   if (d.instruction?.workflow === 'renvoye') return <span className="gx-pill gx-pill-rej">↩ Renvoyé par l&apos;UGP</span>;
   if (d.enValidation) {
     const j = d.enAttenteDepuisJours ?? null;
@@ -178,6 +179,8 @@ export function GestionFile({
   const [echeance, setEcheance] = useState(false);
   const [modifEnCours, setModifEnCours] = useState(false);
   const [pieceAjoutee, setPieceAjoutee] = useState(false);
+  // Dossiers renvoyes de l'evaluation : a instruire en non-eligibilite.
+  const [reexamen, setReexamen] = useState(false);
   const [filiere, setFiliere] = useState('');
   const [province, setProvince] = useState('');
   const [critere, setCritere] = useState('');
@@ -193,14 +196,14 @@ export function GestionFile({
 
   function reinitialiser() {
     setRecherche(''); setScope(scopeDefaut); setVerdict(''); setTravail('');
-    setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false);
+    setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false); setReexamen(false);
     setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(tab === 'evaluation' && ugp ? 'entree_eval' : triDefaut);
     setEtatEval('a_designer'); setSigRecuse(false); setSigEcart(false); setSigEs(false); setSigSansFiche(false); setEvaluateur('');
   }
   function changerOnglet(t: Tab) {
     setTab(t);
     // Les verdicts et l'avancement ne sont pas les memes d'une etape a l'autre.
-    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect(''); setEvaluateur('');
+    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect(''); setEvaluateur(''); setReexamen(false);
     // Tri par defaut propre a chaque onglet : entree en evaluation pour l'UGP a l'evaluation.
     if (t === 'evaluation' && ugp) setTri('entree_eval');
     else if (tri === 'entree_eval') setTri(triDefaut);
@@ -276,6 +279,7 @@ export function GestionFile({
   const nEcheance = items.filter(echeanceProche).length;
   const nModif = items.filter((d) => d.modificationEnCours).length;
   const nAjout = items.filter((d) => d.pieceAjoutee).length;
+  const nReexamen = items.filter((d) => d.reexamen).length;
   const sansFiche = (d: GestionDossierRow) => (d.evaluation?.sansFicheDepuisJours ?? -1) >= SANS_FICHE_SEUIL;
   const nRecuse = items.filter((d) => d.evaluation?.recuseARemplacer).length;
   const nEcart = items.filter((d) => (d.evaluation?.ecartsNonHarmonises || 0) > 0).length;
@@ -293,6 +297,7 @@ export function GestionFile({
     if (echeance) items = items.filter(echeanceProche);
     if (modifEnCours) items = items.filter((d) => d.modificationEnCours);
     if (pieceAjoutee) items = items.filter((d) => d.pieceAjoutee);
+    if (reexamen) items = items.filter((d) => d.reexamen);
   }
 
   // 6. Tri.
@@ -316,6 +321,7 @@ export function GestionFile({
     etapeInstruite && echeance ? 'échéance proche ou dépassée' : null,
     etapeInstruite && modifEnCours ? 'candidat en train de modifier' : null,
     etapeInstruite && pieceAjoutee ? 'pièce ajoutée' : null,
+    etapeInstruite && reexamen ? "renvoyés de l'évaluation" : null,
     etapeEval && etatEval ? ETATS_EVAL.find(([k]) => k === etatEval)?.[1].toLowerCase() : null,
     etapeEval && sigRecuse ? 'évaluateur récusé' : null,
     etapeEval && sigEcart ? 'écart à harmoniser' : null,
@@ -402,6 +408,9 @@ export function GestionFile({
         {etapeInstruite ? (
           <Ligne label="Signaux">
             <Chip on={arbitrer} onClick={() => setArbitrer((v) => !v)} n={nArbitrer}>⚖ À arbitrer</Chip>
+            {tab === 'eligibilite' ? (
+              <Chip on={reexamen} onClick={() => setReexamen((v) => !v)} n={nReexamen}>⟲ Renvoyés de l&apos;évaluation</Chip>
+            ) : null}
             {ugp ? (
               <Chip on={attente} onClick={() => setAttente((v) => !v)} n={nAttente}>⏳ En attente {ATTENTE_SEUIL} j et plus</Chip>
             ) : (
