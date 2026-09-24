@@ -32,14 +32,20 @@ export function GestionAssistanceListe({
   rows,
   categories,
   userId,
+  role = 'ugp',
 }: {
   rows: GestionAssistanceRow[];
   categories: { code: string; libelle: string }[];
   userId: number;
+  role?: 'instructeur' | 'ugp';
 }) {
   const [fStatut, setFStatut] = useState<FiltreStatut>('toutes');
   const [fCat, setFCat] = useState('');
   const [fMine, setFMine] = useState(false);
+  // L'instructeur arrive sur les demandes des candidats dont il instruit le dossier ;
+  // l'UGP garde la vue complete. Les deux filtres se cumulent.
+  const [fMesDossiers, setFMesDossiers] = useState(role === 'instructeur');
+  const nMesDossiers = rows.filter((r) => r.dossierInstructeur?.id === userId).length;
 
   const count = (s: FiltreStatut) => (s === 'toutes' ? rows.length : rows.filter((r) => r.statut === s).length);
 
@@ -47,6 +53,7 @@ export function GestionAssistanceListe({
   if (fStatut !== 'toutes') items = items.filter((r) => r.statut === fStatut);
   if (fCat) items = items.filter((r) => r.categorie?.code === fCat);
   if (fMine) items = items.filter((r) => r.priseEnChargePar?.id === userId);
+  if (fMesDossiers) items = items.filter((r) => r.dossierInstructeur?.id === userId);
 
   return (
     <div className="gx">
@@ -76,10 +83,17 @@ export function GestionAssistanceListe({
           <input type="checkbox" checked={fMine} onChange={(e) => setFMine(e.target.checked)} style={{ width: 'auto' }} />
           Ma prise en charge
         </label>
+        <label className="gx-chk" style={{ display: 'inline-flex', gap: 6, alignItems: 'center', fontSize: 13, cursor: 'pointer' }}>
+          <input type="checkbox" checked={fMesDossiers} onChange={(e) => setFMesDossiers(e.target.checked)} style={{ width: 'auto' }} />
+          Mes dossiers <span className="gx-n">{nMesDossiers}</span>
+        </label>
       </div>
 
       {items.length === 0 ? (
-        <div className="gx-empty">Aucune demande à ces filtres.</div>
+        <div className="gx-empty">
+          Aucune demande à ces filtres.
+          {fMesDossiers ? <> Les questions générales, sans dossier rattaché, n&apos;apparaissent pas dans « Mes dossiers ».</> : null}
+        </div>
       ) : (
         items.map((d) => (
           <Link className="gx-srow" key={d.documentId} href={`/gestion/assistance/${d.documentId}`}>
@@ -97,7 +111,8 @@ export function GestionAssistanceListe({
                   <span>Question générale</span>
                 )}
                 {d.origine === 'ugp' ? <span className="gx-tag-origin">ouverte par l&apos;équipe</span> : null}
-                {d.priseEnChargePar ? <span>· {d.priseEnChargePar.nom}</span> : null}
+                {d.dossierInstructeur ? <span>· instruit par <b>{d.dossierInstructeur.nom}</b></span> : null}
+                {d.priseEnChargePar ? <span>· pris en charge : {d.priseEnChargePar.nom}</span> : null}
                 {d.dernierLe ? (
                   <span>· {d.dernierAuteur === 'equipe' ? 'Équipe' : 'Opérateur'} · {fmtDate(d.dernierLe)}</span>
                 ) : null}

@@ -21,6 +21,7 @@ export default async function AssistancePage() {
       rows={rows}
       categories={categories.map((c) => ({ code: c.code || '', libelle: c.libelle || '' }))}
       userId={session?.userId ?? 0}
+      role={session?.role === 'ugp' ? 'ugp' : 'instructeur'}
     />
   );
 }

@@ -788,6 +788,8 @@ export type GestionAssistanceRow = {
   concerneCandidature: { documentId: string; numeroDossier: string | null; titreProjet: string | null } | null;
   concerneSubvention: { documentId: string; numeroConvention: string | null } | null;
   priseEnChargePar: { id: number; nom: string } | null;
+  // Instructeur du DOSSIER rattaché (distinct du responsable de la demande).
+  dossierInstructeur?: { id: number; nom: string } | null;
   updatedAt: string | null;
   dernierAuteur: 'operateur' | 'equipe' | null;
   dernierLe: string | null;
