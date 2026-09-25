@@ -15,6 +15,7 @@ import {
   verifierEligibiliteAction,
 } from '@/app/(gestion)/actions';
 import { GestionJournal } from '@/components/gestion-journal';
+import { GestionPiecesAssistance } from '@/components/gestion-pieces-assistance';
 
 type Etat = 'conforme' | 'non_conforme';
 type Verdict = 'eligible' | 'rejet' | '';
@@ -256,6 +257,14 @@ export function GestionEligibilite({
           </>
         ) : <span style={{ fontSize: 12.5, color: 'var(--muted-warm)' }}>Aucune pièce déposée.</span>}
       </div>
+
+      <GestionPiecesAssistance
+        documentId={dossier.documentId}
+        pieces={dossier.piecesAssistance || []}
+        complements={dossier.complements || []}
+        typePieces={dossier.referentiels.typePieces.map((t) => ({ id: t.id, libelle: t.libelle }))}
+        versable={editable}
+      />
 
       <div className="gx-card">
         <div className="gx-block-title">Critères d&apos;éligibilité<span className="gx-tot">Grille validée par l&apos;UGP le 18/09/2026 — Annexe 5</span></div>

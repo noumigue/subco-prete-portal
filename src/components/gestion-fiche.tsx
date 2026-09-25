@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import type { GestionBaremeCritere, GestionFicheDetail } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
+import { GestionPiecesAssistance } from '@/components/gestion-pieces-assistance';
 import { declarerCoiAction, enregistrerFicheAction, recuserAction, soumettreFicheAction } from '@/app/(gestion)/actions';
 
 type Notes = Record<string, { note: string; commentaire: string }>;
@@ -154,6 +155,9 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
 
       {/* Pieces du dossier : transmises par le serveur seulement apres la declaration d'absence de conflit d'interets. */}
       {!coiNeeded ? <GestionPiecesDossier donnees={detail.piecesDossier} /> : null}
+      {!coiNeeded ? (
+        <GestionPiecesAssistance documentId={detail.documentId} pieces={detail.piecesAssistance || []} />
+      ) : null}
 
       {coiNeeded ? (
         <>

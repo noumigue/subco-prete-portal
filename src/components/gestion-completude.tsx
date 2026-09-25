@@ -14,6 +14,7 @@ import {
   verifierCompletudeAction,
 } from '@/app/(gestion)/actions';
 import { GestionJournal } from '@/components/gestion-journal';
+import { GestionPiecesAssistance } from '@/components/gestion-pieces-assistance';
 
 const GROUP_LABEL: Record<string, string> = { administratif: 'Administratives', financier: 'Financières', technique: 'Techniques' };
 type Etat = 'presente' | 'absente' | 'non_conforme';
@@ -450,6 +451,14 @@ export function GestionCompletude({
             les précédentes sont conservées avec le document qui faisait foi à leur date, et restent opposables.</p>
         </div>
       ) : null}
+
+      <GestionPiecesAssistance
+        documentId={dossier.documentId}
+        pieces={dossier.piecesAssistance || []}
+        complements={dossier.complements || []}
+        typePieces={dossier.referentiels.typePieces.map((t) => ({ id: t.id, libelle: t.libelle }))}
+        versable={editable}
+      />
 
       {dossier.complements && dossier.complements.length > 0 ? (
         <div className="gx-card">

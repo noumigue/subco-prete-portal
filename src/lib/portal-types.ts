@@ -435,6 +435,9 @@ export type GestionComplement = {
   origine?: 'ugp' | 'candidat';
   fichierUrl: string | null;
   fourniLe: string | null;
+  // Versement d'une piece recue par l'assistance : provenance + precision de l'agent.
+  precision?: string | null;
+  sourceAssistance?: string | null;
 };
 
 export type GestionInstructionCompletude = {
@@ -469,6 +472,17 @@ export type GestionInstructionEligibilite = {
   reexamenLe?: string | null;
 };
 
+export type GestionPieceAssistance = {
+  fileId: number;
+  nom: string;
+  url: string | null;
+  envoyeLe: string | null;
+  demandeDocumentId: string;
+  demandeObjet: string;
+  rattachementDossier: boolean;
+  verseeComme: string[];
+};
+
 export type GestionReferentiels = {
   typePieces: { id: string; libelle: string; groupe: string; exigence: string }[];
   // `groupe` : bloc de la grille (candidat / infrastructure) ; `acquis` : coche d'office (ex. dossier complet).
@@ -495,6 +509,7 @@ export type GestionDossierDetail = GestionDossierRow & {
   depots?: GestionDepot[];
   instructionCompletude: GestionInstructionCompletude | null;
   instructionEligibilite: GestionInstructionEligibilite | null;
+  piecesAssistance?: GestionPieceAssistance[];
   referentiels: GestionReferentiels;
   journal: GestionActe[];
   complements?: GestionComplement[];
@@ -550,6 +565,7 @@ export type GestionFicheDetail = {
   piecesDossier?: GestionPiecesDossier | null;
   rang: number;
   retire?: boolean;
+  piecesAssistance?: GestionPieceAssistance[];
   fiche: {
     coiDeclare: boolean;
     esConforme: boolean | null;

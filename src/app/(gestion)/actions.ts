@@ -62,6 +62,8 @@ import {
   rouvrirCompletude,
   renvoyerRapport,
   renvoyerVersEligibilite,
+  verserPieceAssistance,
+  annulerVersementAssistance,
   saveDecision,
   saveRapportDossier,
   setNonObjection,
@@ -298,6 +300,19 @@ export async function annulerFicheSigneeAction(input: { documentId: string; rang
 export async function libererPlaceEvaluateurAction(input: { documentId: string; rang: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
   const r = await libererPlaceEvaluateur(input.documentId, input.rang, input.motif);
   revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  return r;
+}
+export async function verserPieceAssistanceAction(input: { documentId: string; fileId: number; complementIds: string[]; typePieceIds: string[]; precision?: string; demandeDocumentId?: string }): Promise<{ ok: boolean; error?: string }> {
+  const { documentId, ...data } = input;
+  const r = await verserPieceAssistance(documentId, data);
+  revalidatePath(`/gestion/dossiers/${documentId}/completude`);
+  revalidatePath(`/gestion/dossiers/${documentId}/eligibilite`);
+  return r;
+}
+export async function annulerVersementAssistanceAction(input: { documentId: string; complementId: string }): Promise<{ ok: boolean; error?: string }> {
+  const r = await annulerVersementAssistance(input.documentId, input.complementId);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/completude`);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/eligibilite`);
   return r;
 }
 export async function renvoyerVersEligibiliteAction(input: { documentId: string; motif: string }): Promise<{ ok: boolean; error?: string }> {

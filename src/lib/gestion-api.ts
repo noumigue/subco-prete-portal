@@ -173,6 +173,10 @@ export const annulerFicheSignee = (documentId: string, rang: number, motif: stri
   gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/annuler-fiche`, { rang, motif });
 export const libererPlaceEvaluateur = (documentId: string, rang: number, motif: string) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/liberer-place`, { rang, motif });
+export const verserPieceAssistance = (documentId: string, data: { fileId: number; complementIds: string[]; typePieceIds: string[]; precision?: string; demandeDocumentId?: string }) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/assistance-pieces/verser`, data);
+export const annulerVersementAssistance = (documentId: string, complementId: string) =>
+  gestionPost(`/api/gestion/dossiers/${documentId}/assistance-pieces/annuler`, { complementId });
 export const renvoyerVersEligibilite = (documentId: string, motif: string) =>
   gestionPost(`/api/gestion/dossiers/${documentId}/evaluation/renvoyer-eligibilite`, { motif });
 export const annulerRenvoiEvaluation = (documentId: string) =>
