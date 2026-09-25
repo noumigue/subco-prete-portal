@@ -62,6 +62,7 @@ import {
   rouvrirCompletude,
   renvoyerRapport,
   renvoyerVersEligibilite,
+  rouvrirDossierClos,
   verserPieceAssistance,
   annulerVersementAssistance,
   saveDecision,
@@ -300,6 +301,13 @@ export async function annulerFicheSigneeAction(input: { documentId: string; rang
 export async function libererPlaceEvaluateurAction(input: { documentId: string; rang: number; motif: string }): Promise<{ ok: boolean; error?: string }> {
   const r = await libererPlaceEvaluateur(input.documentId, input.rang, input.motif);
   revalidatePath(`/gestion/dossiers/${input.documentId}/evaluation`);
+  return r;
+}
+export async function rouvrirDossierClosAction(input: { documentId: string; motif: string; prevenirCandidat: boolean }): Promise<{ ok: boolean; error?: string }> {
+  const r = await rouvrirDossierClos(input.documentId, input.motif, input.prevenirCandidat);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/completude`);
+  revalidatePath(`/gestion/dossiers/${input.documentId}/eligibilite`);
+  revalidatePath('/gestion/dossiers');
   return r;
 }
 export async function verserPieceAssistanceAction(input: { documentId: string; fileId: number; complementIds: string[]; typePieceIds: string[]; precision?: string; demandeDocumentId?: string }): Promise<{ ok: boolean; error?: string }> {

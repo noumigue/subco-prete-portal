@@ -14,6 +14,7 @@ import {
   verifierCompletudeAction,
 } from '@/app/(gestion)/actions';
 import { GestionJournal } from '@/components/gestion-journal';
+import { rouvrirDossierClosAction } from '@/app/(gestion)/actions';
 import { GestionPiecesAssistance } from '@/components/gestion-pieces-assistance';
 
 const GROUP_LABEL: Record<string, string> = { administratif: 'Administratives', financier: 'Financières', technique: 'Techniques' };
@@ -75,6 +76,12 @@ export function GestionCompletude({
   // adresse directe et lui evite de remplir un formulaire qui serait rejete au dernier clic.
   const lectureSeule = role !== 'ugp' && dossier.prisEnChargePar?.id !== currentUserId;
   const editable = !lectureSeule && !validationMode && !proposedWaiting && dossier.statut?.phase === 'completude';
+
+  // Dossier clos sur rejet : l'UGP peut le rouvrir, motif obligatoire (ex. un constat errone).
+  const clos = dossier.statut?.groupe === 'non_retenu';
+  const [reouvrirOpen, setReouvrirOpen] = useState(false);
+  const [motifReouvrir, setMotifReouvrir] = useState('');
+  const [prevenirCandidat, setPrevenirCandidat] = useState(true);
 
   const [etats, setEtats] = useState<Record<string, { etat: Etat; note?: string }>>(
     () => (instr?.verdictsPieces as Record<string, { etat: Etat; note?: string }>) || {},
@@ -449,6 +456,46 @@ export function GestionCompletude({
           ))}
           <p className="gx-m7-hint">L&apos;opérateur a redéposé son dossier avant la clôture. Seule la dernière version est instruite ;
             les précédentes sont conservées avec le document qui faisait foi à leur date, et restent opposables.</p>
+        </div>
+      ) : null}
+
+      {role === 'ugp' && clos ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Rouvrir ce dossier</div>
+          <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>
+            Le dossier a été déclaré non retenu et le candidat en a été informé. La réouverture annule cette décision
+            et ramène le dossier à l&apos;étape où le rejet a été prononcé. Les constats déjà saisis sont <b>conservés</b> ;
+            seul le verdict tombe, l&apos;instructeur devra se prononcer à nouveau.
+          </p>
+          {reouvrirOpen ? (
+            <div className="gx-subform" style={{ marginLeft: 0 }}>
+              <label>Motif <span style={{ fontWeight: 400, color: 'var(--muted-warm)' }}>(obligatoire — inscrit au journal et montré à l&apos;instructeur)</span></label>
+              <textarea rows={2} value={motifReouvrir} onChange={(e) => setMotifReouvrir(e.target.value)} placeholder="Ex. : rejet fondé sur une erreur d'appréciation — la banane est bien une filière éligible." />
+              <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13, marginTop: 8, cursor: 'pointer' }}>
+                <input type="checkbox" style={{ width: 'auto' }} checked={prevenirCandidat} onChange={(e) => setPrevenirCandidat(e.target.checked)} />
+                Prévenir le candidat que son dossier est réexaminé
+              </label>
+              <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="gx-btn gx-btn-primary gx-btn-sm"
+                  disabled={pending || !motifReouvrir.trim()}
+                  onClick={async () => {
+                    setPending(true); setError(null);
+                    const r = await rouvrirDossierClosAction({ documentId: dossier.documentId, motif: motifReouvrir.trim(), prevenirCandidat });
+                    setPending(false);
+                    if (r.ok) router.refresh();
+                    else setError(r.error || 'Réouverture refusée.');
+                  }}
+                >
+                  {pending ? 'Réouverture…' : 'Confirmer la réouverture'}
+                </button>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={pending} onClick={() => setReouvrirOpen(false)}>Annuler</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" onClick={() => setReouvrirOpen(true)}>Rouvrir le dossier…</button>
+          )}
         </div>
       ) : null}
 
