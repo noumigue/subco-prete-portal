@@ -5,7 +5,15 @@ import type { GestionSeance } from '@/lib/portal-types';
 import { portalMediaUrl } from '@/lib/portal-media';
 
 const RECO_LBL: Record<string, string> = { selection: 'Sélection', conditionnelle: 'Conditionnelle', attente: "Liste d'attente", rejet: 'Rejet' };
-function bandClass(total: number) { return total >= 80 ? 'gx-band-a' : total >= 70 ? 'gx-band-b' : total >= 60 ? 'gx-band-c' : 'gx-band-d'; }
+// Regle de classement (Coordination, 25/09) : sous 60 hors bonus, le projet est non retenu et
+// le bonus est ignore ; a partir de 60, la bande se lit sur le total bonus inclus.
+function bandClasse(totalHorsBonus: number, totalFinal: number) {
+  if (totalHorsBonus < 60) return 'gx-band-d';
+  if (totalFinal >= 80) return 'gx-band-a';
+  if (totalFinal >= 70) return 'gx-band-b';
+  return 'gx-band-c';
+}
+
 
 export function GestionSeanceView({ seance }: { seance: GestionSeance }) {
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
@@ -54,7 +62,7 @@ function RowGroup({ d, expanded, onToggle }: { d: NonNullable<GestionSeance['dos
         <td><span className="gx-rank">{d.rang}</span></td>
         <td><div style={{ fontWeight: 600 }}>{d.op}</div><div style={{ fontSize: 12, color: 'var(--muted-warm)' }}>{d.proj}</div></td>
         <td className="n" style={{ fontSize: 15 }}>{d.totalFinal}</td>
-        <td><span className={`gx-band ${bandClass(d.totalFinal - d.bonus)}`}>{d.bande}</span></td>
+        <td><span className={`gx-band ${bandClasse(d.totalFinal - d.bonus, d.totalFinal)}`}>{d.bande}</span></td>
         <td><b>{RECO_LBL[d.reco] || d.reco}</b></td>
         <td><button type="button" className="gx-back" style={{ margin: 0, fontSize: 12 }} onClick={onToggle}>{expanded ? '▾' : '▸'}</button></td>
       </tr>

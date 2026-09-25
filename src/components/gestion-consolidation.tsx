@@ -7,12 +7,15 @@ import type { GestionConsolidation as ConsData, GestionConsolidationRow } from '
 import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
 import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
 
-function bandClass(total: number) {
-  if (total >= 80) return 'gx-band-a';
-  if (total >= 70) return 'gx-band-b';
-  if (total >= 60) return 'gx-band-c';
-  return 'gx-band-d';
+// Regle de classement (Coordination, 25/09) : sous 60 hors bonus, le projet est non retenu et
+// le bonus est ignore ; a partir de 60, la bande se lit sur le total bonus inclus.
+function bandClasse(totalHorsBonus: number, totalFinal: number) {
+  if (totalHorsBonus < 60) return 'gx-band-d';
+  if (totalFinal >= 80) return 'gx-band-a';
+  if (totalFinal >= 70) return 'gx-band-b';
+  return 'gx-band-c';
 }
+
 
 export function GestionConsolidation({ data }: { data: ConsData }) {
   const router = useRouter();
@@ -173,7 +176,7 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
                 <td>Total hors bonus</td>
                 <td className="n" colSpan={aTroisieme ? 3 : 2}></td>
                 <td className="n">{totals.totalHorsBonus.toFixed(1)}</td>
-                <td><span className={`gx-band ${bandClass(totals.totalHorsBonus)}`}>{totals.bande}</span></td>
+                <td><span className={`gx-band ${bandClasse(totals.totalHorsBonus, totals.totalFinal)}`}>{totals.bande}</span></td>
               </tr>
               <tr>
                 <td>Total final (bonus inclus)</td>

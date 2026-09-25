@@ -8,7 +8,15 @@ import { renvoyerRapportAction, saveRapportDossierAction, soumettreRapportAction
 
 const RECO_LBL: Record<string, string> = { selection: 'Sélection', conditionnelle: 'Conditionnelle', attente: "Liste d'attente", rejet: 'Rejet' };
 const STATUT_LBL: Record<string, string> = { brouillon: 'Brouillon', soumis: "Soumis à l'UGP", valide: 'Validé' };
-function bandClass(total: number) { return total >= 80 ? 'gx-band-a' : total >= 70 ? 'gx-band-b' : total >= 60 ? 'gx-band-c' : 'gx-band-d'; }
+// Regle de classement (Coordination, 25/09) : sous 60 hors bonus, le projet est non retenu et
+// le bonus est ignore ; a partir de 60, la bande se lit sur le total bonus inclus.
+function bandClasse(totalHorsBonus: number, totalFinal: number) {
+  if (totalHorsBonus < 60) return 'gx-band-d';
+  if (totalFinal >= 80) return 'gx-band-a';
+  if (totalFinal >= 70) return 'gx-band-b';
+  return 'gx-band-c';
+}
+
 
 export function GestionRapportView({ rapport, appelId, role }: { rapport: GestionRapport; appelId: string; role: 'instructeur' | 'ugp' }) {
   const router = useRouter();
@@ -103,7 +111,7 @@ function RowGroup({ d, editable, expanded, onToggle, onReco, onConditions, onLis
         <td><div className="gx-num">{d.num}</div><div style={{ fontSize: 13, fontWeight: 600 }}>{d.op}</div><div style={{ fontSize: 12, color: 'var(--muted-warm)' }}>{d.proj}</div></td>
         <td className="n">{d.totalA}</td><td className="n">{d.totalB}</td><td className="n">+{d.bonus}</td>
         <td className="n" style={{ fontSize: 15 }}>{d.totalFinal}{d.hasHarmon ? <span title="écart harmonisé" style={{ color: 'var(--gold)' }}> *</span> : null}</td>
-        <td><span className={`gx-band ${bandClass(d.totalHorsBonus)}`}>{d.bande}</span>{d.esStatut === 'differee' ? <div style={{ fontSize: 11.5, color: 'var(--gx-amber-tx)', marginTop: 4 }}>E&amp;S à vérifier avant le comité</div> : null}</td>
+        <td><span className={`gx-band ${bandClasse(d.totalHorsBonus, d.totalFinal)}`}>{d.bande}</span>{d.esStatut === 'differee' ? <div style={{ fontSize: 11.5, color: 'var(--gx-amber-tx)', marginTop: 4 }}>E&amp;S à vérifier avant le comité</div> : null}</td>
         <td>{editable ? (
           <select value={d.reco} disabled={pending} onChange={(e) => onReco(e.target.value)} style={{ padding: '5px 8px', fontSize: 12.5 }}>
             {Object.keys(RECO_LBL).map((k) => <option key={k} value={k}>{RECO_LBL[k]}</option>)}

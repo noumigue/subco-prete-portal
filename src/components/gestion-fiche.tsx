@@ -17,12 +17,20 @@ function bandeFor(total: number, bandes: { min: number; label: string }[]) {
   for (const b of sorted) if (total >= b.min) return b.label;
   return sorted[sorted.length - 1]?.label || '';
 }
-function bandClass(total: number) {
-  if (total >= 80) return 'gx-band-a';
-  if (total >= 70) return 'gx-band-b';
-  if (total >= 60) return 'gx-band-c';
-  return 'gx-band-d';
+// Sous le seuil hors bonus, la bande basse s'impose quel que soit le bonus.
+function bandeSelonRegle(totalHorsBonus: number, totalFinal: number, bandes: { min: number; label: string }[]) {
+  if (totalHorsBonus < 60) return [...bandes].sort((a, b) => a.min - b.min)[0]?.label || 'Non retenu';
+  return bandeFor(totalFinal, bandes);
 }
+// Regle de classement (Coordination, 25/09) : sous 60 hors bonus, le projet est non retenu et
+// le bonus est ignore ; a partir de 60, la bande se lit sur le total bonus inclus.
+function bandClasse(totalHorsBonus: number, totalFinal: number) {
+  if (totalHorsBonus < 60) return 'gx-band-d';
+  if (totalFinal >= 80) return 'gx-band-a';
+  if (totalFinal >= 70) return 'gx-band-b';
+  return 'gx-band-c';
+}
+
 
 export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
   const router = useRouter();
@@ -235,8 +243,8 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
                 <span>Total hors bonus <span className="gx-big">{base}</span>/100</span>
                 <span>+ bonus <b>{totBonus}</b></span>
                 <span>= Total final <span className="gx-big">{final}</span>/100</span>
-                <span className={`gx-band ${bandClass(base)}`}>{bandeFor(base, parametres.bandes)}</span>
-                <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Le bonus ne rattrape jamais le seuil de base 60/100.</span>
+                <span className={`gx-band ${bandClasse(base, final)}`}>{bandeSelonRegle(base, final, parametres.bandes)}</span>
+                <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Sous 60 hors bonus, le bonus ne rattrape rien ; au-delà, la bande se lit bonus inclus.</span>
               </div>
             </>
           ) : null}
