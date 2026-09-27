@@ -173,21 +173,23 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
             </tbody>
             <tfoot>
               <tr>
-                <td>Total hors bonus</td>
+                <td>Total hors bonus <span style={{ fontWeight: 400, fontSize: 11.5, color: 'var(--muted-warm)' }}>(seuil d&apos;entrée : 60)</span></td>
                 <td className="n" colSpan={aTroisieme ? 3 : 2}></td>
                 <td className="n">{totals.totalHorsBonus.toFixed(1)}</td>
-                <td><span className={`gx-band ${bandClasse(totals.totalHorsBonus, totals.totalFinal)}`}>{totals.bande}</span></td>
+                <td></td>
               </tr>
+              {/* La bande se lit sur le total FINAL des que le seuil est atteint hors bonus
+                  (arbitrage Coordination du 25/09) : la pastille suit donc ce total-la. */}
               <tr>
                 <td>Total final (bonus inclus)</td>
                 <td className="n" colSpan={aTroisieme ? 3 : 2}>+ {totals.bonus} bonus</td>
                 <td className="n">{totals.totalFinal.toFixed(1)}</td>
-                <td></td>
+                <td><span className={`gx-band ${bandClasse(totals.totalHorsBonus, totals.totalFinal)}`}>{totals.bande}</span></td>
               </tr>
             </tfoot>
           </table>
         </div>
-        <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '10px 0 0' }}>* note harmonisée. Départage ex æquo (6.5.1) appliqué au classement : Bloc A → impact socio-éco → cofinancement → inclusion.</p>
+        <p style={{ fontSize: 11.5, color: 'var(--muted-warm)', margin: '10px 0 0' }}>* note harmonisée. Sous 60 hors bonus, le projet est non retenu et le bonus est ignoré ; au-delà, la bande se lit sur le total final, bonus inclus. Départage ex æquo (6.5.1) appliqué au classement : Bloc A → impact socio-éco → cofinancement → inclusion.</p>
         {!figee ? (
           <div style={{ marginTop: 14 }}>
             <button type="button" className="gx-btn gx-btn-primary" disabled={pending || ecarts.length > 0 || desaccordEs} onClick={() => run(() => figerConsolidationAction(data.documentId!))}>
