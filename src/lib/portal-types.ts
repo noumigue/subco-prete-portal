@@ -577,6 +577,8 @@ export type GestionFicheDetail = {
     bonus: Record<string, number>;
     statut: 'brouillon' | 'soumise';
     signeLe: string | null;
+    renvoyeeMotif?: string | null;
+    renvoyeeLe?: string | null;
     forces?: string[];
     faiblesses?: string[];
   } | null;
@@ -586,7 +588,14 @@ export type GestionFicheDetail = {
   arbitrageEsMotif?: string | null;
 };
 
-export type GestionEvaluateurSlot = { evaluateurId: number | null; nom: string | null; ficheStatut: 'brouillon' | 'soumise' | null } | null;
+export type GestionEvaluateurSlot = {
+  evaluateurId: number | null;
+  nom: string | null;
+  ficheStatut: 'brouillon' | 'soumise' | null;
+  // Fiche renvoyee par l'UGP a son evaluateur : brouillon qui porte le motif du renvoi.
+  renvoyee?: boolean;
+  renvoyeeMotif?: string | null;
+} | null;
 
 export type GestionEvaluationAssign = {
   documentId: string;

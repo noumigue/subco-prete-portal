@@ -184,6 +184,13 @@ export function GestionFiche({ detail }: { detail: GestionFicheDetail }) {
         </>
       ) : (
         <>
+          {detail.fiche?.renvoyeeMotif ? (
+            <div className="gx-flash err">
+              ↩ <b>Votre fiche vous a été renvoyée par l&apos;UGP.</b> Motif : « {detail.fiche.renvoyeeMotif} »
+              <br />Vos notes et vos commentaires sont conservés. Corrigez ce qui doit l&apos;être, puis signez à nouveau.
+            </div>
+          ) : null}
+
           {/* Porte E&S */}
           {porteDifferee ? (
             <div className="gx-es">

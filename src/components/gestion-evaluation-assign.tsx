@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionEvaluateurSlot, GestionEvaluationAssign as AssignData } from '@/lib/portal-types';
-import { annulerFicheSigneeAction, assignerEvaluateurAction, libererPlaceEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
+import { annulerFicheSigneeAction, assignerEvaluateurAction, libererPlaceEvaluateurAction, renvoyerFicheEvaluateurAction, renvoyerVersEligibiliteAction } from '@/app/(gestion)/actions';
 
 function FicheEtat({ slot }: { slot: GestionEvaluateurSlot }) {
   if (!slot?.evaluateurId) return <span className="gx-pill gx-pill-comp">Non assigné</span>;
@@ -23,6 +23,10 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
   // Annulation d'une fiche signee : la fiche est conservee pour l'audit, la place se libere.
   const [annulOpen, setAnnulOpen] = useState<number | null>(null);
   const [motifAnnul, setMotifAnnul] = useState('');
+  // Renvoi d'une fiche signee a SON evaluateur, rang par rang : l'UGP peut renvoyer a l'un,
+  // a l'autre, ou aux deux, avec un motif propre a chacun.
+  const [renvOpen, setRenvOpen] = useState<number | null>(null);
+  const [motifRenv, setMotifRenv] = useState('');
   const [renvoiOpen, setRenvoiOpen] = useState(false);
   const [motifRenvoi, setMotifRenvoi] = useState('');
   const [busy, setBusy] = useState(false);
@@ -42,6 +46,14 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
     setPending(null);
     if (r.ok) router.refresh();
     else setError(r.error || 'Assignation refusée.');
+  }
+
+  async function renvoyerFiche(rang: number) {
+    setBusy(true); setError(null);
+    const r = await renvoyerFicheEvaluateurAction({ documentId: data.documentId, rang, motif: motifRenv.trim() });
+    setBusy(false);
+    if (r.ok) { setRenvOpen(null); setMotifRenv(''); router.refresh(); }
+    else setError(r.error || 'Renvoi refusé.');
   }
 
   async function annuler(rang: number) {
@@ -79,10 +91,25 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
           </select>
           <FicheEtat slot={slot} />
           {signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche signée — la notation est acquise.</span> : null}
+          {slot?.renvoyee ? <span className="gx-pill gx-pill-comp" style={{ fontSize: 11 }}>↩ renvoyée pour correction</span> : null}
           {locked && !signee ? <span style={{ fontSize: 12, color: 'var(--muted-warm)' }}>Fiche commencée — la place est verrouillée.</span> : null}
         </div>
         {signee ? (
-          annulOpen === rang ? (
+          renvOpen === rang ? (
+            <div className="gx-subform" style={{ marginLeft: 0, marginTop: 10 }}>
+              <label>Renvoyer cette fiche à {slot?.nom || 'son évaluateur'}</label>
+              <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 8px' }}>
+                La fiche repasse en brouillon <b>avec ses notes et ses commentaires</b> : l&apos;évaluateur corrige et signe à nouveau,
+                sans rien ressaisir. Il lira votre motif dans sa fiche. La consolidation se referme jusqu&apos;à sa nouvelle signature
+                {data.consolidationStatut === 'figee' ? <>, et <b>la consolidation figée est annulée</b></> : null}.
+              </p>
+              <textarea rows={2} value={motifRenv} onChange={(e) => setMotifRenv(e.target.value)} placeholder="Ex. : la note du critère A4 ne correspond pas à votre commentaire ; précisez ou ajustez." />
+              <div style={{ marginTop: 8, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="gx-btn gx-btn-primary gx-btn-sm" disabled={busy || !motifRenv.trim()} onClick={() => renvoyerFiche(rang)}>{busy ? 'Renvoi…' : 'Confirmer le renvoi'}</button>
+                <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" disabled={busy} onClick={() => setRenvOpen(null)}>Annuler</button>
+              </div>
+            </div>
+          ) : annulOpen === rang ? (
             <div className="gx-subform" style={{ marginLeft: 0, marginTop: 10 }}>
               <label style={{ color: 'var(--gx-red-tx)' }}>Annuler cette fiche signée</label>
               <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 8px' }}>
@@ -97,7 +124,10 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
               </div>
             </div>
           ) : (
-            <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" style={{ marginTop: 10 }} onClick={() => { setAnnulOpen(rang); setMotifAnnul(''); }}>Annuler la fiche signée…</button>
+            <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" onClick={() => { setRenvOpen(rang); setMotifRenv(''); }}>Renvoyer la fiche à son évaluateur…</button>
+              <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" onClick={() => { setAnnulOpen(rang); setMotifAnnul(''); }}>Annuler la fiche signée…</button>
+            </div>
           )
         ) : null}
         {locked && !signee ? (
