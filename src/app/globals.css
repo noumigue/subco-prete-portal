@@ -5161,6 +5161,12 @@ table {
 .operator-follow-step.done::before {
   background: var(--emerald);
 }
+.operator-follow-step.stopped::before { background: var(--gx-red-tx); }
+.operator-follow-step.stopped .operator-follow-bead { border-color: var(--gx-red-tx); background: var(--gx-red-tx); }
+.operator-follow-step.stopped .operator-follow-label { color: var(--gx-red-tx); font-weight: 700; }
+.operator-follow-step.stopped .operator-follow-meta { color: var(--gx-red-tx); }
+.operator-follow-step.unreached .operator-follow-label,
+.operator-follow-step.unreached .operator-follow-meta { color: var(--muted-warm); opacity: .65; }
 
 .operator-follow-bead {
   position: absolute;

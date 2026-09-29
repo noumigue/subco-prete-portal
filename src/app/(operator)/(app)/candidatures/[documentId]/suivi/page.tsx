@@ -73,6 +73,12 @@ export default async function FollowUpPage({
   const echeanceDemandes = demandes.map((item) => item.echeance).filter(Boolean).sort()[0] || null;
   const isSelected = candidature?.statut?.groupe === 'selectionne';
   const isRejected = candidature?.statut?.groupe === 'non_retenu';
+  // Etape a laquelle le parcours s'est arrete (rejet a n'importe quelle etape, ou selection).
+  // Le CMS la calcule a partir du verdict reellement enregistre ; sans elle, la frise marquait
+  // « etape franchie » toutes les etapes precedant la phase du statut, y compris celles que le
+  // dossier n'avait jamais atteintes.
+  const decision = candidature?.decision || null;
+  const arretIndex = decision?.etape ? phases.indexOf(decision.etape as (typeof phases)[number]) : -1;
   const pill = getPill(candidature?.statut?.groupe, Boolean(complement));
   const decisionUrl = mediaUrl(candidature?.notificationDecision?.url);
   const erreur = errorFlag ? ERREURS_CONNUES[errorFlag] || errorFlag : null;
@@ -176,18 +182,61 @@ export default async function FollowUpPage({
         </section>
       ) : null}
 
+      {isSelected ? (
+        <section className="operator-result-card is-selected">
+          <h2>✓ Votre candidature a été sélectionnée</h2>
+          <p>La convention pourra être suivie dans la section <strong>Ma subvention</strong>.</p>
+          {decisionUrl ? (
+            <p className="operator-decision-line">
+              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
+              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
+            </p>
+          ) : null}
+          <Link href="/ma-subvention" className="operator-primary-btn inline">Accéder à Ma subvention</Link>
+        </section>
+      ) : null}
+
+      {isRejected ? (
+        <section className="operator-result-card is-rejected">
+          <h2>✗ Votre candidature n&apos;a pas été retenue</h2>
+          <div className="operator-motif-box">
+            <span className="operator-motif-label">Motif</span>
+            {candidature?.motifDecisionCourt || 'Motif officiel court à renseigner par l’UGP.'}
+          </div>
+          {decisionUrl ? (
+            <p className="operator-decision-line">
+              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
+              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       <div className="operator-block-title">Avancement du dossier</div>
       <section className="operator-card">
         <div className="operator-follow-timeline">
-          {phases.map((phase, index) => (
-            <div key={phase} className={`operator-follow-step${index < currentIndex ? ' done' : ''}${index === currentIndex ? ' current' : ''}${index === currentIndex && complement ? ' comp' : ''}`}>
-              <span className="operator-follow-bead" />
-              <div>
-                <div className="operator-follow-label">{labels[phase]}</div>
-                <div className="operator-follow-meta">{index < currentIndex ? 'Étape franchie' : index === currentIndex ? (complement ? 'Complément attendu' : 'Étape en cours') : 'À venir'}</div>
+          {phases.map((phase, index) => {
+            // Dossier arrete : les etapes suivant l'arret n'ont jamais ete atteintes.
+            const estArret = arretIndex >= 0 && index === arretIndex;
+            const apresArret = arretIndex >= 0 && index > arretIndex;
+            const franchie = arretIndex >= 0 ? index < arretIndex : index < currentIndex;
+            const enCours = arretIndex < 0 && index === currentIndex;
+            const classe = `operator-follow-step${franchie ? ' done' : ''}${enCours ? ' current' : ''}${enCours && complement ? ' comp' : ''}${estArret && isRejected ? ' stopped' : ''}${estArret && isSelected ? ' done' : ''}${apresArret ? ' unreached' : ''}`;
+            const meta = franchie ? 'Étape franchie'
+              : estArret ? (isRejected ? 'Dossier écarté à cette étape' : 'Dossier sélectionné')
+              : apresArret ? 'Étape non atteinte'
+              : enCours ? (complement ? 'Complément attendu' : 'Étape en cours')
+              : 'À venir';
+            return (
+              <div key={phase} className={classe}>
+                <span className="operator-follow-bead" />
+                <div>
+                  <div className="operator-follow-label">{labels[phase]}</div>
+                  <div className="operator-follow-meta">{meta}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -227,36 +276,6 @@ export default async function FollowUpPage({
             </p>
           ) : null}
           <p className="operator-action-hint">Ces dépôts s&apos;ajoutent au dossier ; ils ne modifient pas votre candidature déjà déposée.</p>
-        </section>
-      ) : null}
-
-      {isSelected ? (
-        <section className="operator-result-card is-selected">
-          <h2>✓ Votre candidature a été sélectionnée</h2>
-          <p>La convention pourra être suivie dans la section <strong>Ma subvention</strong>.</p>
-          {decisionUrl ? (
-            <p className="operator-decision-line">
-              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
-              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
-            </p>
-          ) : null}
-          <Link href="/ma-subvention" className="operator-primary-btn inline">Accéder à Ma subvention</Link>
-        </section>
-      ) : null}
-
-      {isRejected ? (
-        <section className="operator-result-card is-rejected">
-          <h2>✗ Votre candidature n&apos;a pas été retenue</h2>
-          <div className="operator-motif-box">
-            <span className="operator-motif-label">Motif</span>
-            {candidature?.motifDecisionCourt || 'Motif officiel court à renseigner par l’UGP.'}
-          </div>
-          {decisionUrl ? (
-            <p className="operator-decision-line">
-              📄 Notification de décision — document officiel signé, joint par l&apos;UGP.{' '}
-              <a href={decisionUrl} target="_blank" rel="noopener" className="operator-text-link">⤓ Télécharger</a>
-            </p>
-          ) : null}
         </section>
       ) : null}
 

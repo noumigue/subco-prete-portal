@@ -71,7 +71,11 @@ export type PortalNotification = {
 // (le depot n'est pas une relation media : sans cette table, aucun ecran ne peut ouvrir la piece).
 export type GestionPieceFichier = { url: string; nom: string; mime: string | null; tailleKo: number | null };
 
+// Etape a laquelle le parcours s'est arrete (calculee par le CMS a partir du verdict valide).
+export type PortalDecision = { etape: 'completude' | 'eligibilite' | 'evaluation' | 'decision' | null; issue: 'non_retenu' | 'selectionne' };
+
 export type PortalCandidature = {
+  decision?: PortalDecision | null;
   id: number;
   documentId: string;
   titreProjet?: string;
