@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { GestionConsolidation as ConsData, GestionConsolidationRow } from '@/lib/portal-types';
 import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
-import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
+import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, renvoyerFicheEvaluateurAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
 
 // Regle de classement (Coordination, 25/09) : sous 60 hors bonus, le projet est non retenu et
 // le bonus est ignore ; a partir de 60, la bande se lit sur le total bonus inclus.
@@ -27,6 +27,9 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   const desaccordEs = !!porteEs?.desaccordNonArbitre;
   const ecarteEs = !!porteEs?.ecarte;
   const [motifEs, setMotifEs] = useState('');
+  // Renvoi d'une fiche a son evaluateur, depuis l'ecran ou l'UGP lit les deux notations :
+  // c'est ici qu'elle voit qu'une fiche est bâclee, pas sur l'ecran d'assignation.
+  const [motifsRenvoi, setMotifsRenvoi] = useState<Record<number, string>>({});
 
   const [harmonVals, setHarmonVals] = useState<Record<string, string>>({});
   // La note retenue arrive pre-remplie avec la moyenne des deux evaluateurs : c'est la base de
@@ -198,6 +201,39 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
           </div>
         ) : null}
       </div>
+
+      {!figee && (data.forcesFaiblesses || []).length ? (
+        <div className="gx-card">
+          <div className="gx-block-title">Renvoyer une fiche à son évaluateur</div>
+          <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>
+            Alternative au 3ᵉ évaluateur quand une notation doit être reprise par son auteur. La fiche repasse en brouillon
+            <b> avec ses notes et ses commentaires</b> ; l&apos;évaluateur lit votre motif, corrige et signe à nouveau.
+            La consolidation se referme jusqu&apos;à sa nouvelle signature, et les harmonisations déjà saisies sont effacées.
+          </p>
+          {(data.forcesFaiblesses || []).map((ev) => (
+            <div key={ev.rang} style={{ borderTop: '1px solid var(--line-warm)', padding: '10px 0' }}>
+              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>Évaluateur {ev.rang} — {ev.nom}</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <textarea
+                  rows={2}
+                  style={{ flex: 1, minWidth: 260 }}
+                  placeholder={`Motif du renvoi à ${ev.nom} (obligatoire) — il le lira dans sa fiche`}
+                  value={motifsRenvoi[ev.rang] || ''}
+                  onChange={(e) => setMotifsRenvoi((p) => ({ ...p, [ev.rang]: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  className="gx-btn gx-btn-ghost gx-btn-sm"
+                  disabled={pending || !(motifsRenvoi[ev.rang] || '').trim()}
+                  onClick={() => run(() => renvoyerFicheEvaluateurAction({ documentId: data.documentId!, rang: ev.rang, motif: (motifsRenvoi[ev.rang] || '').trim() }))}
+                >
+                  Renvoyer sa fiche
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       <p className="gx-annot">
         <b>E4 — écart ≥ 20 % du barème du critère</b> (base en référentiel, {(data.ecartPct ?? 0.2) * 100} %). Deux voies : harmonisation (révision journalisée + re-signature)
