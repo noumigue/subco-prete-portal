@@ -27,7 +27,12 @@ export default async function GestionAppLayout({
   // Badge Assistance (phase 4) : nb de demandes non resolues — ugp ET instructeur (H2).
   const assistCount = session.role === 'comite'
     ? 0
-    : (await getGestionAssistance()).filter((d) => d.statut !== 'resolue').length;
+    : await (async () => {
+        // Compteurs serveur : inutile de charger les demandes pour afficher un badge.
+        const { meta, rows } = await getGestionAssistance(1);
+        if (meta) return meta.parStatut.ouverte + meta.parStatut.en_cours;
+        return rows.filter((d) => d.statut !== 'resolue').length;
+      })();
   const brand = await getBrandAssets();
 
   return (

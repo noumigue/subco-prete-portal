@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { GestionAssistanceRow, GestionAssistanceStatut } from '@/lib/portal-types';
+import type { GestionAssistanceMeta, GestionAssistanceRow, GestionAssistanceStatut } from '@/lib/portal-types';
 
 type FiltreStatut = 'toutes' | GestionAssistanceStatut;
 
@@ -33,11 +33,15 @@ export function GestionAssistanceListe({
   categories,
   userId,
   role = 'ugp',
+  meta = null,
+  tout = false,
 }: {
   rows: GestionAssistanceRow[];
   categories: { code: string; libelle: string }[];
   userId: number;
   role?: 'instructeur' | 'ugp';
+  meta?: GestionAssistanceMeta | null;
+  tout?: boolean;
 }) {
   const [fStatut, setFStatut] = useState<FiltreStatut>('toutes');
   const [fCat, setFCat] = useState('');
@@ -47,7 +51,12 @@ export function GestionAssistanceListe({
   const [fMesDossiers, setFMesDossiers] = useState(role === 'instructeur');
   const nMesDossiers = rows.filter((r) => r.dossierInstructeur?.id === userId).length;
 
-  const count = (s: FiltreStatut) => (s === 'toutes' ? rows.length : rows.filter((r) => r.statut === s).length);
+  // Compteurs d'onglets comptes en base : ils portent sur TOUTES les demandes, pas seulement
+  // sur celles qui sont chargees. Sans cela, limiter la liste fausserait les chiffres.
+  const count = (s: FiltreStatut) => {
+    if (meta) return s === 'toutes' ? meta.total : meta.parStatut[s];
+    return s === 'toutes' ? rows.length : rows.filter((r) => r.statut === s).length;
+  };
 
   let items = rows;
   if (fStatut !== 'toutes') items = items.filter((r) => r.statut === fStatut);
@@ -88,6 +97,18 @@ export function GestionAssistanceListe({
           Mes dossiers <span className="gx-n">{nMesDossiers}</span>
         </label>
       </div>
+
+      {meta && meta.total > meta.affichees ? (
+        <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>
+          {meta.affichees} demandes les plus récentes affichées sur {meta.total}.{' '}
+          <Link className="gx-back" style={{ margin: 0, fontSize: 12.5 }} href="/gestion/assistance?tout=1">Tout charger</Link>
+        </p>
+      ) : tout ? (
+        <p style={{ fontSize: 12.5, color: 'var(--muted-warm)', margin: '0 0 10px' }}>
+          Toutes les demandes sont chargées.{' '}
+          <Link className="gx-back" style={{ margin: 0, fontSize: 12.5 }} href="/gestion/assistance">Revenir aux 50 plus récentes</Link>
+        </p>
+      ) : null}
 
       {items.length === 0 ? (
         <div className="gx-empty">

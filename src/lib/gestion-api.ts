@@ -4,6 +4,7 @@
 
 import { getPortalJwt } from './portal-auth';
 import type {
+  GestionAssistanceMeta,
   GestionAppel,
   GestionConsolidation,
   GestionContradiction,
@@ -283,9 +284,11 @@ export const suspendreSubvention = (id: string, motif?: string) => gestionPost(`
 export const leverSubvention = (id: string) => gestionPost(`/api/gestion/subventions/${id}/lever`, {});
 
 // ——— M5 phase 4 : assistance côté équipe (§19) ———
-export async function getGestionAssistance(): Promise<GestionAssistanceRow[]> {
-  const res = await gestionGet<{ data: GestionAssistanceRow[] }>('/api/gestion/assistance');
-  return res?.data || [];
+export async function getGestionAssistance(limit?: number): Promise<{ rows: GestionAssistanceRow[]; meta: GestionAssistanceMeta | null }> {
+  const res = await gestionGet<{ data: GestionAssistanceRow[]; meta?: GestionAssistanceMeta }>(
+    `/api/gestion/assistance${limit ? `?limit=${limit}` : ''}`,
+  );
+  return { rows: res?.data || [], meta: res?.meta || null };
 }
 export async function getGestionAssistanceDetail(documentId: string): Promise<GestionAssistanceDetail | null> {
   const res = await gestionGet<{ data: GestionAssistanceDetail }>(`/api/gestion/assistance/${documentId}`);

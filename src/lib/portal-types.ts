@@ -807,6 +807,13 @@ export type GestionSubventionDetail = GestionSubventionRow & {
 
 export type GestionAssistanceStatut = 'ouverte' | 'en_cours' | 'resolue';
 
+export type GestionAssistanceMeta = {
+  affichees: number;
+  limit: number;
+  total: number;
+  parStatut: { ouverte: number; en_cours: number; resolue: number };
+};
+
 export type GestionAssistanceRow = {
   documentId: string;
   objet: string;
