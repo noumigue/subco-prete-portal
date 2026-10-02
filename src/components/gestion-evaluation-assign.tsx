@@ -72,12 +72,16 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
     else setError(r.error || 'Libération refusée.');
   }
 
-  function Slot({ rang, slot }: { rang: number; slot: GestionEvaluateurSlot }) {
+  // Rendu d'un bloc evaluateur. Appele comme une FONCTION, surtout pas comme un composant
+  // (<Slot />) : un composant declare dans le rendu est recree a chaque frappe, React demonte
+  // alors tout le bloc — le champ de motif perdait le focus apres chaque caractere (signale
+  // le 02/10). Meme correction que sur la fiche de scoring le 22/09.
+  function slotEvaluateur(rang: number, slot: GestionEvaluateurSlot) {
     const signee = slot?.ficheStatut === 'soumise';
     // Fiche ouverte (brouillon ou signée) : la place appartient à son titulaire.
     const locked = !!slot?.ficheStatut;
     return (
-      <div className="gx-card">
+      <div className="gx-card" key={rang}>
         <div className="gx-block-title">Évaluateur {rang}</div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <select
@@ -155,9 +159,9 @@ export function GestionEvaluationAssign({ data, role }: { data: AssignData; role
       <p className="gx-page-sub">Assignation de la double notation (§6.3) — {data.organisation?.filiere}.</p>
       {error ? <div className="gx-flash err">{error}</div> : null}
 
-      <Slot rang={1} slot={data.evaluateur1} />
-      <Slot rang={2} slot={data.evaluateur2} />
-      {data.evaluateur3?.evaluateurId ? <Slot rang={3} slot={data.evaluateur3} /> : null}
+      {slotEvaluateur(1, data.evaluateur1)}
+      {slotEvaluateur(2, data.evaluateur2)}
+      {data.evaluateur3?.evaluateurId ? slotEvaluateur(3, data.evaluateur3) : null}
 
       {data.consolidationPrete ? (
         <div className="gx-card">

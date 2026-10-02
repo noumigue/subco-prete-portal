@@ -50,9 +50,11 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
 
   const colCount = 3 + (aTroisieme ? 1 : 0) + 1; // Critère + N1 + N2 (+N3) + Moyenne + flag → handled inline
 
-  function Row({ r }: { r: GestionConsolidationRow }) {
+  // Fonction, pas composant : voir gestion-evaluation-assign.tsx. Un <Row /> declare dans le
+  // rendu fait remonter tout le tableau a chaque frappe dans un champ de la page.
+  function ligneCritere(r: GestionConsolidationRow) {
     return (
-      <tr className={r.gap && !r.traite ? 'gap' : ''}>
+      <tr className={r.gap && !r.traite ? 'gap' : ''} key={r.code}>
         {/* Le maximum du critere est rappele a chaque ligne : sans lui, impossible de juger
             si 8 est une bonne note (sur 10) ou une note faible (sur 15). */}
         <td className="gx-cregle">
@@ -175,11 +177,11 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
             </thead>
             <tbody>
               <tr><td colSpan={colCount + 1} style={{ background: '#fbfaf4', fontWeight: 700, color: 'var(--pine)' }}>Bloc A — Infrastructure</td></tr>
-              {(data.rows?.blocA || []).map((r) => <Row key={r.code} r={r} />)}
+              {(data.rows?.blocA || []).map((r) => ligneCritere(r))}
               <tr><td colSpan={colCount + 1} style={{ background: '#fbfaf4', fontWeight: 700, color: 'var(--pine)' }}>Bloc B — Candidat</td></tr>
-              {(data.rows?.blocB || []).map((r) => <Row key={r.code} r={r} />)}
+              {(data.rows?.blocB || []).map((r) => ligneCritere(r))}
               <tr><td colSpan={colCount + 1} style={{ background: '#fbfaf4', fontWeight: 700, color: 'var(--pine)' }}>Bonus d&apos;inclusion</td></tr>
-              {(data.bonusRows || []).map((r) => <Row key={r.code} r={r} />)}
+              {(data.bonusRows || []).map((r) => ligneCritere(r))}
             </tbody>
             <tfoot>
               <tr>
