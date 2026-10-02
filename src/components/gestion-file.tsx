@@ -23,6 +23,33 @@ const ECHEANCE_PROCHE_JOURS = 2;
 
 // Onglet Evaluation (UGP) : etats de la notation, dans l'ordre du circuit.
 type EtatEval = 'a_designer' | 'un_evaluateur' | 'notation' | 'a_consolider' | 'figee';
+
+// Tranche prevue par la moyenne des deux fiches signees. Elle n'engage rien tant que la
+// consolidation n'est pas figee : le traitement des ecarts peut la faire changer.
+type Tranche = 'reco' | 'conditions' | 'attente' | 'rejet';
+const TRANCHES: [Tranche, string, string][] = [
+  ['reco', 'Recommandé ≥ 80', 'gx-band-a'],
+  ['conditions', 'Sous conditions 70-79', 'gx-band-b'],
+  ['attente', "Liste d'attente 60-69", 'gx-band-c'],
+  ['rejet', 'Non retenu < 60', 'gx-band-d'],
+];
+function trancheDe(d: GestionDossierRow): Tranche | null {
+  const p = d.evaluation?.previsionnel;
+  if (!p) return null;
+  // Dossier figé : on lit la bande telle qu'elle a été arrêtée, sans la recalculer — sinon le
+  // filtre contredirait la pastille affichée pour une consolidation figée avant le 25/09.
+  if (p.figee) {
+    const b = p.bande.toLowerCase();
+    if (b.includes('financement')) return 'reco';
+    if (b.includes('condition')) return 'conditions';
+    if (b.includes('attente') || b.includes('révision')) return 'attente';
+    return 'rejet';
+  }
+  if (p.totalHorsBonus < 60) return 'rejet';
+  if (p.totalFinal >= 80) return 'reco';
+  if (p.totalFinal >= 70) return 'conditions';
+  return 'attente';
+}
 const ETATS_EVAL: [EtatEval, string, string][] = [
   ['a_designer', 'Évaluateurs à désigner', 'bad'],
   ['un_evaluateur', 'Un seul évaluateur', 'warn'],
@@ -167,7 +194,8 @@ export function GestionFile({
   // Vue par defaut = le travail du jour : l'UGP arrive sur ce qu'elle a a valider, l'instructeur
   // sur ses propres dossiers. Ces reglages servent a la 1re visite et a « Tout reinitialiser ».
   const scopeDefaut = ugp ? 'a_valider' : 'mes';
-  const triDefaut: Tri = ugp ? 'attente' : 'depot_asc';
+  // Tri par defaut : numero croissant dans tous les onglets (demande UGP du 02/10).
+  const triDefaut: Tri = 'numero';
 
   const [tab, setTab] = useState<Tab>('completude');
   const [recherche, setRecherche] = useState('');
@@ -181,6 +209,8 @@ export function GestionFile({
   const [pieceAjoutee, setPieceAjoutee] = useState(false);
   // Dossiers renvoyes de l'evaluation : a instruire en non-eligibilite.
   const [reexamen, setReexamen] = useState(false);
+  // Tranche prevue par la moyenne des deux fiches, pour attaquer la consolidation par priorite.
+  const [tranche, setTranche] = useState('');
   const [filiere, setFiliere] = useState('');
   const [province, setProvince] = useState('');
   const [critere, setCritere] = useState('');
@@ -246,8 +276,8 @@ export function GestionFile({
 
   function reinitialiser() {
     setRecherche(''); setScope(scopeDefaut); setVerdict(''); setTravail('');
-    setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false); setReexamen(false);
-    setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(tab === 'evaluation' && ugp ? 'entree_eval' : triDefaut);
+    setArbitrer(false); setAttente(false); setEcheance(false); setModifEnCours(false); setPieceAjoutee(false); setReexamen(false); setTranche('');
+    setFiliere(''); setProvince(''); setCritere(''); setVerdictSelect(''); setTri(triDefaut);
     setEtatEval('a_designer'); setSigRecuse(false); setSigEcart(false); setSigEs(false); setSigSansFiche(false); setEvaluateur('');
     // L'onglet n'est pas touche : on reinitialise les filtres de l'etape ou l'on travaille.
     // La memoire est reecrite par l'effet ci-dessus avec ces valeurs remises a zero.
@@ -255,10 +285,9 @@ export function GestionFile({
   function changerOnglet(t: Tab) {
     setTab(t);
     // Les verdicts et l'avancement ne sont pas les memes d'une etape a l'autre.
-    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect(''); setEvaluateur(''); setReexamen(false);
-    // Tri par defaut propre a chaque onglet : entree en evaluation pour l'UGP a l'evaluation.
-    if (t === 'evaluation' && ugp) setTri('entree_eval');
-    else if (tri === 'entree_eval') setTri(triDefaut);
+    setVerdict(''); setTravail(''); setCritere(''); setVerdictSelect(''); setEvaluateur(''); setReexamen(false); setTranche('');
+    // Le tri ne change plus d'un onglet a l'autre : numero croissant partout, sauf choix explicite.
+    if (t !== 'evaluation' && tri === 'entree_eval') setTri(triDefaut);
   }
 
   const estAMoi = (d: GestionDossierRow) => currentUserId != null && d.prisEnChargePar?.id === currentUserId;
@@ -319,9 +348,11 @@ export function GestionFile({
 
   // Onglet Evaluation (UGP) : etat de la notation.
   const nEtatEval = (e: EtatEval) => base.filter((d) => d.evaluation?.etat === e).length;
+  const nTranche = (t: Tranche) => base.filter((d) => (etatEval ? d.evaluation?.etat === etatEval : true) && trancheDe(d) === t).length;
 
   let items = base;
   if (etapeEval && etatEval) items = items.filter((d) => d.evaluation?.etat === etatEval);
+  if (etapeEval && tranche) items = items.filter((d) => trancheDe(d) === tranche);
   if (vueAValider && verdict) items = items.filter((d) => d.instruction?.verdictPropose === verdict);
   if (etapeInstruite && !ugp && travail) items = items.filter((d) => travailOf(d) === travail);
 
@@ -374,6 +405,7 @@ export function GestionFile({
     etapeInstruite && modifEnCours ? 'candidat en train de modifier' : null,
     etapeInstruite && pieceAjoutee ? 'pièce ajoutée' : null,
     etapeInstruite && reexamen ? "renvoyés de l'évaluation" : null,
+    etapeEval && tranche ? `tranche ${TRANCHES.find(([k]) => k === tranche)?.[1] || ''}` : null,
     etapeEval && etatEval ? ETATS_EVAL.find(([k]) => k === etatEval)?.[1].toLowerCase() : null,
     etapeEval && sigRecuse ? 'évaluateur récusé' : null,
     etapeEval && sigEcart ? 'écart à harmoniser' : null,
@@ -486,6 +518,14 @@ export function GestionFile({
           </Ligne>
         ) : null}
         {etapeEval ? (
+          <Ligne label="Tranche prévisionnelle">
+            <Chip on={!tranche} onClick={() => setTranche('')} n={base.filter((d) => trancheDe(d)).length}>Toutes</Chip>
+            {TRANCHES.map(([k, label, dot]) => (
+              <Chip key={k} on={tranche === k} onClick={() => setTranche(tranche === k ? '' : k)} dot={dot} n={nTranche(k)}>{label}</Chip>
+            ))}
+          </Ligne>
+        ) : null}
+        {etapeEval ? (
           <Ligne label="Signaux">
             <Chip on={sigRecuse} onClick={() => setSigRecuse((v) => !v)} n={nRecuse}>↺ Évaluateur récusé, à remplacer</Chip>
             <Chip on={sigEcart} onClick={() => setSigEcart((v) => !v)} n={nEcart}>⚖ Écart à harmoniser</Chip>
@@ -555,6 +595,12 @@ export function GestionFile({
                   {d.organisation?.filiere ? <span>{d.organisation.filiere}</span> : null}
                   {d.organisation?.province ? <span>{d.organisation.province}</span> : null}
                   {d.dateDepot ? <span>déposé le {new Date(d.dateDepot).toLocaleDateString('fr-FR')}</span> : null}
+                  {phase === 'evaluation' && d.evaluation?.previsionnel ? (
+                    <span>
+                      <b>{d.evaluation.previsionnel.totalFinal.toFixed(1)}</b> · {d.evaluation.previsionnel.bande}
+                      {d.evaluation.previsionnel.figee ? '' : ' (prévisionnel)'}
+                    </span>
+                  ) : null}
                   {phase === 'evaluation' && d.evaluation?.evaluateurs.length ? (
                     <span>évaluateurs : <b>{d.evaluation.evaluateurs.map((e) => e.nom).join(', ')}</b></span>
                   ) : d.prisEnChargePar ? <span>pris en charge : <b>{d.prisEnChargePar.nom}</b></span> : null}

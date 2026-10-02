@@ -406,6 +406,8 @@ export type GestionDossierRow = {
     sansFicheDepuisJours: number | null;
     totalFinal: number | null;
     entreeEvaluationLe: string | null;
+    // Tranche ou se situerait le dossier d'apres la moyenne des fiches signees. `figee` = tranche reelle.
+    previsionnel?: { totalHorsBonus: number; totalFinal: number; bande: string; figee: boolean } | null;
   } | null;
   aArbitrer?: GestionContradiction[];
   // Jours ecoules depuis la proposition, pour les dossiers en attente de validation UGP.
@@ -622,6 +624,10 @@ export type GestionConsolidationRow = {
   traite: boolean;
   harmonisee: boolean;
   retenue: number;
+  // Justification ecrite par chaque evaluateur pour ce critere.
+  c1?: string;
+  c2?: string;
+  c3?: string;
 };
 
 export type GestionConsolidationTotals = {

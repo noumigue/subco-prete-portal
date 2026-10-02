@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { GestionConsolidation as ConsData, GestionConsolidationRow } from '@/lib/portal-types';
 import { GestionPiecesDossier } from '@/components/gestion-pieces-dossier';
 import { arbitrerEsAction, figerConsolidationAction, harmoniserAction, renvoyerFicheEvaluateurAction, troisiemeEvaluateurAction } from '@/app/(gestion)/actions';
@@ -30,6 +30,11 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   // Renvoi d'une fiche a son evaluateur, depuis l'ecran ou l'UGP lit les deux notations :
   // c'est ici qu'elle voit qu'une fiche est bâclee, pas sur l'ecran d'assignation.
   const [motifsRenvoi, setMotifsRenvoi] = useState<Record<number, string>>({});
+  // Justifications par critere : repliees par defaut pour garder le tableau lisible, mais
+  // ouvertes d'office sur les criteres en ecart — ce sont ceux qui demandent un arbitrage.
+  const [deplie, setDeplie] = useState<Record<string, boolean>>({});
+  const [toutDeplie, setToutDeplie] = useState(false);
+  const ouvert = (r: GestionConsolidationRow) => deplie[r.code] ?? (toutDeplie || (r.gap && !r.traite));
 
   const [harmonVals, setHarmonVals] = useState<Record<string, string>>({});
   // La note retenue arrive pre-remplie avec la moyenne des deux evaluateurs : c'est la base de
@@ -53,11 +58,28 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   // Fonction, pas composant : voir gestion-evaluation-assign.tsx. Un <Row /> declare dans le
   // rendu fait remonter tout le tableau a chaque frappe dans un champ de la page.
   function ligneCritere(r: GestionConsolidationRow) {
+    const justifs: [string, number | null, string][] = [
+      [data.evaluateur1Nom || 'Évaluateur 1', r.n1, r.c1 || ''],
+      [data.evaluateur2Nom || 'Évaluateur 2', r.n2, r.c2 || ''],
+      ...(aTroisieme ? [['Évaluateur 3', r.n3, r.c3 || ''] as [string, number | null, string]] : []),
+    ];
+    const aDesJustifs = justifs.some(([, , texte]) => texte.trim());
     return (
-      <tr className={r.gap && !r.traite ? 'gap' : ''} key={r.code}>
+      <Fragment key={r.code}>
+      <tr className={r.gap && !r.traite ? 'gap' : ''}>
         {/* Le maximum du critere est rappele a chaque ligne : sans lui, impossible de juger
             si 8 est une bonne note (sur 10) ou une note faible (sur 15). */}
         <td className="gx-cregle">
+          {aDesJustifs ? (
+            <button
+              type="button"
+              aria-label={ouvert(r) ? 'Masquer les justifications' : 'Voir les justifications'}
+              onClick={() => setDeplie((p) => ({ ...p, [r.code]: !ouvert(r) }))}
+              style={{ background: 'none', border: 0, padding: 0, marginRight: 6, cursor: 'pointer', color: 'inherit', font: 'inherit', width: 'auto' }}
+            >
+              {ouvert(r) ? '▾' : '▸'}
+            </button>
+          ) : null}
           {r.code}. {r.libelle}
           <span style={{ color: 'var(--muted-warm)', fontWeight: 400 }}> · sur {r.points}</span>
         </td>
@@ -69,6 +91,21 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
         </td>
         <td>{r.gap ? (r.traite ? <span className="gx-pill gx-pill-ok" style={{ fontSize: 10 }}>traité</span> : <span className="gx-gapflag">écart {r.ecart} ≥ {r.seuil.toFixed(0)}</span>) : ''}</td>
       </tr>
+      {aDesJustifs && ouvert(r) ? (
+        <tr className={r.gap && !r.traite ? 'gap' : ''}>
+          <td colSpan={colCount + 1} style={{ paddingTop: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${justifs.length}, minmax(0, 1fr))`, gap: 10, paddingBottom: 8 }}>
+              {justifs.map(([nom, note, texte]) => (
+                <div key={nom} style={{ background: '#fff', border: '1px solid var(--line-warm)', borderRadius: 8, padding: '8px 10px' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700 }}>{nom} — {note ?? '—'}/{r.points}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted-warm)', lineHeight: 1.5, marginTop: 3, whiteSpace: 'pre-wrap' }}>{texte.trim() || '— pas de justification —'}</div>
+                </div>
+              ))}
+            </div>
+          </td>
+        </tr>
+      ) : null}
+      </Fragment>
     );
   }
 
@@ -162,7 +199,12 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
       ) : null}
 
       <div className="gx-card">
-        <div className="gx-block-title">Notes consolidées</div>
+        <div className="gx-block-title">
+          Notes consolidées
+          <button type="button" className="gx-btn gx-btn-ghost gx-btn-sm" style={{ marginLeft: 'auto' }} onClick={() => { setToutDeplie((v) => !v); setDeplie({}); }}>
+            {toutDeplie ? 'Tout replier' : 'Tout déplier'}
+          </button>
+        </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="gx-constable">
             <thead>
