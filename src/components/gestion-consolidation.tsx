@@ -53,11 +53,18 @@ export function GestionConsolidation({ data }: { data: ConsData }) {
   function Row({ r }: { r: GestionConsolidationRow }) {
     return (
       <tr className={r.gap && !r.traite ? 'gap' : ''}>
-        <td className="gx-cregle">{r.code}. {r.libelle}</td>
+        {/* Le maximum du critere est rappele a chaque ligne : sans lui, impossible de juger
+            si 8 est une bonne note (sur 10) ou une note faible (sur 15). */}
+        <td className="gx-cregle">
+          {r.code}. {r.libelle}
+          <span style={{ color: 'var(--muted-warm)', fontWeight: 400 }}> · sur {r.points}</span>
+        </td>
         <td className="n">{r.n1 ?? '—'}</td>
         <td className="n">{r.n2 ?? '—'}</td>
         {aTroisieme ? <td className="n">{r.n3 ?? '—'}</td> : null}
-        <td className="n">{r.retenue.toFixed(1)}{r.harmonisee ? ' *' : ''}</td>
+        <td className="n">
+          {r.retenue.toFixed(1)}<span style={{ color: 'var(--muted-warm)', fontWeight: 400 }}>/{r.points}</span>{r.harmonisee ? ' *' : ''}
+        </td>
         <td>{r.gap ? (r.traite ? <span className="gx-pill gx-pill-ok" style={{ fontSize: 10 }}>traité</span> : <span className="gx-gapflag">écart {r.ecart} ≥ {r.seuil.toFixed(0)}</span>) : ''}</td>
       </tr>
     );
