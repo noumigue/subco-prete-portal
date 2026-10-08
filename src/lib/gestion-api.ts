@@ -5,6 +5,7 @@
 import { getPortalJwt } from './portal-auth';
 import type {
   GestionAssistanceMeta,
+  GestionMesEvaluationsMeta,
   GestionAppel,
   GestionConsolidation,
   GestionContradiction,
@@ -81,9 +82,9 @@ async function gestionVerifier(path: string, data: unknown): Promise<{ ok: boole
 }
 
 // ——— Lectures ———
-export async function getGestionDossiers(): Promise<GestionDossierRow[]> {
-  const res = await gestionGet<{ data: GestionDossierRow[] }>('/api/gestion/dossiers');
-  return res?.data || [];
+export async function getGestionDossiers(): Promise<{ rows: GestionDossierRow[]; tronque: boolean }> {
+  const res = await gestionGet<{ data: GestionDossierRow[]; meta?: { tronque?: boolean } }>('/api/gestion/dossiers');
+  return { rows: res?.data || [], tronque: Boolean(res?.meta?.tronque) };
 }
 
 export async function getGestionDossier(documentId: string): Promise<GestionDossierDetail | null> {
@@ -98,8 +99,8 @@ export async function getGestionAppels(): Promise<GestionAppel[]> {
 
 // ——— Nombre de propositions en attente de validation (badge sidebar ugp) ———
 export async function getGestionPendingCount(): Promise<number> {
-  const dossiers = await getGestionDossiers();
-  return dossiers.filter((d) => d.enValidation).length;
+  const { rows } = await getGestionDossiers();
+  return rows.filter((d) => d.enValidation).length;
 }
 
 // ——— Ecritures (circuit §4.2) ———
@@ -146,9 +147,9 @@ export const ouvrirAppel = (documentId: string) => gestionPost(`/api/gestion/app
 export const cloreAppel = (documentId: string) => gestionPost(`/api/gestion/appels/${documentId}/clore`);
 
 // ——— M5 phase 2 : évaluation & consolidation ———
-export async function getMesEvaluations(): Promise<GestionMesEvaluationRow[]> {
-  const res = await gestionGet<{ data: GestionMesEvaluationRow[] }>('/api/gestion/evaluations');
-  return res?.data || [];
+export async function getMesEvaluations(): Promise<{ rows: GestionMesEvaluationRow[]; meta: GestionMesEvaluationsMeta | null }> {
+  const res = await gestionGet<{ data: GestionMesEvaluationRow[]; meta?: GestionMesEvaluationsMeta }>('/api/gestion/evaluations');
+  return { rows: res?.data || [], meta: res?.meta || null };
 }
 export async function getFicheDetail(documentId: string): Promise<GestionFicheDetail | null> {
   const res = await gestionGet<{ data: GestionFicheDetail }>(`/api/gestion/evaluations/${documentId}`);

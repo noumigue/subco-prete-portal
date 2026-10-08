@@ -10,7 +10,7 @@ export default async function GestionDossiersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const [session, dossiers] = await Promise.all([getPortalSession(), getGestionDossiers()]);
+  const [session, { rows: dossiers, tronque }] = await Promise.all([getPortalSession(), getGestionDossiers()]);
   const role = session?.role === 'ugp' ? 'ugp' : 'instructeur';
 
   const flash =
@@ -23,5 +23,15 @@ export default async function GestionDossiersPage({
                 : null;
   const flashError = typeof params.error === 'string' ? params.error : null;
 
-  return <GestionFile dossiers={dossiers} role={role} currentUserId={session?.userId ?? null} flash={flash} flashError={flashError} />;
+  return (
+    <GestionFile
+      dossiers={dossiers}
+      role={role}
+      currentUserId={session?.userId ?? null}
+      flash={flash}
+      // Une file tronquee doit se voir : c'est ce silence qui a masque deux dossiers a un
+      // evaluateur le 08/10. Le message prime sur une autre erreur eventuelle.
+      flashError={tronque ? "La file a atteint sa limite d'affichage : des dossiers peuvent manquer. Signalez-le à l'équipe projet." : flashError}
+    />
+  );
 }

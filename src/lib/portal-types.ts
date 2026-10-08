@@ -541,6 +541,15 @@ export type GestionBaremeCritere = {
   type: 'note' | 'eliminatoire';
 };
 
+export type GestionMesEvaluationsMeta = {
+  total: number;
+  aRemplir: number;
+  soumises: number;
+  retires: number;
+  // Vrai si la borne de securite a ete atteinte : l'ecran doit le dire plutot que masquer.
+  tronque: boolean;
+};
+
 export type GestionMesEvaluationRow = {
   documentId: string;
   numeroDossier: string | null;
