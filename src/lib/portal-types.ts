@@ -571,6 +571,20 @@ export type GestionPiecesDossier = {
   autres: { libelle: string; url: string; nom: string; spontanee: boolean }[];
 };
 
+// Vue « pieces seules » d'un dossier dont on n'est pas detenteur (evaluation, dossiers clos) :
+// elle ne porte aucune note, aucun verdict, aucun nom d'evaluateur.
+export type GestionDossierPieces = {
+  documentId: string;
+  numeroDossier: string | null;
+  titreProjet: string;
+  organisation: { nom: string; filiere: string | null; province: string | null } | null;
+  phase: string | null;
+  statutLibelle: string | null;
+  pieces: GestionPiecesDossier['pieces'];
+  autres: GestionPiecesDossier['autres'];
+  assistance: GestionPieceAssistance[];
+};
+
 export type GestionFicheDetail = {
   documentId: string;
   numeroDossier: string | null;

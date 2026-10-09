@@ -660,6 +660,11 @@ export function GestionFile({
                 {phase === 'clos' ? (
                   <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/completude`}>Consulter</Link>
                 ) : null}
+                {/* Pieces seules : ouvert a toute l'equipe, y compris a qui n'est pas detenteur
+                    du dossier (09/10). Les fiches et la consolidation restent inaccessibles. */}
+                {phase === 'evaluation' || phase === 'clos' ? (
+                  <Link className="gx-btn gx-btn-ghost gx-btn-sm" href={`/gestion/dossiers/${d.documentId}/pieces`}>Pièces</Link>
+                ) : null}
               </div>
             </div>
           );

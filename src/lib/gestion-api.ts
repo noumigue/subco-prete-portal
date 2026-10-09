@@ -11,6 +11,7 @@ import type {
   GestionContradiction,
   GestionDecisions,
   GestionDossierDetail,
+  GestionDossierPieces,
   GestionDossierRow,
   GestionEvaluationAssign,
   GestionFicheDetail,
@@ -89,6 +90,12 @@ export async function getGestionDossiers(): Promise<{ rows: GestionDossierRow[];
 
 export async function getGestionDossier(documentId: string): Promise<GestionDossierDetail | null> {
   const res = await gestionGet<{ data: GestionDossierDetail }>(`/api/gestion/dossiers/${documentId}`);
+  return res?.data || null;
+}
+
+// Pieces seules : accessible a toute l'equipe sur un dossier en evaluation ou clos.
+export async function getGestionDossierPieces(documentId: string): Promise<GestionDossierPieces | null> {
+  const res = await gestionGet<{ data: GestionDossierPieces }>(`/api/gestion/dossiers/${documentId}/pieces`);
   return res?.data || null;
 }
 
