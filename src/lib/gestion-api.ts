@@ -432,3 +432,62 @@ export async function definirMotDePasse(token: string, password: string): Promis
   if (!response.ok) return { ok: false, error: payload?.error?.message || "L'activation a echoue." };
   return { ok: true };
 }
+
+// ——— Demandes de mise a jour (maturation) ————————————————————————————————————
+//
+// « Le Cabinet OU l'UGP valide » : les deux roles appellent les memes routes. Seule la
+// creation d'une campagne est reservee a l'UGP, cote CMS.
+
+export type GestionDemandeMaj = {
+  documentId: string;
+  statut: 'demandee' | 'fournie' | 'validee' | 'renvoyee' | 'echue';
+  campagne?: string | null;
+  phase?: string | null;
+  echeance?: string | null;
+  perimetre?: { pieces?: { libelle: string }[]; montants?: boolean } | null;
+  piecesFournies?: { libelle: string; nomFichier?: string | null; statut?: string }[];
+  montantsProposes?: { budgetTotal?: number; contrepartie?: number; typeContrepartie?: string | null; commentaire?: string | null } | null;
+  montantsStatut?: string;
+  soumisLe?: string | null;
+  validePar?: string | null;
+  valideParRole?: string | null;
+  valideLe?: string | null;
+  motifRenvoi?: string | null;
+  versionProduite?: number | null;
+  type?: { libelle?: string; phase?: string } | null;
+  candidature?: {
+    documentId: string;
+    numeroDossier?: string;
+    titreProjet?: string;
+    versionDepot?: number;
+    montantsMatures?: boolean;
+    organisation?: { nom?: string } | null;
+    statut?: { code?: string; libelleCandidat?: string } | null;
+  } | null;
+};
+
+export async function getGestionDemandesMaj(filtres?: { statut?: string; campagne?: string }) {
+  const params = new URLSearchParams();
+  if (filtres?.statut) params.set('statut', filtres.statut);
+  if (filtres?.campagne) params.set('campagne', filtres.campagne);
+  const suffixe = params.toString() ? `?${params}` : '';
+  return gestionGet<{ demandes: GestionDemandeMaj[]; compte: Record<string, number>; total: number }>(
+    `/api/gestion/maturation${suffixe}`,
+  );
+}
+
+export async function getGestionDemandeMaj(documentId: string) {
+  return gestionGet<{ demande: GestionDemandeMaj }>(`/api/gestion/maturation/${documentId}`);
+}
+
+export async function validerDemandeMaj(documentId: string) {
+  return gestionPost(`/api/gestion/maturation/${documentId}/valider`);
+}
+
+export async function renvoyerDemandeMaj(documentId: string, motif: string, joursOuvres?: number) {
+  return gestionPost(`/api/gestion/maturation/${documentId}/renvoyer`, { motif, joursOuvres });
+}
+
+export async function rouvrirDemandeMaj(documentId: string, joursOuvres?: number) {
+  return gestionPost(`/api/gestion/maturation/${documentId}/rouvrir`, { joursOuvres });
+}

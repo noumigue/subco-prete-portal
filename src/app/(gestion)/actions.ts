@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset } from '@/lib/portal-auth';
 import { uploadPortalFile } from '@/lib/portal-api';
+import { validerDemandeMaj, renvoyerDemandeMaj, rouvrirDemandeMaj } from '@/lib/gestion-api';
 import {
   annulerRenvoiEvaluation,
   annulerFicheSignee,
@@ -582,4 +583,18 @@ export async function exportJournalCsvAction(filters: GestionAdminJournalFilters
   const csv = await getAdminJournalCsv(filters);
   if (csv == null) return { ok: false, error: "L'export a echoue." };
   return { ok: true, csv };
+}
+
+// ——— Demandes de mise a jour (maturation) ————————————————————————————————————
+// Le Cabinet comme l'UGP peuvent valider : la garde est cote CMS, qui trace qui a valide.
+function revalMaturation() { revalidatePath('/gestion/maturation'); }
+
+export async function validerDemandeMajAction(documentId: string): Res {
+  const r = await validerDemandeMaj(documentId); revalMaturation(); return r;
+}
+export async function renvoyerDemandeMajAction(documentId: string, motif: string, joursOuvres?: number): Res {
+  const r = await renvoyerDemandeMaj(documentId, motif, joursOuvres); revalMaturation(); return r;
+}
+export async function rouvrirDemandeMajAction(documentId: string, joursOuvres?: number): Res {
+  const r = await rouvrirDemandeMaj(documentId, joursOuvres); revalMaturation(); return r;
 }

@@ -26,6 +26,7 @@ const navItems = [
   { href: '/tableau-de-bord', label: 'Tableau de bord', icon: 'dashboard' },
   { href: '/mon-organisation', label: 'Mon organisation', icon: 'organisation' },
   { href: '/mes-candidatures', label: 'Mes candidatures', icon: 'candidatures' },
+  { href: '/mises-a-jour', label: 'Mises à jour', icon: 'candidatures' },
   { href: '/ma-subvention', label: 'Ma subvention', icon: 'subvention', isSubvention: true },
   { href: '/notifications', label: 'Notifications', icon: 'notifications' },
   { href: '/faq-documents', label: 'FAQ & documents', icon: 'faq' },

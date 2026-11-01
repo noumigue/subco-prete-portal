@@ -29,6 +29,7 @@ import {
   updatePortalDraft,
   updatePortalPhone,
   uploadPortalFile,
+  soumettreDemandeMaj,
   upsertPortalOrganisation,
 } from '@/lib/portal-api';
 import { portalMediaUrl } from '@/lib/portal-media';
@@ -560,4 +561,52 @@ export async function addPieceAction(formData: FormData) {
 
   const result = await addPieceComplementaire(candidatureId, libelle, (uploaded as { id: number }).id);
   redirect(result.ok ? `${backTo}?piece=ajoutee` : `${backTo}?error=${encodeURIComponent(result.error || "L’ajout a echoue.")}`);
+}
+
+// ——— Demande de mise a jour apres depot (maturation) ————————————————————————
+//
+// Un seul envoi porte les pieces ET les montants : l'operateur repond a la demande d'un
+// bloc, et le CMS n'ecrit rien sur le dossier tant que l'equipe n'a pas valide.
+//
+// Les fichiers sont televerses ici, un par un, AVANT l'envoi : si l'un echoue, rien n'est
+// soumis et l'operateur garde sa saisie.
+export async function soumettreDemandeMajAction(
+  documentId: string,
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
+  await requirePortalSession();
+
+  const pieces: { libelle: string; fileId: number; nomFichier?: string }[] = [];
+  for (const [cle, valeur] of formData.entries()) {
+    if (!cle.startsWith('piece::') || !(valeur instanceof File) || valeur.size === 0) continue;
+    const libelle = cle.slice('piece::'.length);
+    const uploaded = await uploadPortalFile(valeur);
+    if (!uploaded?.id) {
+      return { ok: false, error: `Le televersement de « ${libelle} » a echoue. Reessayez avec un PDF ou une image.` };
+    }
+    pieces.push({ libelle, fileId: uploaded.id, nomFichier: uploaded.name });
+  }
+
+  const nombre = (champ: string) => {
+    const brut = String(formData.get(champ) ?? '').replace(/\s/g, '').replace(',', '.');
+    return brut === '' ? null : Number(brut);
+  };
+
+  const budgetTotal = nombre('budgetTotal');
+  const contrepartie = nombre('contrepartie');
+  const montants = budgetTotal !== null || contrepartie !== null
+    ? {
+      budgetTotal,
+      contrepartie,
+      typeContrepartie: String(formData.get('typeContrepartie') || '') || null,
+      commentaire: String(formData.get('commentaire') || '') || null,
+    }
+    : undefined;
+
+  const resultat = await soumettreDemandeMaj(documentId, { pieces, montants });
+  if (resultat.ok) {
+    revalidatePath('/mises-a-jour');
+    revalidatePath(`/mises-a-jour/${documentId}`);
+  }
+  return resultat;
 }

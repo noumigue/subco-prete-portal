@@ -589,3 +589,70 @@ export async function depositComplement(documentId: string, fileId: number) {
     body: JSON.stringify({ data: { fichier: fileId } }),
   });
 }
+
+// ——— Demandes de mise a jour apres depot (maturation) ———————————————————————
+//
+// Trois routes owner-scopees cote CMS. Le portail ne voit jamais les champs de decision
+// interne (qui a valide, motif d'arbitrage) : la vue operateur est construite cote serveur.
+
+export type PortalDemandeMajPiece = {
+  libelle: string;
+  fileId?: number | null;
+  nomFichier?: string | null;
+  deposeLe?: string | null;
+  statut?: string;
+};
+
+export type PortalDemandeMaj = {
+  documentId: string;
+  statut: 'demandee' | 'fournie' | 'validee' | 'renvoyee' | 'echue';
+  phase?: string | null;
+  echeance?: string | null;
+  texteDemande?: string | null;
+  perimetre?: {
+    pieces?: { libelle: string; groupe?: string | null; exigence?: string }[];
+    montants?: boolean;
+    champs?: string[];
+  } | null;
+  piecesFournies?: PortalDemandeMajPiece[];
+  montantsProposes?: {
+    budgetTotal?: number;
+    contrepartie?: number;
+    typeContrepartie?: string | null;
+    commentaire?: string | null;
+  } | null;
+  montantsStatut?: string;
+  motifRenvoi?: string | null;
+  soumisLe?: string | null;
+  type?: { libelle?: string; phase?: string } | null;
+  candidature?: { documentId: string; numeroDossier?: string; titreProjet?: string } | null;
+};
+
+export async function getMesDemandesMaj(): Promise<PortalDemandeMaj[]> {
+  const result = await portalFetch<{ demandes: PortalDemandeMaj[] }>('/api/demandes-maj/mes-demandes');
+  return result?.demandes || [];
+}
+
+export async function getDemandeMaj(documentId: string): Promise<PortalDemandeMaj | null> {
+  const result = await portalFetch<{ demande: PortalDemandeMaj }>(`/api/demandes-maj/${documentId}`);
+  return result?.demande || null;
+}
+
+export async function soumettreDemandeMaj(
+  documentId: string,
+  corps: { pieces?: { libelle: string; fileId: number; nomFichier?: string }[]; montants?: Record<string, unknown> },
+): Promise<{ ok: boolean; error?: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/demandes-maj/${documentId}/soumettre`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(corps),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+  // Les refus du CMS portent du sens pour l'operateur — echeance passee, piece hors
+  // perimetre, contrepartie superieure au budget : on remonte son message tel quel.
+  if (!response.ok) return { ok: false, error: payload?.error?.message || "L'envoi n'a pas abouti." };
+  return { ok: true };
+}

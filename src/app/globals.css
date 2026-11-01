@@ -7916,3 +7916,9 @@ a.candidature-bis-doc-card:hover .candidature-bis-doc-download { stroke: var(--b
 .candidature-bis-check-exig { align-self: center; font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; color: var(--ink-soft); white-space: nowrap; }
 .candidature-bis-check-exig.exig-obligatoire { background: #e4f2ee; border-color: #bfe0d5; color: #1f6b52; }
 @media (max-width: 860px) { .candidature-bis-checklist-grid { grid-template-columns: 1fr; } }
+
+/* ---- Mises a jour des dossiers (maturation) ---- */
+/* Deux classes seulement : le reste de l'ecran reutilise gx-card, gx-pill, gx-meta,
+   gx-plist, gx-constable et les boutons gx-btn. */
+.gx-mat-erreur { color: var(--red-deep, #9a5546); font-size: 13.5px; margin: 8px 0; }
+.gx-mat-renvoi { border-top: 1px solid var(--line-warm); margin-top: 12px; padding-top: 12px; }
