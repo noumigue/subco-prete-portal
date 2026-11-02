@@ -27,26 +27,44 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
 
   const liste = dossiers.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
 
+  // Un bouton grise n'explique rien. On nomme ce qui manque, dans l'ordre ou l'ecran le demande.
+  const manquant: string[] = [];
+  if (!typeDocumentId) manquant.push('le type de demande');
+  if (!campagne.trim()) manquant.push('la clé de campagne');
+  if (liste.length === 0) manquant.push('au moins un dossier');
+  const pretASimuler = manquant.length === 0;
+
   function simuler() {
     setErreur(null); setMessage(null);
     startTransition(async () => {
-      const r = await simulerCampagneMajAction({ typeDocumentId, candidatures: liste, campagne, joursOuvres });
-      if (r.ok && r.simulation) setSimulation(r.simulation);
-      else { setSimulation(null); setErreur(r.error || 'La simulation a échoué.'); }
+      try {
+        const r = await simulerCampagneMajAction({ typeDocumentId, candidatures: liste, campagne, joursOuvres });
+        if (r.ok && r.simulation) setSimulation(r.simulation);
+        else { setSimulation(null); setErreur(r.error || 'La simulation a échoué.'); }
+      } catch (e) {
+        // Sans ce filet, une action serveur qui leve ne produit RIEN a l'ecran : ni resultat,
+        // ni message. L'operateur clique et croit l'ecran casse.
+        setSimulation(null);
+        setErreur(`La simulation n’a pas abouti : ${e instanceof Error ? e.message : 'erreur inattendue'}.`);
+      }
     });
   }
 
   function lancer() {
     setErreur(null); setMessage(null);
     startTransition(async () => {
-      const r = await lancerCampagneMajAction({
-        typeDocumentId, candidatures: liste, campagne, joursOuvres,
-        ...(echeance ? { echeance: new Date(`${echeance}T21:59:00Z`).toISOString() } : {}),
-      });
-      if (r.ok) {
-        setMessage(`${r.creees} demande(s) créée(s)${r.ignorees?.length ? ` · ${r.ignorees.length} déjà servi(s)` : ''}.`);
-        setSimulation(null);
-      } else setErreur(r.error || 'Le lancement a échoué.');
+      try {
+        const r = await lancerCampagneMajAction({
+          typeDocumentId, candidatures: liste, campagne, joursOuvres,
+          ...(echeance ? { echeance: new Date(`${echeance}T21:59:00Z`).toISOString() } : {}),
+        });
+        if (r.ok) {
+          setMessage(`${r.creees} demande(s) créée(s)${r.ignorees?.length ? ` · ${r.ignorees.length} déjà servi(s)` : ''}.`);
+          setSimulation(null);
+        } else setErreur(r.error || 'Le lancement a échoué.');
+      } catch (e) {
+        setErreur(`Le lancement n’a pas abouti : ${e instanceof Error ? e.message : 'erreur inattendue'}.`);
+      }
     });
   }
 
@@ -129,9 +147,15 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
       {erreur ? <p className="gx-mat-erreur">{erreur}</p> : null}
       {message ? <p className="gx-meta"><strong>{message}</strong></p> : null}
 
+      {!pretASimuler ? (
+        <p className="gx-meta">
+          Pour simuler, il manque encore <strong>{manquant.join(' et ')}</strong>.
+        </p>
+      ) : null}
+
       <div className="gx-actions">
-        <button type="button" className="gx-btn gx-btn-ghost" disabled={enCours || !campagne || liste.length === 0} onClick={simuler}>
-          Simuler
+        <button type="button" className="gx-btn gx-btn-ghost" disabled={enCours || !pretASimuler} onClick={simuler}>
+          {enCours ? 'Simulation en cours…' : 'Simuler'}
         </button>
         <button
           type="button"
@@ -147,6 +171,7 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
       </div>
       <p className="gx-meta">
         Le lancement n’est possible qu’après une simulation : c’est elle qui dit ce qui partira.
+        {simulation ? '' : ' Tant qu’elle n’a pas répondu, le bouton de lancement reste inactif.'}
       </p>
     </article>
   );
