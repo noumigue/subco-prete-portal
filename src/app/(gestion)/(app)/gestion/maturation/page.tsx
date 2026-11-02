@@ -1,11 +1,15 @@
-import { getGestionDemandesMaj, getGestionPiecesReferentiel } from '@/lib/gestion-api';
+import { getGestionChampsReferentiel, getGestionDemandesMaj, getGestionPiecesReferentiel } from '@/lib/gestion-api';
 import { GestionMaturation } from '@/components/gestion-maturation';
 import { GestionMaturationCampagne } from '@/components/gestion-maturation-campagne';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MaturationPage() {
-  const [data, refs] = await Promise.all([getGestionDemandesMaj(), getGestionPiecesReferentiel()]);
+  const [data, refs, cat] = await Promise.all([
+    getGestionDemandesMaj(),
+    getGestionPiecesReferentiel(),
+    getGestionChampsReferentiel(),
+  ]);
 
   return (
     <section className="gx-page">
@@ -18,7 +22,7 @@ export default async function MaturationPage() {
         qui l’a fait. Les montants ne sont portés au dossier qu’à la validation.
       </p>
 
-      <GestionMaturationCampagne pieces={refs?.pieces || []} />
+      <GestionMaturationCampagne pieces={refs?.pieces || []} champsCatalogue={cat?.champs || []} />
 
       {data ? (
         <GestionMaturation demandes={data.demandes} compte={data.compte} />

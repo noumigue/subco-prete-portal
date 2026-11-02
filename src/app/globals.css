@@ -7355,6 +7355,16 @@ a.docs-item:hover .docs-item-dl {
 .gx-pdoss-ver { padding-left: 14px; border-top: 1px dashed var(--line-warm); color: var(--muted-warm); }
 .gx-pdoss-ver .gx-pdoss-lib { font-size: 12.5px; font-style: italic; }
 
+/* Selection des champs a rouvrir dans une campagne. Groupes par section du formulaire,
+   dans l'ordre ou le candidat les a remplis : on retrouve un champ la ou on l'a saisi. */
+.gx-champs-choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 6px 0 2px; }
+.gx-champs-groupe { border: 1px solid var(--line-warm); border-radius: 10px; padding: 8px 12px 10px; min-width: 0; }
+.gx-champs-groupe legend { font-size: 12px; font-weight: 700; color: var(--pine); padding: 0 4px; }
+/* Deux classes pour passer devant `.gx label { display: block; margin: 13px 0 5px }`,
+   qui ecraserait sinon la mise en ligne de la case et de son libelle. */
+.gx-champs-groupe .gx-champs-ligne { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 3px 0; font-size: 13px; font-weight: 400; cursor: pointer; }
+.gx-champs-groupe .gx-champs-ligne input { margin: 3px 0 0; flex: 0 0 auto; }
+
 /* ---- instruction ---- */
 .gx-dhead { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid var(--line-warm); padding-bottom: 13px; margin-bottom: 14px; }
 .gx-dhead h1 { font-size: 19px; color: var(--pine); margin: 0 0 3px; }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { GenreCampagne, PayloadCampagne, PieceReferentiel, SimulationCampagne } from '@/lib/gestion-api';
+import type { ChampModifiable, GenreCampagne, PayloadCampagne, PieceReferentiel, SimulationCampagne } from '@/lib/gestion-api';
 import { lancerCampagneMajAction, simulerCampagneMajAction } from '@/app/(gestion)/actions';
 
 // Lancement d'une campagne de demandes.
@@ -24,7 +24,7 @@ const GENRES: { cle: GenreCampagne; titre: string; aide: string }[] = [
   {
     cle: 'champs',
     titre: 'Modifier le formulaire',
-    aide: 'Budget total proposé et contrepartie proposée. La subvention demandée en est déduite.',
+    aide: 'Vous choisissez les champs à rouvrir. L’opérateur ne pourra modifier que ceux-là.',
   },
   {
     cle: 'piece_nouvelle',
@@ -38,9 +38,21 @@ const GENRES: { cle: GenreCampagne; titre: string; aide: string }[] = [
   },
 ];
 
-export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel[] }) {
+// Le budget et la contrepartie forment un objet arithmetique : cocher l'un coche l'autre.
+// Accepter un nouveau budget en gardant l'ancienne contrepartie changerait la subvention
+// a l'insu de tous.
+const MONTANTS = ['financement.budgetTotal', 'financement.contrepartie'];
+
+export function GestionMaturationCampagne({
+  pieces,
+  champsCatalogue,
+}: {
+  pieces: PieceReferentiel[];
+  champsCatalogue: ChampModifiable[];
+}) {
   const [ouvert, setOuvert] = useState(false);
   const [genre, setGenre] = useState<GenreCampagne>('champs');
+  const [champs, setChamps] = useState<string[]>([]);
   const [libellePiece, setLibellePiece] = useState('');
   const [typePieceDocumentId, setTypePiece] = useState('');
   const [campagne, setCampagne] = useState('');
@@ -54,9 +66,11 @@ export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel
 
   const liste = dossiers.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
   const genreChoisi = GENRES.find((g) => g.cle === genre)!;
+  const sections = [...new Set(champsCatalogue.map((c) => c.section))];
 
   // Un bouton grise n'explique rien. On nomme ce qui manque, dans l'ordre ou l'ecran le demande.
   const manquant: string[] = [];
+  if (genre === 'champs' && champs.length === 0) manquant.push('au moins un champ à modifier');
   if (genre === 'piece_nouvelle' && !libellePiece.trim()) manquant.push('le nom de la pièce à fournir');
   if (genre === 'piece_revision' && !typePieceDocumentId) manquant.push('la pièce à réviser');
   if (!campagne.trim()) manquant.push('la clé de campagne');
@@ -69,6 +83,7 @@ export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel
       candidatures: liste,
       campagne,
       joursOuvres,
+      ...(genre === 'champs' ? { champs } : {}),
       ...(genre === 'piece_nouvelle' ? { libellePiece: libellePiece.trim() } : {}),
       ...(genre === 'piece_revision' ? { typePieceDocumentId } : {}),
     };
@@ -77,9 +92,19 @@ export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel
   // Changer de genre invalide l'apercu : il decrivait un autre objet.
   function choisirGenre(g: GenreCampagne) {
     setGenre(g);
+    setChamps([]);
     setSimulation(null);
     setErreur(null);
     setMessage(null);
+  }
+
+  function basculerChamp(cle: string) {
+    setSimulation(null);
+    setChamps((actuels) => {
+      const vise = MONTANTS.includes(cle) ? MONTANTS : [cle];
+      const deja = actuels.includes(cle);
+      return deja ? actuels.filter((c) => !vise.includes(c)) : [...new Set([...actuels, ...vise])];
+    });
   }
 
   function simuler() {
@@ -139,6 +164,33 @@ export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel
         ))}
       </select>
       <p className="gx-meta">{genreChoisi.aide}</p>
+
+      {genre === 'champs' ? (
+        <>
+          <label>Champs à rouvrir</label>
+          <div className="gx-champs-choix">
+            {sections.map((section) => (
+              <fieldset key={section} className="gx-champs-groupe">
+                <legend>{section}</legend>
+                {champsCatalogue.filter((c) => c.section === section).map((c) => (
+                  <label key={c.cle} className="gx-champs-ligne">
+                    <input
+                      type="checkbox"
+                      checked={champs.includes(c.cle)}
+                      onChange={() => basculerChamp(c.cle)}
+                    />
+                    <span>{c.libelle}</span>
+                  </label>
+                ))}
+              </fieldset>
+            ))}
+          </div>
+          <p className="gx-meta">
+            {champs.length} champ(s) sélectionné(s). Le budget et la contrepartie vont ensemble :
+            la subvention se déduit des deux, les rouvrir séparément n’aurait pas de sens.
+          </p>
+        </>
+      ) : null}
 
       {genre === 'piece_nouvelle' ? (
         <>

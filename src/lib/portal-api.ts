@@ -616,6 +616,18 @@ export type PortalDemandeMaj = {
     champs?: string[];
   } | null;
   piecesFournies?: PortalDemandeMajPiece[];
+  // Champs ouverts par la demande, decrits par le CMS : libelle, type, valeurs admises,
+  // valeur actuelle au dossier. Le formulaire n'a pas sa propre definition du formulaire.
+  champs?: {
+    cle: string;
+    libelle: string;
+    section: string;
+    type: 'montant' | 'nombre' | 'texte' | 'texteLong' | 'choix';
+    options?: string[] | null;
+    max?: number | null;
+    valeurActuelle?: string | number | null;
+    valeurProposee?: string | number | null;
+  }[];
   montantsProposes?: {
     budgetTotal?: number;
     contrepartie?: number;
@@ -641,7 +653,11 @@ export async function getDemandeMaj(documentId: string): Promise<PortalDemandeMa
 
 export async function soumettreDemandeMaj(
   documentId: string,
-  corps: { pieces?: { libelle: string; fileId: number; nomFichier?: string }[]; montants?: Record<string, unknown> },
+  corps: {
+    pieces?: { libelle: string; fileId: number; nomFichier?: string }[];
+    valeurs?: Record<string, string>;
+    montants?: Record<string, unknown>;
+  },
 ): Promise<{ ok: boolean; error?: string }> {
   const jwt = await getPortalJwt();
   if (!jwt) return { ok: false, error: 'Session expiree.' };

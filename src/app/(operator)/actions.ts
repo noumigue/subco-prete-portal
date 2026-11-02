@@ -587,23 +587,21 @@ export async function soumettreDemandeMajAction(
     pieces.push({ libelle, fileId: uploaded.id, nomFichier: uploaded.name });
   }
 
-  const nombre = (champ: string) => {
-    const brut = String(formData.get(champ) ?? '').replace(/\s/g, '').replace(',', '.');
-    return brut === '' ? null : Number(brut);
-  };
+  // Les champs ouverts arrivent sous `champ::<cle pointee>` — c'est le CMS qui a decrit
+  // lesquels, et c'est lui qui les validera contre son catalogue.
+  const valeurs: Record<string, string> = {};
+  for (const [cle, valeur] of formData.entries()) {
+    if (!cle.startsWith('champ::') || valeur instanceof File) continue;
+    const brut = String(valeur).trim();
+    if (brut !== '') valeurs[cle.slice('champ::'.length)] = brut;
+  }
+  const commentaire = String(formData.get('commentaire') || '') || null;
 
-  const budgetTotal = nombre('budgetTotal');
-  const contrepartie = nombre('contrepartie');
-  const montants = budgetTotal !== null || contrepartie !== null
-    ? {
-      budgetTotal,
-      contrepartie,
-      typeContrepartie: String(formData.get('typeContrepartie') || '') || null,
-      commentaire: String(formData.get('commentaire') || '') || null,
-    }
-    : undefined;
-
-  const resultat = await soumettreDemandeMaj(documentId, { pieces, montants });
+  const resultat = await soumettreDemandeMaj(documentId, {
+    pieces,
+    ...(Object.keys(valeurs).length ? { valeurs } : {}),
+    ...(commentaire ? { montants: { commentaire } } : {}),
+  });
   if (resultat.ok) {
     revalidatePath('/mises-a-jour');
     revalidatePath(`/mises-a-jour/${documentId}`);

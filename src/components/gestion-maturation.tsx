@@ -38,6 +38,7 @@ function Ligne({ demande }: { demande: GestionDemandeMaj }) {
   const [renvoiOuvert, setRenvoiOuvert] = useState(false);
 
   const montants = demande.montantsProposes;
+  const valeurs = demande.valeursDecrites || [];
   const aExaminer = demande.statut === 'fournie';
 
   function lancer(action: () => Promise<{ ok: boolean; error?: string }>) {
@@ -80,25 +81,38 @@ function Ligne({ demande }: { demande: GestionDemandeMaj }) {
         </ul>
       ) : null}
 
-      {montants ? (
+      {valeurs.length ? (
         <table className="gx-constable">
+          <thead>
+            <tr><th>Champ</th><th>Au dossier</th><th>Proposé</th></tr>
+          </thead>
           <tbody>
-            <tr>
-              <td>Budget total proposé</td>
-              <td>{fr(montants.budgetTotal)}</td>
-            </tr>
-            <tr>
-              <td>Contrepartie proposée</td>
-              <td>{fr(montants.contrepartie)}</td>
-            </tr>
-            <tr>
-              <td>Subvention qui en découle</td>
-              <td>
-                {typeof montants.budgetTotal === 'number' && typeof montants.contrepartie === 'number'
-                  ? fr(montants.budgetTotal - montants.contrepartie)
-                  : '—'}
-              </td>
-            </tr>
+            {valeurs.map((v) => (
+              <tr key={v.cle}>
+                <td>{v.libelle}</td>
+                <td>{v.actuelle ?? '—'}</td>
+                {/* Ce qui ne bouge pas se lit d'un coup d'oeil : on ne relit pas trois fois
+                    la meme valeur pour trouver celle qui a change. */}
+                <td>
+                  {v.proposee === null || v.proposee === undefined
+                    ? <span className="gx-meta">en attente</span>
+                    : String(v.proposee) === String(v.actuelle ?? '')
+                      ? <span className="gx-meta">inchangé</span>
+                      : <strong>{v.proposee}</strong>}
+                </td>
+              </tr>
+            ))}
+            {montants ? (
+              <tr>
+                <td>Subvention qui en découle</td>
+                <td>—</td>
+                <td>
+                  {typeof montants.budgetTotal === 'number' && typeof montants.contrepartie === 'number'
+                    ? <strong>{fr(montants.budgetTotal - montants.contrepartie)}</strong>
+                    : '—'}
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       ) : null}

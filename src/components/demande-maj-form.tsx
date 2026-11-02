@@ -22,7 +22,11 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
 
   const perimetre = demande.perimetre || {};
   const pieces = perimetre.pieces || [];
-  const montantsOuverts = Boolean(perimetre.montants);
+  // Les champs ouverts sont DECRITS par le CMS — libelle, type, valeurs admises, valeur
+  // actuelle. Le formulaire n'a pas sa propre definition du formulaire de candidature :
+  // une seule definition, au CMS, sert la campagne, la validation et cet ecran.
+  const champs = demande.champs || [];
+  const couple = champs.some((c) => c.cle === 'financement.budgetTotal');
   const dejaFournies = new Map((demande.piecesFournies || []).map((p) => [p.libelle, p]));
   const ferme = demande.statut === 'validee' || demande.statut === 'echue';
 
@@ -81,52 +85,55 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
         </>
       ) : null}
 
-      {montantsOuverts ? (
+      {champs.length > 0 ? (
         <>
-          <h3 className="operator-block-title">Montants révisés</h3>
+          <h3 className="operator-block-title">Informations à mettre à jour</h3>
           <p className="operator-field-note">
-            Montants en francs burundais. La contrepartie ne peut pas dépasser le budget total ;
-            la subvention demandée est la différence entre les deux.
+            Seuls les champs ci-dessous sont ouverts. Ils sont pré-remplis avec les valeurs
+            actuelles de votre dossier : corrigez ce qui doit l’être.
+            {couple ? ' Le budget total et la contrepartie vont ensemble ; la subvention demandée est leur différence.' : ''}
           </p>
-          <div className="operator-form-grid">
-            <div className="operator-form-field">
-              <label htmlFor="budgetTotal">Budget total du projet</label>
-              <input
-                id="budgetTotal"
-                name="budgetTotal"
-                inputMode="numeric"
-                defaultValue={montantFr(demande.montantsProposes?.budgetTotal)}
-                required
-              />
-            </div>
-            <div className="operator-form-field">
-              <label htmlFor="contrepartie">Votre contrepartie</label>
-              <input
-                id="contrepartie"
-                name="contrepartie"
-                inputMode="numeric"
-                defaultValue={montantFr(demande.montantsProposes?.contrepartie)}
-                required
-              />
-            </div>
-          </div>
-          <div className="operator-form-field">
-            <label htmlFor="typeContrepartie">Nature de la contrepartie</label>
-            <input
-              id="typeContrepartie"
-              name="typeContrepartie"
-              defaultValue={demande.montantsProposes?.typeContrepartie || ''}
-              placeholder="Numéraire, nature, mixte…"
-            />
-          </div>
+          {champs.map((champ) => {
+            const nom = `champ::${champ.cle}`;
+            const valeur = champ.valeurProposee ?? champ.valeurActuelle ?? '';
+            return (
+              <div key={champ.cle} className="operator-form-field">
+                <label htmlFor={nom}>{champ.libelle}</label>
+                {champ.type === 'choix' && champ.options?.length ? (
+                  <select id={nom} name={nom} defaultValue={String(valeur)}>
+                    <option value="">Sélectionner…</option>
+                    {/* La valeur actuelle peut ne plus figurer au référentiel : on l'ajoute
+                        plutôt que de la faire disparaître du formulaire. */}
+                    {[...new Set([...(champ.options || []), ...(valeur ? [String(valeur)] : [])])].map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                ) : champ.type === 'texteLong' ? (
+                  <textarea
+                    id={nom}
+                    name={nom}
+                    rows={3}
+                    {...(champ.max ? { maxLength: champ.max } : {})}
+                    defaultValue={String(valeur)}
+                  />
+                ) : (
+                  <input
+                    id={nom}
+                    name={nom}
+                    type="text"
+                    {...(champ.type === 'montant' || champ.type === 'nombre' ? { inputMode: 'numeric' as const } : {})}
+                    defaultValue={champ.type === 'montant' ? montantFr(Number(valeur) || null) : String(valeur)}
+                  />
+                )}
+                {champ.type === 'montant' ? (
+                  <p className="operator-field-note">En francs burundais.</p>
+                ) : null}
+              </div>
+            );
+          })}
           <div className="operator-form-field">
             <label htmlFor="commentaire">Ce qui a changé depuis la séance de travail</label>
-            <textarea
-              id="commentaire"
-              name="commentaire"
-              rows={3}
-              defaultValue={demande.montantsProposes?.commentaire || ''}
-            />
+            <textarea id="commentaire" name="commentaire" rows={3} />
           </div>
         </>
       ) : null}
@@ -134,8 +141,8 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
       {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
       {envoye ? (
         <p className="operator-auth-note">
-          Votre réponse est enregistrée. Elle sera examinée par l’équipe du projet ; vos montants
-          ne seront actualisés qu’après sa validation.
+          Votre réponse est enregistrée. Elle sera examinée par l’équipe du projet ; votre dossier
+          ne sera actualisé qu’après sa validation.
         </p>
       ) : null}
 

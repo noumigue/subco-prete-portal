@@ -444,7 +444,10 @@ export type GestionDemandeMaj = {
   campagne?: string | null;
   phase?: string | null;
   echeance?: string | null;
-  perimetre?: { pieces?: { libelle: string }[]; montants?: boolean } | null;
+  perimetre?: { pieces?: { libelle: string }[]; montants?: boolean; champs?: string[]; genre?: GenreCampagne } | null;
+  // Rapprochement fait par le CMS : l'ancienne valeur et la nouvelle, cote a cote. On ne
+  // valide pas ce qu'on ne peut pas comparer.
+  valeursDecrites?: { cle: string; libelle: string; actuelle: string | number | null; proposee: string | number | null }[];
   piecesFournies?: { libelle: string; nomFichier?: string | null; url?: string | null; mime?: string | null; tailleKo?: number | null; statut?: string }[];
   montantsProposes?: { budgetTotal?: number; contrepartie?: number; typeContrepartie?: string | null; commentaire?: string | null } | null;
   montantsStatut?: string;
@@ -513,6 +516,7 @@ export type GenreCampagne = 'champs' | 'piece_nouvelle' | 'piece_revision';
 // une piece du referentiel pour une nouvelle version.
 export type PayloadCampagne = {
   genre: GenreCampagne;
+  champs?: string[];
   libellePiece?: string;
   typePieceDocumentId?: string;
   candidatures: string[];
@@ -522,6 +526,22 @@ export type PayloadCampagne = {
 };
 
 export type PieceReferentiel = { documentId: string; libelle: string; groupe: string };
+
+// Un champ du formulaire qu'une campagne peut rouvrir. Le catalogue vit au CMS : l'ecran
+// affiche ce qu'il decrit, pour qu'il n'y ait pas deux definitions a tenir d'accord.
+export type ChampModifiable = {
+  cle: string;
+  libelle: string;
+  section: string;
+  type: 'montant' | 'nombre' | 'texte' | 'texteLong' | 'choix';
+  options?: string[] | null;
+  max?: number | null;
+  groupe?: string | null;
+};
+
+export async function getGestionChampsReferentiel() {
+  return gestionGet<{ champs: ChampModifiable[] }>('/api/gestion/maturation/champs');
+}
 
 export async function getGestionPiecesReferentiel() {
   return gestionGet<{ pieces: PieceReferentiel[] }>('/api/gestion/maturation/pieces');
