@@ -8,7 +8,10 @@ import {
   validerDemandeMajAction,
 } from '@/app/(gestion)/actions';
 
-// File des demandes de mise a jour.
+// File des demandes de mise a jour, du plus recent au plus ancien.
+//
+// L'echeance ne dit plus l'ordre des faits depuis que trois campagnes peuvent partir le
+// meme jour sur un meme dossier : c'est la date de la demande qui ordonne la file.
 //
 // Les montants sont valides EN BLOC : budget total, contrepartie et subvention forment un
 // seul objet arithmetique, et accepter l'un en refusant l'autre ne voudrait rien dire. Les
@@ -171,21 +174,176 @@ function Ligne({ demande }: { demande: GestionDemandeMaj }) {
   );
 }
 
-export function GestionMaturation({ demandes, compte }: { demandes: GestionDemandeMaj[]; compte: Record<string, number> }) {
-  const ordre = ['fournie', 'renvoyee', 'demandee', 'echue', 'validee'];
-  const triees = [...demandes].sort((a, b) => ordre.indexOf(a.statut) - ordre.indexOf(b.statut));
+// Genre d'une demande, y compris celles parties avant que le genre n'existe : leur
+// perimetre est fige, on le deduit plutot que de les migrer.
+function genreDe(d: GestionDemandeMaj): 'champs' | 'piece_nouvelle' | 'piece_revision' {
+  const g = d.perimetre?.genre;
+  if (g === 'piece_nouvelle' || g === 'piece_revision' || g === 'champs') return g;
+  return d.perimetre?.montants ? 'champs' : 'piece_revision';
+}
+
+const GENRE_LIBELLE: Record<string, string> = {
+  champs: 'Champs du formulaire',
+  piece_nouvelle: 'Pièce d’un type nouveau',
+  piece_revision: 'Nouvelle version d’une pièce',
+};
+
+const ORDRE_STATUT = ['fournie', 'renvoyee', 'demandee', 'echue', 'validee'];
+
+function Chip({
+  on, onClick, n, children,
+}: {
+  on: boolean; onClick: () => void; n?: number; children: React.ReactNode;
+}) {
+  return (
+    <button type="button" className={`gx-fz-chip${on ? ' on' : ''}`} onClick={onClick} aria-pressed={on}>
+      {children}
+      {n != null ? <span className="gx-n">{n}</span> : null}
+    </button>
+  );
+}
+
+function LigneFiltre({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="gx-fz-row">
+      <span className="gx-fz-lbl">{label}</span>
+      <div className="gx-fz-opts">{children}</div>
+    </div>
+  );
+}
+
+// Combien de demandes on affiche d'emblee. Le chargement n'est pas le probleme — la file
+// arrive d'un bloc, comme celle des dossiers — mais peindre un millier de cartes l'est.
+// On en revele par paquets, ce qui garde l'ecran reactif sans second aller-retour reseau.
+const PAR_PAQUET = 40;
+
+export function GestionMaturation({
+  demandes,
+  compte,
+  tronque,
+}: {
+  demandes: GestionDemandeMaj[];
+  compte: Record<string, number>;
+  tronque?: boolean;
+}) {
+  const [recherche, setRecherche] = useState('');
+  const [statut, setStatut] = useState('');
+  const [genre, setGenre] = useState('');
+  const [campagne, setCampagne] = useState('');
+  const [visibles, setVisibles] = useState(PAR_PAQUET);
+
+  const campagnes = [...new Set(demandes.map((d) => d.campagne).filter(Boolean) as string[])].sort();
+
+  const q = recherche.trim().toLowerCase();
+  const items = demandes.filter((d) => {
+    if (statut && d.statut !== statut) return false;
+    if (genre && genreDe(d) !== genre) return false;
+    if (campagne && d.campagne !== campagne) return false;
+    if (!q) return true;
+    const foin = [
+      d.candidature?.numeroDossier,
+      d.candidature?.organisation?.nom,
+      d.candidature?.titreProjet,
+      d.type?.libelle,
+      d.campagne,
+    ].filter(Boolean).join(' ').toLowerCase();
+    return foin.includes(q);
+  });
+
+  // La file arrive deja du plus recent au plus ancien ; on ne la reordonne pas, on la filtre.
+  const affichees = items.slice(0, visibles);
+
+  function reinitialiser() {
+    setRecherche(''); setStatut(''); setGenre(''); setCampagne(''); setVisibles(PAR_PAQUET);
+  }
+
+  const filtre = Boolean(q || statut || genre || campagne);
 
   return (
     <>
-      <p className="gx-meta">
-        {ordre
-          .filter((s) => compte[s])
-          .map((s) => `${compte[s]} ${LIBELLE[s].toLowerCase()}`)
-          .join(' · ') || 'Aucune demande en cours.'}
-      </p>
-      {triees.map((d) => (
-        <Ligne key={d.documentId} demande={d} />
-      ))}
+      {tronque ? (
+        <div className="gx-flash err">
+          La file a atteint sa limite d’affichage : des demandes peuvent manquer. Signalez-le à
+          l’équipe projet.
+        </div>
+      ) : null}
+
+      <div className="gx-fz">
+        <div className="gx-fz-search">
+          <span aria-hidden="true">🔍</span>
+          <input
+            type="search"
+            value={recherche}
+            onChange={(e) => { setRecherche(e.target.value); setVisibles(PAR_PAQUET); }}
+            placeholder="Numéro de dossier, organisation ou clé de campagne"
+            aria-label="Rechercher une demande"
+          />
+        </div>
+
+        <div className="gx-fz-grid">
+          <LigneFiltre label="État">
+            <Chip on={!statut} onClick={() => { setStatut(''); setVisibles(PAR_PAQUET); }} n={demandes.length}>Toutes</Chip>
+            {ORDRE_STATUT.filter((s) => compte[s]).map((s) => (
+              <Chip key={s} on={statut === s} onClick={() => { setStatut(s); setVisibles(PAR_PAQUET); }} n={compte[s]}>
+                {LIBELLE[s]}
+              </Chip>
+            ))}
+          </LigneFiltre>
+
+          <LigneFiltre label="Objet">
+            <Chip on={!genre} onClick={() => { setGenre(''); setVisibles(PAR_PAQUET); }}>Tous</Chip>
+            {Object.entries(GENRE_LIBELLE).map(([g, lib]) => {
+              const n = demandes.filter((d) => genreDe(d) === g).length;
+              return n ? (
+                <Chip key={g} on={genre === g} onClick={() => { setGenre(g); setVisibles(PAR_PAQUET); }} n={n}>{lib}</Chip>
+              ) : null;
+            })}
+          </LigneFiltre>
+
+          {campagnes.length > 1 ? (
+            <LigneFiltre label="Campagne">
+              {/* Une liste deroulante et non des puces : les cles s'accumulent au fil des
+                  vagues, et une rangee de trente puces ne se lit plus. */}
+              <select
+                value={campagne}
+                onChange={(e) => { setCampagne(e.target.value); setVisibles(PAR_PAQUET); }}
+                aria-label="Filtrer par campagne"
+              >
+                <option value="">Toutes les campagnes</option>
+                {campagnes.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </LigneFiltre>
+          ) : null}
+        </div>
+
+        <div className="gx-fz-foot">
+          <span>
+            {items.length} demande(s){filtre ? ` sur ${demandes.length}` : ''}
+            {items.length > affichees.length ? ` · ${affichees.length} affichée(s)` : ''}
+          </span>
+          <button type="button" onClick={reinitialiser}>↺ Réinitialiser</button>
+        </div>
+      </div>
+
+      {affichees.length === 0 ? (
+        <div className="gx-empty">
+          {demandes.length === 0
+            ? 'Aucune demande de mise à jour pour le moment.'
+            : 'Aucune demande ne correspond à ces critères. Élargissez les filtres ou réinitialisez-les.'}
+        </div>
+      ) : (
+        affichees.map((d) => <Ligne key={d.documentId} demande={d} />)
+      )}
+
+      {items.length > affichees.length ? (
+        <div className="gx-actions">
+          <button type="button" className="gx-btn gx-btn-ghost" onClick={() => setVisibles((v) => v + PAR_PAQUET)}>
+            Afficher {Math.min(PAR_PAQUET, items.length - affichees.length)} demande(s) de plus
+          </button>
+        </div>
+      ) : null}
     </>
   );
 }

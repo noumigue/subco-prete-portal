@@ -25,7 +25,7 @@ export default async function MaturationPage() {
       <GestionMaturationCampagne pieces={refs?.pieces || []} champsCatalogue={cat?.champs || []} />
 
       {data ? (
-        <GestionMaturation demandes={data.demandes} compte={data.compte} />
+        <GestionMaturation demandes={data.demandes} compte={data.compte} tronque={data.tronque} />
       ) : (
         <p className="gx-error">La file n’a pas pu être chargée. Votre session a peut-être expiré.</p>
       )}

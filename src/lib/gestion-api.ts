@@ -474,7 +474,7 @@ export async function getGestionDemandesMaj(filtres?: { statut?: string; campagn
   if (filtres?.statut) params.set('statut', filtres.statut);
   if (filtres?.campagne) params.set('campagne', filtres.campagne);
   const suffixe = params.toString() ? `?${params}` : '';
-  return gestionGet<{ demandes: GestionDemandeMaj[]; compte: Record<string, number>; total: number }>(
+  return gestionGet<{ demandes: GestionDemandeMaj[]; compte: Record<string, number>; total: number; tronque?: boolean }>(
     `/api/gestion/maturation${suffixe}`,
   );
 }

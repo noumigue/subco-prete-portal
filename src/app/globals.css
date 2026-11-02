@@ -7321,6 +7321,9 @@ a.docs-item:hover .docs-item-dl {
 .gx-fz-chip .gx-n { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 0 6px; background: var(--sage-tile); color: var(--muted-warm); }
 .gx-fz-chip.on { background: var(--pine); border-color: var(--pine); color: #fff; }
 .gx-fz-chip.on .gx-n { background: rgba(255,255,255,.22); color: #fff; }
+/* Une liste deroulante dans une rangee de filtres : `.gx select` la veut pleine largeur,
+   ce qui la ferait s'etaler a cote des puces. On l'aligne sur elles. */
+.gx-fz-opts select { width: auto; min-width: 190px; padding: 4px 10px; font-size: 12.5px; border-radius: 999px; }
 .gx-fz-chip:disabled { opacity: .45; cursor: default; }
 .gx-fz-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .gx-fz-dot.ok { background: var(--emerald); } .gx-fz-dot.warn { background: var(--gold); } .gx-fz-dot.bad { background: var(--gx-red-tx); }
