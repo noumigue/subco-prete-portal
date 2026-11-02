@@ -599,6 +599,7 @@ export type PortalDemandeMajPiece = {
   libelle: string;
   fileId?: number | null;
   nomFichier?: string | null;
+  url?: string | null;
   deposeLe?: string | null;
   statut?: string;
 };

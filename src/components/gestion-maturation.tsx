@@ -67,7 +67,14 @@ function Ligne({ demande }: { demande: GestionDemandeMaj }) {
         <ul className="gx-plist">
           {demande.piecesFournies.map((p) => (
             <li key={p.libelle}>
-              {p.libelle} — {p.nomFichier || 'fichier déposé'}
+              {p.libelle} —{' '}
+              {p.url ? (
+                <a href={p.url} target="_blank" rel="noopener noreferrer">
+                  {p.nomFichier || 'ouvrir le fichier'}
+                </a>
+              ) : (
+                `${p.nomFichier || 'fichier déposé'} (fichier introuvable)`
+              )}
             </li>
           ))}
         </ul>

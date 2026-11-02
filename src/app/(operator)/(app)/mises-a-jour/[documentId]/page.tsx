@@ -67,7 +67,14 @@ export default async function DemandeMajPage({
               <ul className="operator-bullet-list">
                 {demande.piecesFournies.map((p) => (
                   <li key={p.libelle}>
-                    {p.libelle} — {p.nomFichier || 'fichier déposé'}
+                    {p.libelle} —{' '}
+                    {p.url ? (
+                      <a href={p.url} target="_blank" rel="noopener noreferrer">
+                        {p.nomFichier || 'ouvrir le fichier'}
+                      </a>
+                    ) : (
+                      p.nomFichier || 'fichier déposé'
+                    )}
                   </li>
                 ))}
               </ul>

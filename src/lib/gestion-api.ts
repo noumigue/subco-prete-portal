@@ -445,7 +445,7 @@ export type GestionDemandeMaj = {
   phase?: string | null;
   echeance?: string | null;
   perimetre?: { pieces?: { libelle: string }[]; montants?: boolean } | null;
-  piecesFournies?: { libelle: string; nomFichier?: string | null; statut?: string }[];
+  piecesFournies?: { libelle: string; nomFichier?: string | null; url?: string | null; mime?: string | null; tailleKo?: number | null; statut?: string }[];
   montantsProposes?: { budgetTotal?: number; contrepartie?: number; typeContrepartie?: string | null; commentaire?: string | null } | null;
   montantsStatut?: string;
   soumisLe?: string | null;
