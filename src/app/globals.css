@@ -7922,3 +7922,4 @@ a.candidature-bis-doc-card:hover .candidature-bis-doc-download { stroke: var(--b
    gx-plist, gx-constable et les boutons gx-btn. */
 .gx-mat-erreur { color: var(--red-deep, #9a5546); font-size: 13.5px; margin: 8px 0; }
 .gx-mat-renvoi { border-top: 1px solid var(--line-warm); margin-top: 12px; padding-top: 12px; }
+.gx-mat-simulation { margin: 14px 0; padding: 12px 14px; background: var(--sage-bg, #eef5ee); border-radius: 10px; font-size: 13.5px; }

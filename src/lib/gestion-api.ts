@@ -491,3 +491,61 @@ export async function renvoyerDemandeMaj(documentId: string, motif: string, jour
 export async function rouvrirDemandeMaj(documentId: string, joursOuvres?: number) {
   return gestionPost(`/api/gestion/maturation/${documentId}/rouvrir`, { joursOuvres });
 }
+
+export type GestionTypeDemandeMaj = {
+  documentId: string;
+  code: string;
+  libelle: string;
+  phase: string;
+  delaiJoursDefaut?: number;
+  montantsOuverts?: boolean;
+  piecesAttendues?: { libelle: string }[];
+};
+
+export async function getGestionTypesDemandeMaj() {
+  return gestionGet<{ types: GestionTypeDemandeMaj[] }>('/api/gestion/maturation/types');
+}
+
+export type SimulationCampagne = {
+  type: { libelle: string; phase: string };
+  echeance: string;
+  vises: number;
+  introuvables: string[];
+  aCreer: number;
+  dejaServis: string[];
+  demandeEnCours: string[];
+  pieces: string[];
+  montantsOuverts: boolean;
+};
+
+export async function simulerCampagneMaj(data: {
+  typeDocumentId: string; candidatures: string[]; campagne: string; joursOuvres?: number;
+}): Promise<{ ok: boolean; error?: string; simulation?: SimulationCampagne }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const r = await fetch(`${STRAPI_URL}/api/gestion/maturation/simulation`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data }),
+    cache: 'no-store',
+  });
+  const payload = await r.json().catch(() => null);
+  if (!r.ok) return { ok: false, error: payload?.error?.message || "La simulation a echoue." };
+  return { ok: true, simulation: payload as SimulationCampagne };
+}
+
+export async function lancerCampagneMaj(data: {
+  typeDocumentId: string; candidatures: string[]; campagne: string; echeance?: string; joursOuvres?: number;
+}): Promise<{ ok: boolean; error?: string; creees?: number; ignorees?: string[] }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const r = await fetch(`${STRAPI_URL}/api/gestion/maturation/campagne`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data }),
+    cache: 'no-store',
+  });
+  const payload = await r.json().catch(() => null);
+  if (!r.ok) return { ok: false, error: payload?.error?.message || "Le lancement a echoue." };
+  return { ok: true, creees: payload?.creees, ignorees: payload?.ignorees };
+}

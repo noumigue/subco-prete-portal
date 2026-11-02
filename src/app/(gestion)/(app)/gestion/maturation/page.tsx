@@ -1,10 +1,11 @@
-import { getGestionDemandesMaj } from '@/lib/gestion-api';
+import { getGestionDemandesMaj, getGestionTypesDemandeMaj } from '@/lib/gestion-api';
 import { GestionMaturation } from '@/components/gestion-maturation';
+import { GestionMaturationCampagne } from '@/components/gestion-maturation-campagne';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MaturationPage() {
-  const data = await getGestionDemandesMaj();
+  const [data, refs] = await Promise.all([getGestionDemandesMaj(), getGestionTypesDemandeMaj()]);
 
   return (
     <section className="gx-page">
@@ -15,6 +16,8 @@ export default async function MaturationPage() {
         la plateforme enregistre qui l’a fait. Les montants ne sont portés au dossier qu’à la
         validation.
       </p>
+
+      {refs?.types?.length ? <GestionMaturationCampagne types={refs.types} /> : null}
 
       {data ? (
         <GestionMaturation demandes={data.demandes} compte={data.compte} />
