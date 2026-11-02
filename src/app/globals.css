@@ -7923,3 +7923,21 @@ a.candidature-bis-doc-card:hover .candidature-bis-doc-download { stroke: var(--b
 .gx-mat-erreur { color: var(--red-deep, #9a5546); font-size: 13.5px; margin: 8px 0; }
 .gx-mat-renvoi { border-top: 1px solid var(--line-warm); margin-top: 12px; padding-top: 12px; }
 .gx-mat-simulation { margin: 14px 0; padding: 12px 14px; background: var(--sage-bg, #eef5ee); border-radius: 10px; font-size: 13.5px; }
+
+/* Recapitulatif d'une demande de mise a jour deja traitee : l'operateur relit ce qu'il a
+   transmis, sans formulaire qui l'inviterait a repondre une seconde fois. */
+.operator-recap {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--sage-border);
+  border-radius: 12px;
+}
+
+.operator-recap .operator-block-title {
+  margin: 0;
+}
+
+.operator-recap ul {
+  margin: 0;
+}
