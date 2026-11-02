@@ -506,8 +506,31 @@ export async function getGestionTypesDemandeMaj() {
   return gestionGet<{ types: GestionTypeDemandeMaj[] }>('/api/gestion/maturation/types');
 }
 
+export type GenreCampagne = 'champs' | 'piece_nouvelle' | 'piece_revision';
+
+// Une campagne ne porte qu'un seul objet. Le genre dit lequel, et ce qu'il faut preciser :
+// rien pour les champs (ce sont les montants), un libelle pour une piece d'un type nouveau,
+// une piece du referentiel pour une nouvelle version.
+export type PayloadCampagne = {
+  genre: GenreCampagne;
+  libellePiece?: string;
+  typePieceDocumentId?: string;
+  candidatures: string[];
+  campagne: string;
+  joursOuvres?: number;
+  echeance?: string;
+};
+
+export type PieceReferentiel = { documentId: string; libelle: string; groupe: string };
+
+export async function getGestionPiecesReferentiel() {
+  return gestionGet<{ pieces: PieceReferentiel[] }>('/api/gestion/maturation/pieces');
+}
+
 export type SimulationCampagne = {
-  type: { libelle: string; phase: string };
+  type: { libelle: string; phase: string; genre?: GenreCampagne };
+  objet?: string;
+  autresDemandesOuvertes?: number;
   echeance: string;
   vises: number;
   introuvables: string[];
@@ -518,9 +541,9 @@ export type SimulationCampagne = {
   montantsOuverts: boolean;
 };
 
-export async function simulerCampagneMaj(data: {
-  typeDocumentId: string; candidatures: string[]; campagne: string; joursOuvres?: number;
-}): Promise<{ ok: boolean; error?: string; simulation?: SimulationCampagne }> {
+export async function simulerCampagneMaj(
+  data: PayloadCampagne,
+): Promise<{ ok: boolean; error?: string; simulation?: SimulationCampagne }> {
   const jwt = await getPortalJwt();
   if (!jwt) return { ok: false, error: 'Session expiree.' };
   const r = await fetch(`${STRAPI_URL}/api/gestion/maturation/simulation`, {
@@ -534,9 +557,9 @@ export async function simulerCampagneMaj(data: {
   return { ok: true, simulation: payload as SimulationCampagne };
 }
 
-export async function lancerCampagneMaj(data: {
-  typeDocumentId: string; candidatures: string[]; campagne: string; echeance?: string; joursOuvres?: number;
-}): Promise<{ ok: boolean; error?: string; creees?: number; ignorees?: string[] }> {
+export async function lancerCampagneMaj(
+  data: PayloadCampagne,
+): Promise<{ ok: boolean; error?: string; creees?: number; ignorees?: string[] }> {
   const jwt = await getPortalJwt();
   if (!jwt) return { ok: false, error: 'Session expiree.' };
   const r = await fetch(`${STRAPI_URL}/api/gestion/maturation/campagne`, {

@@ -1,24 +1,51 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { GestionTypeDemandeMaj, SimulationCampagne } from '@/lib/gestion-api';
+import type { GenreCampagne, PayloadCampagne, PieceReferentiel, SimulationCampagne } from '@/lib/gestion-api';
 import { lancerCampagneMajAction, simulerCampagneMajAction } from '@/app/(gestion)/actions';
 
 // Lancement d'une campagne de demandes.
 //
+// UNE CAMPAGNE = UN GENRE (arbitrage du 2 novembre 2026). Le Cabinet lance une campagne par
+// element a completer, et chacune suit son cours : sa propre echeance, ses relances, sa
+// validation. C'est ce qui permet a un operateur de livrer progressivement — une campagne se
+// clot quand son objet est servi, independamment des autres. L'ecran ne propose donc pas de
+// composer un paquet : il demande d'abord lequel des trois genres on lance, puis seulement
+// ce que ce genre exige.
+//
 // La simulation precede toujours le lancement — meme deroule que les campagnes d'e-mail :
-// on voit combien de dossiers seraient servis, lesquels le sont deja, et a quelle
-// echeance, avant que le premier courriel ne parte.
+// on voit combien de dossiers seraient servis, lesquels le sont deja, et a quelle echeance,
+// avant que le premier courriel ne parte. Elle n'ecrit rien, pas meme le type de demande.
 //
 // Les dossiers se collent par NUMERO, un par ligne : c'est ce que l'equipe a sous la main,
 // pas des identifiants de document. Le CMS resout « 00127 » comme « PRETE-AP-C1-2026-00127 ».
 
-export function GestionMaturationCampagne({ types }: { types: GestionTypeDemandeMaj[] }) {
+const GENRES: { cle: GenreCampagne; titre: string; aide: string }[] = [
+  {
+    cle: 'champs',
+    titre: 'Modifier le formulaire',
+    aide: 'Budget total proposé et contrepartie proposée. La subvention demandée en est déduite.',
+  },
+  {
+    cle: 'piece_nouvelle',
+    titre: 'Fournir une pièce d’un type nouveau',
+    aide: 'Une pièce qui ne figurait pas parmi celles demandées au dépôt. Vous la nommez ici.',
+  },
+  {
+    cle: 'piece_revision',
+    titre: 'Fournir une nouvelle version d’une pièce',
+    aide: 'La version déposée n’est pas écrasée : la nouvelle s’ajoute, les deux restent consultables.',
+  },
+];
+
+export function GestionMaturationCampagne({ pieces }: { pieces: PieceReferentiel[] }) {
   const [ouvert, setOuvert] = useState(false);
-  const [typeDocumentId, setType] = useState(types[0]?.documentId || '');
+  const [genre, setGenre] = useState<GenreCampagne>('champs');
+  const [libellePiece, setLibellePiece] = useState('');
+  const [typePieceDocumentId, setTypePiece] = useState('');
   const [campagne, setCampagne] = useState('');
   const [dossiers, setDossiers] = useState('');
-  const [joursOuvres, setJours] = useState<number>(types[0]?.delaiJoursDefaut || 5);
+  const [joursOuvres, setJours] = useState<number>(5);
   const [echeance, setEcheance] = useState('');
   const [simulation, setSimulation] = useState<SimulationCampagne | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -26,19 +53,40 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
   const [enCours, startTransition] = useTransition();
 
   const liste = dossiers.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+  const genreChoisi = GENRES.find((g) => g.cle === genre)!;
 
   // Un bouton grise n'explique rien. On nomme ce qui manque, dans l'ordre ou l'ecran le demande.
   const manquant: string[] = [];
-  if (!typeDocumentId) manquant.push('le type de demande');
+  if (genre === 'piece_nouvelle' && !libellePiece.trim()) manquant.push('le nom de la pièce à fournir');
+  if (genre === 'piece_revision' && !typePieceDocumentId) manquant.push('la pièce à réviser');
   if (!campagne.trim()) manquant.push('la clé de campagne');
   if (liste.length === 0) manquant.push('au moins un dossier');
   const pretASimuler = manquant.length === 0;
+
+  function payload(): PayloadCampagne {
+    return {
+      genre,
+      candidatures: liste,
+      campagne,
+      joursOuvres,
+      ...(genre === 'piece_nouvelle' ? { libellePiece: libellePiece.trim() } : {}),
+      ...(genre === 'piece_revision' ? { typePieceDocumentId } : {}),
+    };
+  }
+
+  // Changer de genre invalide l'apercu : il decrivait un autre objet.
+  function choisirGenre(g: GenreCampagne) {
+    setGenre(g);
+    setSimulation(null);
+    setErreur(null);
+    setMessage(null);
+  }
 
   function simuler() {
     setErreur(null); setMessage(null);
     startTransition(async () => {
       try {
-        const r = await simulerCampagneMajAction({ typeDocumentId, candidatures: liste, campagne, joursOuvres });
+        const r = await simulerCampagneMajAction(payload());
         if (r.ok && r.simulation) setSimulation(r.simulation);
         else { setSimulation(null); setErreur(r.error || 'La simulation a échoué.'); }
       } catch (e) {
@@ -55,7 +103,7 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
     startTransition(async () => {
       try {
         const r = await lancerCampagneMajAction({
-          typeDocumentId, candidatures: liste, campagne, joursOuvres,
+          ...payload(),
           ...(echeance ? { echeance: new Date(`${echeance}T21:59:00Z`).toISOString() } : {}),
         });
         if (r.ok) {
@@ -79,20 +127,54 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
   return (
     <article className="gx-card">
       <h2 className="gx-block-title">Nouvelle campagne</h2>
+      <p className="gx-meta">
+        Une campagne ne demande qu’une seule chose. Pour en demander trois, lancez trois
+        campagnes : l’opérateur répond à chacune quand il peut, et chacune a son échéance.
+      </p>
 
-      <label htmlFor="mat-type">Type de demande</label>
-      <select id="mat-type" value={typeDocumentId} onChange={(e) => setType(e.target.value)}>
-        {types.map((t) => (
-          <option key={t.documentId} value={t.documentId}>{t.libelle}</option>
+      <label htmlFor="mat-genre">Que demande cette campagne ?</label>
+      <select id="mat-genre" value={genre} onChange={(e) => choisirGenre(e.target.value as GenreCampagne)}>
+        {GENRES.map((g) => (
+          <option key={g.cle} value={g.cle}>{g.titre}</option>
         ))}
       </select>
+      <p className="gx-meta">{genreChoisi.aide}</p>
+
+      {genre === 'piece_nouvelle' ? (
+        <>
+          <label htmlFor="mat-libelle">Nom de la pièce à fournir</label>
+          <input
+            id="mat-libelle"
+            type="text"
+            value={libellePiece}
+            placeholder="Plan de financement"
+            onChange={(e) => setLibellePiece(e.target.value)}
+          />
+          <p className="gx-meta">
+            C’est le nom que l’opérateur verra. Il n’est pas ajouté à la liste des pièces
+            demandées à la candidature : les dossiers déjà déposés ne s’en trouvent pas incomplets.
+          </p>
+        </>
+      ) : null}
+
+      {genre === 'piece_revision' ? (
+        <>
+          <label htmlFor="mat-piece">Pièce dont on veut une nouvelle version</label>
+          <select id="mat-piece" value={typePieceDocumentId} onChange={(e) => setTypePiece(e.target.value)}>
+            <option value="">— choisir —</option>
+            {pieces.map((p) => (
+              <option key={p.documentId} value={p.documentId}>{p.libelle}</option>
+            ))}
+          </select>
+        </>
+      ) : null}
 
       <label htmlFor="mat-cle">Clé de campagne</label>
       <input
         id="mat-cle"
         type="text"
         value={campagne}
-        placeholder="matur-lot1"
+        placeholder="matur-plan-financement"
         onChange={(e) => setCampagne(e.target.value)}
       />
       <p className="gx-meta">
@@ -127,19 +209,25 @@ export function GestionMaturationCampagne({ types }: { types: GestionTypeDemande
         <div className="gx-mat-simulation">
           <strong>Simulation — rien n’est encore parti.</strong>
           <ul className="gx-plist">
+            <li>Objet : <strong>{simulation.objet || simulation.type.libelle}</strong></li>
             <li>{simulation.vises} dossier(s) visé(s), dont <strong>{simulation.aCreer}</strong> à servir</li>
             {simulation.dejaServis.length > 0 ? <li>Déjà servis : {simulation.dejaServis.join(', ')}</li> : null}
             {simulation.demandeEnCours?.length > 0 ? (
               <li className="gx-mat-erreur">
-                Demande déjà en cours, ces dossiers seront écartés : {simulation.demandeEnCours.join(', ')}
+                Une demande sur le même objet est déjà en cours, ces dossiers seront écartés :{' '}
+                {simulation.demandeEnCours.join(', ')}
+              </li>
+            ) : null}
+            {simulation.autresDemandesOuvertes ? (
+              <li>
+                {simulation.autresDemandesOuvertes} demande(s) ouverte(s) sur un <em>autre</em> objet —
+                sans effet, elles suivent leur cours.
               </li>
             ) : null}
             {simulation.introuvables?.length > 0 ? (
               <li className="gx-mat-erreur">Introuvables : {simulation.introuvables.join(', ')}</li>
             ) : null}
             <li>Échéance : {new Date(simulation.echeance).toLocaleDateString('fr-FR')}</li>
-            <li>Pièces demandées : {simulation.pieces.join(', ') || 'aucune'}</li>
-            <li>Montants ouverts : {simulation.montantsOuverts ? 'oui' : 'non'}</li>
           </ul>
         </div>
       ) : null}

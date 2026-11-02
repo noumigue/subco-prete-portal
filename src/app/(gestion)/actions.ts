@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset } from '@/lib/portal-auth';
 import { uploadPortalFile } from '@/lib/portal-api';
 import { validerDemandeMaj, renvoyerDemandeMaj, rouvrirDemandeMaj, simulerCampagneMaj, lancerCampagneMaj } from '@/lib/gestion-api';
+import type { PayloadCampagne } from '@/lib/gestion-api';
 import {
   annulerRenvoiEvaluation,
   annulerFicheSignee,
@@ -602,14 +603,10 @@ export async function rouvrirDemandeMajAction(documentId: string, joursOuvres?: 
 // La simulation ne cree rien : elle dit combien de dossiers seraient servis, lesquels le
 // sont deja, et a quelle echeance. On la fait precéder le lancement, comme pour les
 // campagnes d'e-mail.
-export async function simulerCampagneMajAction(data: {
-  typeDocumentId: string; candidatures: string[]; campagne: string; joursOuvres?: number;
-}) {
+export async function simulerCampagneMajAction(data: PayloadCampagne) {
   return simulerCampagneMaj(data);
 }
 
-export async function lancerCampagneMajAction(data: {
-  typeDocumentId: string; candidatures: string[]; campagne: string; echeance?: string; joursOuvres?: number;
-}) {
+export async function lancerCampagneMajAction(data: PayloadCampagne) {
   const r = await lancerCampagneMaj(data); revalMaturation(); return r;
 }

@@ -560,6 +560,16 @@ export type GestionMesEvaluationRow = {
 };
 
 // Pieces du dossier pour les ecrans d'evaluation : une ligne par type de piece du referentiel.
+// Une piece de maturation : arrivee par une campagne de mise a jour validee, apres le depot.
+// Elle n'ecrase rien — une version revisee se range SOUS la ligne qu'elle revise, une piece
+// d'un type nouveau fait sa propre ligne.
+export type GestionPieceVersion = {
+  url: string;
+  nom: string;
+  deposeLe: string | null;
+  valideLe: string | null;
+};
+
 export type GestionPiecesDossier = {
   pieces: {
     libelle: string;
@@ -567,8 +577,10 @@ export type GestionPiecesDossier = {
     exigence: string | null;
     depot: { url: string; nom: string } | null;
     complement: { url: string; nom: string; recuLe: string | null } | null;
+    versions?: GestionPieceVersion[];
   }[];
   autres: { libelle: string; url: string; nom: string; spontanee: boolean }[];
+  maturation?: (GestionPieceVersion & { libelle: string })[];
 };
 
 // Vue « pieces seules » d'un dossier dont on n'est pas detenteur (evaluation, dossiers clos) :
@@ -582,6 +594,7 @@ export type GestionDossierPieces = {
   statutLibelle: string | null;
   pieces: GestionPiecesDossier['pieces'];
   autres: GestionPiecesDossier['autres'];
+  maturation?: GestionPiecesDossier['maturation'];
   assistance: GestionPieceAssistance[];
 };
 

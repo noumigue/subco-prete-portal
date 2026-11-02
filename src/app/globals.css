@@ -7350,6 +7350,10 @@ a.docs-item:hover .docs-item-dl {
 .gx-pdoss-dl { white-space: nowrap; color: var(--pine); font-weight: 600; text-decoration: none; }
 .gx-pdoss-vide { white-space: nowrap; font-size: 11.5px; color: var(--muted-warm); background: var(--sage-tile); border-radius: 999px; padding: 1px 8px; }
 .gx-pdoss-toggle { border: 0; background: none; color: var(--pine); font-weight: 600; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0; }
+/* Version revisee d'une piece : decalee et plus discrete que la ligne qu'elle complete,
+   pour qu'on lise d'un coup l'original et ce qui s'y est ajoute apres le depot. */
+.gx-pdoss-ver { padding-left: 14px; border-top: 1px dashed var(--line-warm); color: var(--muted-warm); }
+.gx-pdoss-ver .gx-pdoss-lib { font-size: 12.5px; font-style: italic; }
 
 /* ---- instruction ---- */
 .gx-dhead { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; border-bottom: 1px solid var(--line-warm); padding-bottom: 13px; margin-bottom: 14px; }

@@ -45,7 +45,7 @@ export default async function PiecesDossierPage({
         accessible depuis cette page.
       </div>
 
-      <GestionPiecesDossier donnees={{ pieces: vue.pieces, autres: vue.autres }} />
+      <GestionPiecesDossier donnees={{ pieces: vue.pieces, autres: vue.autres, maturation: vue.maturation }} />
 
       {assistance.length ? (
         <div className="gx-card">
