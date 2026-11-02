@@ -299,6 +299,26 @@ export function GestionMaturationCampagne({
         </div>
       ) : null}
 
+      {/* Un apercu qui annonce « 0 a servir » explique un fait, pas un bouton grise. On relie
+          les deux, et on dit quoi faire : l'ecran ne doit jamais laisser deviner. */}
+      {simulation && simulation.aCreer === 0 ? (
+        <p className="gx-meta">
+          <strong>Rien ne partirait, le lancement reste donc inactif.</strong>{' '}
+          {simulation.dejaServis.length > 0 ? (
+            <>
+              La clé <strong>{campagne}</strong> a déjà servi{' '}
+              {simulation.dejaServis.length === simulation.vises ? 'ce(s) dossier(s)' : 'une partie des dossiers'} :
+              elle dédoublonne par dossier, quel que soit l’objet. Donnez une clé neuve pour
+              lancer cette campagne.
+            </>
+          ) : simulation.demandeEnCours?.length > 0 ? (
+            <>Une demande portant sur le même objet est déjà ouverte sur ce(s) dossier(s) : servez-la ou renvoyez-la d’abord.</>
+          ) : (
+            <>Aucun dossier visé ne peut être servi.</>
+          )}
+        </p>
+      ) : null}
+
       {erreur ? <p className="gx-mat-erreur">{erreur}</p> : null}
       {message ? <p className="gx-meta"><strong>{message}</strong></p> : null}
 
