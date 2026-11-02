@@ -59,6 +59,7 @@ export function GestionMaturationCampagne({
   const [dossiers, setDossiers] = useState('');
   const [joursOuvres, setJours] = useState<number>(5);
   const [echeance, setEcheance] = useState('');
+  const [messageOperateur, setMessageOperateur] = useState('');
   const [simulation, setSimulation] = useState<SimulationCampagne | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export function GestionMaturationCampagne({
       campagne,
       joursOuvres,
       ...(genre === 'champs' ? { champs } : {}),
+      ...(messageOperateur.trim() ? { texteDemande: messageOperateur.trim() } : {}),
       ...(genre === 'piece_nouvelle' ? { libellePiece: libellePiece.trim() } : {}),
       ...(genre === 'piece_revision' ? { typePieceDocumentId } : {}),
     };
@@ -242,6 +244,19 @@ export function GestionMaturationCampagne({
         onChange={(e) => setDossiers(e.target.value)}
       />
       <p className="gx-meta">{liste.length} dossier(s) saisi(s).</p>
+
+      <label htmlFor="mat-message">Message à l’opérateur <span className="gx-meta">· facultatif</span></label>
+      <textarea
+        id="mat-message"
+        rows={3}
+        value={messageOperateur}
+        placeholder="À la suite de la séance de travail du 2 novembre…"
+        onChange={(e) => setMessageOperateur(e.target.value)}
+      />
+      <p className="gx-meta">
+        Il remplace la phrase automatique dans le courriel. Vous savez souvent <em>pourquoi</em>
+        {' '}vous demandez — cette raison vaut mieux qu’une formule.
+      </p>
 
       <label htmlFor="mat-echeance">Échéance — à poser depuis la date du Comité</label>
       <input id="mat-echeance" type="date" value={echeance} onChange={(e) => setEcheance(e.target.value)} />

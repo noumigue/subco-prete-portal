@@ -519,6 +519,7 @@ export type PayloadCampagne = {
   champs?: string[];
   libellePiece?: string;
   typePieceDocumentId?: string;
+  texteDemande?: string;
   candidatures: string[];
   campagne: string;
   joursOuvres?: number;
