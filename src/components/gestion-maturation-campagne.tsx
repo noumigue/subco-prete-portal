@@ -150,6 +150,10 @@ export function GestionMaturationCampagne({
           setEcheance('');
           setOuvert(false);
           router.refresh();
+          // Le compte rendu s'affiche en haut de page, et le formulaire qu'on vient de
+          // remplir est long : sans ce retour, l'operateur reste devant un panneau disparu
+          // et ne voit jamais la confirmation de ce qu'il a declenche.
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else setErreur(r.error || 'Le lancement a échoué.');
       } catch (e) {
         setErreur(`Le lancement n’a pas abouti : ${e instanceof Error ? e.message : 'erreur inattendue'}.`);
