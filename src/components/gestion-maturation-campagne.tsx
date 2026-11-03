@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { ChampModifiable, GenreCampagne, PayloadCampagne, PieceReferentiel, SimulationCampagne } from '@/lib/gestion-api';
 import { lancerCampagneMajAction, simulerCampagneMajAction } from '@/app/(gestion)/actions';
@@ -64,6 +65,7 @@ export function GestionMaturationCampagne({
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, startTransition] = useTransition();
+  const router = useRouter();
 
   const liste = dossiers.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
   const genreChoisi = GENRES.find((g) => g.cle === genre)!;
@@ -134,8 +136,20 @@ export function GestionMaturationCampagne({
           ...(echeance ? { echeance: new Date(`${echeance}T21:59:00Z`).toISOString() } : {}),
         });
         if (r.ok) {
+          // Une campagne partie, le formulaire se vide et se ferme. Le laisser ouvert avec la
+          // saisie encore a l'ecran donne a croire que rien n'est parti — et invite a
+          // recliquer. On rafraichit aussi la file, pour que les demandes creees s'y voient.
           setMessage(`${r.creees} demande(s) créée(s)${r.ignorees?.length ? ` · ${r.ignorees.length} déjà servi(s)` : ''}.`);
           setSimulation(null);
+          setChamps([]);
+          setLibellePiece('');
+          setTypePiece('');
+          setCampagne('');
+          setDossiers('');
+          setMessageOperateur('');
+          setEcheance('');
+          setOuvert(false);
+          router.refresh();
         } else setErreur(r.error || 'Le lancement a échoué.');
       } catch (e) {
         setErreur(`Le lancement n’a pas abouti : ${e instanceof Error ? e.message : 'erreur inattendue'}.`);
@@ -145,9 +159,18 @@ export function GestionMaturationCampagne({
 
   if (!ouvert) {
     return (
-      <button type="button" className="gx-btn gx-btn-ghost" onClick={() => setOuvert(true)}>
-        Nouvelle campagne
-      </button>
+      <>
+        {/* Le compte rendu du lancement survit a la fermeture : c'est la seule preuve, a
+            l'ecran, que la campagne est bien partie. */}
+        {message ? (
+          <div className="gx-flash">
+            <strong>{message}</strong> Les demandes apparaissent dans la file ci-dessous.
+          </div>
+        ) : null}
+        <button type="button" className="gx-btn gx-btn-ghost" onClick={() => { setMessage(null); setOuvert(true); }}>
+          Nouvelle campagne
+        </button>
+      </>
     );
   }
 
