@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import type { PortalDemandeMaj } from '@/lib/portal-api';
 import { soumettreDemandeMajAction } from '@/app/(operator)/actions';
@@ -19,6 +20,7 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
   const [enCours, startTransition] = useTransition();
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoye, setEnvoye] = useState(false);
+  const router = useRouter();
 
   const perimetre = demande.perimetre || {};
   const pieces = perimetre.pieces || [];
@@ -34,8 +36,19 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
     setErreur(null);
     startTransition(async () => {
       const resultat = await soumettreDemandeMajAction(demande.documentId, formData);
-      if (resultat.ok) setEnvoye(true);
-      else setErreur(resultat.error || "L'envoi n'a pas abouti.");
+      if (resultat.ok) {
+        setEnvoye(true);
+        // La demande n'est plus ouverte : sans ce rafraichissement, le formulaire reste
+        // affiche, invite a recliquer, et le second envoi se heurte a « cette demande n'est
+        // plus ouverte ». L'ecran doit montrer le recapitulatif, pas un formulaire condamne.
+        router.refresh();
+        // Et on remonte : la confirmation est en haut, le formulaire qu'on vient de remplir
+        // est long.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErreur(resultat.error || "L'envoi n'a pas abouti.");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }
 
@@ -51,6 +64,16 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
 
   return (
     <form action={onSubmit} className="operator-action-form">
+      {/* Le resultat de l'envoi se lit EN HAUT du formulaire : c'est la que l'ecran remonte
+          apres le clic, et le formulaire est trop long pour qu'un message en bas se voie. */}
+      {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
+      {envoye ? (
+        <p className="operator-auth-note">
+          Votre réponse est enregistrée. Elle sera examinée par l’équipe du projet ; votre dossier
+          ne sera actualisé qu’après sa validation.
+        </p>
+      ) : null}
+
       {demande.motifRenvoi ? (
         <p className="operator-auth-error">
           <strong>Correction demandée :</strong> {demande.motifRenvoi}
@@ -136,14 +159,6 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
             <textarea id="commentaire" name="commentaire" rows={3} />
           </div>
         </>
-      ) : null}
-
-      {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
-      {envoye ? (
-        <p className="operator-auth-note">
-          Votre réponse est enregistrée. Elle sera examinée par l’équipe du projet ; votre dossier
-          ne sera actualisé qu’après sa validation.
-        </p>
       ) : null}
 
       <div className="operator-form-actions">
