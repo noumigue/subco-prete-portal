@@ -191,12 +191,18 @@ const GENRE_LIBELLE: Record<string, string> = {
 const ORDRE_STATUT = ['fournie', 'renvoyee', 'demandee', 'echue', 'validee'];
 
 function Chip({
-  on, onClick, n, children,
+  on, onClick, n, vide, children,
 }: {
-  on: boolean; onClick: () => void; n?: number; children: React.ReactNode;
+  on: boolean; onClick: () => void; n?: number; vide?: boolean; children: React.ReactNode;
 }) {
   return (
-    <button type="button" className={`gx-fz-chip${on ? ' on' : ''}`} onClick={onClick} aria-pressed={on}>
+    <button
+      type="button"
+      className={`gx-fz-chip${on ? ' on' : ''}${vide ? ' vide' : ''}`}
+      onClick={onClick}
+      aria-pressed={on}
+      disabled={vide}
+    >
       {children}
       {n != null ? <span className="gx-n">{n}</span> : null}
     </button>
@@ -283,8 +289,17 @@ export function GestionMaturation({
         <div className="gx-fz-grid">
           <LigneFiltre label="État">
             <Chip on={!statut} onClick={() => { setStatut(''); setVisibles(PAR_PAQUET); }} n={demandes.length}>Toutes</Chip>
-            {ORDRE_STATUT.filter((s) => compte[s]).map((s) => (
-              <Chip key={s} on={statut === s} onClick={() => { setStatut(s); setVisibles(PAR_PAQUET); }} n={compte[s]}>
+            {/* « À examiner » s'affiche MEME A ZERO : c'est l'etat qui appelle une action de
+                l'equipe, et son absence laissait croire que le filtre manquait au lieu de
+                dire qu'il n'y a rien a faire. Les autres n'apparaissent que s'ils existent. */}
+            {ORDRE_STATUT.filter((s) => compte[s] || s === 'fournie').map((s) => (
+              <Chip
+                key={s}
+                on={statut === s}
+                vide={!compte[s]}
+                onClick={() => { setStatut(s); setVisibles(PAR_PAQUET); }}
+                n={compte[s] || 0}
+              >
                 {LIBELLE[s]}
               </Chip>
             ))}

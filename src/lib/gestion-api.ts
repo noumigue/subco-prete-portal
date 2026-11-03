@@ -544,6 +544,13 @@ export async function getGestionChampsReferentiel() {
   return gestionGet<{ champs: ChampModifiable[] }>('/api/gestion/maturation/champs');
 }
 
+// Compte seul, pour le badge de navigation : lu a chaque page de l'espace de gestion, il
+// ne doit charger ni les demandes ni leurs pieces.
+export async function getGestionMaturationCompte() {
+  const r = await gestionGet<{ aExaminer: number; enCours: number }>('/api/gestion/maturation/compte');
+  return r?.aExaminer ?? 0;
+}
+
 export async function getGestionPiecesReferentiel() {
   return gestionGet<{ pieces: PieceReferentiel[] }>('/api/gestion/maturation/pieces');
 }

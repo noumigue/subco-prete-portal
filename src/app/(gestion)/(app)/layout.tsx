@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getPortalSession } from '@/lib/portal-auth';
-import { getGestionAssistance, getGestionPendingCount } from '@/lib/gestion-api';
+import { getGestionAssistance, getGestionMaturationCompte, getGestionPendingCount } from '@/lib/gestion-api';
 import { getBrandAssets } from '@/lib/strapi-public';
 import { GestionShell } from '@/components/gestion-shell';
 
@@ -33,10 +33,14 @@ export default async function GestionAppLayout({
         if (meta) return meta.parStatut.ouverte + meta.parStatut.en_cours;
         return rows.filter((d) => d.statut !== 'resolue').length;
       })();
+  // Badge « Mises a jour » : nb de demandes servies par l'operateur et attendant l'examen
+  // de l'equipe. Sans lui, une reponse deposee n'etait visible qu'en ouvrant l'ecran —
+  // et l'etat correspondant disparaissait du panneau de filtres des qu'il etait vide.
+  const majCount = session.role === 'comite' ? 0 : await getGestionMaturationCompte();
   const brand = await getBrandAssets();
 
   return (
-    <GestionShell session={session} pendingCount={pendingCount} assistCount={assistCount} brand={brand}>
+    <GestionShell session={session} pendingCount={pendingCount} assistCount={assistCount} majCount={majCount} brand={brand}>
       {children}
     </GestionShell>
   );

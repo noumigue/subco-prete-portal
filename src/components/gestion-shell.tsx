@@ -12,6 +12,7 @@ type GestionShellProps = {
   session: PortalSession;
   pendingCount: number;
   assistCount?: number;
+  majCount?: number;
   // Logo de marque (icône pour la pastille du header). Repli « SP » si vide.
   brand?: { label: string; logoUrl: string | null; logoIconUrl: string | null };
 };
@@ -29,7 +30,7 @@ function initials(nom: string) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || 'SP';
 }
 
-export function GestionShell({ children, session, pendingCount, assistCount = 0, brand }: GestionShellProps) {
+export function GestionShell({ children, session, pendingCount, assistCount = 0, majCount = 0, brand }: GestionShellProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isFileActive = pathname.startsWith('/gestion/dossiers');
@@ -89,7 +90,7 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0,
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions</Link>
                   <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
                   <Link className={`gx-nav-item${active('/gestion/non-objection')}`} href="/gestion/non-objection"><span className="gx-ic"><GestionNavIcon name="nonobjection" /></span>Non-objection</Link>
-                  <Link className={`gx-nav-item${active('/gestion/maturation')}`} href="/gestion/maturation"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Mises à jour</Link>
+                  <Link className={`gx-nav-item${active('/gestion/maturation')}`} href="/gestion/maturation"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Mises à jour{majCount > 0 ? <span className="gx-nav-badge">{majCount}</span> : null}</Link>
                   <Link className={`gx-nav-item${active('/gestion/se')}`} href="/gestion/se"><span className="gx-ic"><GestionNavIcon name="se" /></span>Suivi-évaluation</Link>
                   <Link className={`gx-nav-item${active('/gestion/administration')}`} href="/gestion/administration"><span className="gx-ic"><GestionNavIcon name="admin" /></span>Administration</Link>
                 </>
@@ -100,7 +101,7 @@ export function GestionShell({ children, session, pendingCount, assistCount = 0,
                   <Link className={`gx-nav-item${active('/gestion/subventions')}`} href="/gestion/subventions"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Subventions<span className="gx-phase-note" style={{ marginLeft: 6 }}>Suivi technique</span></Link>
                   <Link className={`gx-nav-item${active('/gestion/assistance')}`} href="/gestion/assistance"><span className="gx-ic"><GestionNavIcon name="assistance" /></span>Assistance{assistCount > 0 ? <span className="gx-nav-badge">{assistCount}</span> : null}</Link>
                   <Link className={`gx-nav-item${active('/gestion/non-objection')}`} href="/gestion/non-objection"><span className="gx-ic"><GestionNavIcon name="nonobjection" /></span>Non-objection<span className="gx-phase-note" style={{ marginLeft: 6 }}>Lecture</span></Link>
-                  <Link className={`gx-nav-item${active('/gestion/maturation')}`} href="/gestion/maturation"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Mises à jour</Link>
+                  <Link className={`gx-nav-item${active('/gestion/maturation')}`} href="/gestion/maturation"><span className="gx-ic"><GestionNavIcon name="subventions" /></span>Mises à jour{majCount > 0 ? <span className="gx-nav-badge">{majCount}</span> : null}</Link>
                   <Link className={`gx-nav-item${active('/gestion/se')}`} href="/gestion/se"><span className="gx-ic"><GestionNavIcon name="se" /></span>Suivi-évaluation</Link>
                   <Link className={`gx-nav-item${active('/gestion/administration')}`} href="/gestion/administration"><span className="gx-ic"><GestionNavIcon name="admin" /></span>Administration<span className="gx-phase-note" style={{ marginLeft: 6 }}>Annuaire · sécurité</span></Link>
                 </>
