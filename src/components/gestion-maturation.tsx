@@ -36,10 +36,11 @@ function dateFr(iso?: string | null) {
   return iso ? new Date(iso).toLocaleDateString('fr-FR') : '—';
 }
 
-function Ligne({ demande }: { demande: GestionDemandeMaj }) {
+function Ligne({ demande, defautEcheance }: { demande: GestionDemandeMaj; defautEcheance: string }) {
   const [enCours, startTransition] = useTransition();
   const [erreur, setErreur] = useState<string | null>(null);
   const [motif, setMotif] = useState('');
+  const [jourRenvoi, setJourRenvoi] = useState(defautEcheance);
   const [renvoiOuvert, setRenvoiOuvert] = useState(false);
 
   const montants = demande.montantsProposes;
@@ -161,12 +162,25 @@ function Ligne({ demande }: { demande: GestionDemandeMaj }) {
             value={motif}
             onChange={(e) => setMotif(e.target.value)}
           />
-          <p className="gx-meta">Le renvoi porte une nouvelle échéance de trois jours ouvrés.</p>
+          <div className="gx-fz-row">
+            <label htmlFor={`echeance-${demande.documentId}`}>Nouvelle échéance</label>
+            <input
+              id={`echeance-${demande.documentId}`}
+              type="date"
+              value={jourRenvoi}
+              onChange={(e) => setJourRenvoi(e.target.value)}
+            />
+          </div>
+          <p className="gx-meta">
+            L’opérateur a jusqu’à cette date, à 23h59. Alignez-la sur l’échéance en vigueur :
+            un renvoi plus court mettrait celui qui a répondu plus à l’étroit que celui qui
+            n’a rien envoyé.
+          </p>
           <button
             type="button"
             className="gx-btn gx-btn-gold"
-            disabled={enCours || motif.trim().length === 0}
-            onClick={() => lancer(() => renvoyerDemandeMajAction(demande.documentId, motif.trim(), 3))}
+            disabled={enCours || motif.trim().length === 0 || !jourRenvoi}
+            onClick={() => lancer(() => renvoyerDemandeMajAction(demande.documentId, motif.trim(), jourRenvoi))}
           >
             Confirmer le renvoi
           </button>
@@ -408,7 +422,7 @@ export function GestionMaturation({
             : 'Aucune demande ne correspond à ces critères. Élargissez les filtres ou réinitialisez-les.'}
         </div>
       ) : (
-        affichees.map((d) => <Ligne key={d.documentId} demande={d} />)
+        affichees.map((d) => <Ligne key={d.documentId} demande={d} defautEcheance={defautEcheance} />)
       )}
 
       {items.length > affichees.length ? (

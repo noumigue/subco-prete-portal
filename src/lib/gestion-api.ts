@@ -487,8 +487,13 @@ export async function validerDemandeMaj(documentId: string) {
   return gestionPost(`/api/gestion/maturation/${documentId}/valider`);
 }
 
-export async function renvoyerDemandeMaj(documentId: string, motif: string, joursOuvres?: number) {
-  return gestionPost(`/api/gestion/maturation/${documentId}/renvoyer`, { motif, joursOuvres });
+export async function renvoyerDemandeMaj(
+  documentId: string,
+  motif: string,
+  joursOuvres?: number,
+  echeance?: string,
+) {
+  return gestionPost(`/api/gestion/maturation/${documentId}/renvoyer`, { motif, joursOuvres, echeance });
 }
 
 export async function rouvrirDemandeMaj(documentId: string, joursOuvres?: number) {

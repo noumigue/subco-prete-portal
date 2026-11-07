@@ -593,8 +593,14 @@ function revalMaturation() { revalidatePath('/gestion/maturation'); }
 export async function validerDemandeMajAction(documentId: string): Res {
   const r = await validerDemandeMaj(documentId); revalMaturation(); return r;
 }
-export async function renvoyerDemandeMajAction(documentId: string, motif: string, joursOuvres?: number): Res {
-  const r = await renvoyerDemandeMaj(documentId, motif, joursOuvres); revalMaturation(); return r;
+// Le renvoi portait une echeance figee a trois jours ouvres. Quand la mission prolonge un
+// delai, ces trois jours tombent AVANT la date accordee a tout le monde : l'operateur qu'on
+// renvoie se retrouve plus presse que celui qui n'a rien envoye. L'ecran choisit donc la
+// date, et `jour` (AAAA-MM-JJ) se pose a 23h59 heure de Bujumbura comme partout ailleurs.
+export async function renvoyerDemandeMajAction(documentId: string, motif: string, jour?: string): Res {
+  const r = await renvoyerDemandeMaj(documentId, motif, jour ? undefined : 3, jour ? `${jour}T21:59:00.000Z` : undefined);
+  revalMaturation();
+  return r;
 }
 export async function rouvrirDemandeMajAction(documentId: string, joursOuvres?: number): Res {
   const r = await rouvrirDemandeMaj(documentId, joursOuvres); revalMaturation(); return r;
