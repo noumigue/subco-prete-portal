@@ -12,6 +12,17 @@ import { soumettreDemandeMajAction } from '@/app/(operator)/actions';
 // CMS — un referentiel modifie en cours de route n'elargit pas retroactivement ce qu'un
 // operateur peut changer sur un dossier dont la note est figee.
 
+// Ce que le selecteur de fichiers propose. Les extensions sont listees EN PLUS des types
+// MIME : c'est sur elles que le navigateur filtre reellement ce qu'il affiche. La liste
+// s'est longtemps arretee au PDF et aux images, et le plan de financement — un tableur —
+// n'apparaissait donc pas. Les operateurs l'imprimaient en PDF, l'equipe le leur renvoyait :
+// 82 renvois sur 73 dossiers en trois jours, tous pour ce seul motif.
+const ACCEPT_PIECES = [
+  '.pdf', '.xls', '.xlsx', '.xlsm', '.csv', '.doc', '.docx',
+  '.png', '.jpg', '.jpeg', '.webp', '.heic',
+  'application/pdf', 'image/*',
+].join(',');
+
 function montantFr(v?: number | null) {
   return typeof v === 'number' ? new Intl.NumberFormat('fr-FR').format(v) : '';
 }
@@ -31,6 +42,22 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
   const couple = champs.some((c) => c.cle === 'financement.budgetTotal');
   const dejaFournies = new Map((demande.piecesFournies || []).map((p) => [p.libelle, p]));
   const ferme = demande.statut === 'validee' || demande.statut === 'echue';
+
+  // Une demande qui ne porte QUE des pieces n'a pas de reponse possible sans fichier : le
+  // bouton reste donc ferme tant qu'aucun n'est choisi. Une demande de champs, elle, arrive
+  // pre-remplie des valeurs actuelles du dossier — les renvoyer telles quelles vaut
+  // confirmation, et c'est une reponse valable. Le CMS refait le controle de son cote.
+  const exigeFichier = pieces.length > 0 && champs.length === 0;
+  const [aUnFichier, setAUnFichier] = useState(false);
+
+  function surChangement(e: React.ChangeEvent<HTMLFormElement>) {
+    if (!exigeFichier) return;
+    let choisi = false;
+    new FormData(e.currentTarget).forEach((valeur, nom) => {
+      if (nom.startsWith('piece::') && valeur instanceof File && valeur.size > 0) choisi = true;
+    });
+    setAUnFichier(choisi);
+  }
 
   function onSubmit(formData: FormData) {
     setErreur(null);
@@ -63,7 +90,7 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
   }
 
   return (
-    <form action={onSubmit} className="operator-action-form">
+    <form action={onSubmit} onChange={surChangement} className="operator-action-form">
       {/* Le resultat de l'envoi se lit EN HAUT du formulaire : c'est la que l'ecran remonte
           apres le clic, et le formulaire est trop long pour qu'un message en bas se voie. */}
       {erreur ? <p className="operator-auth-error">{erreur}</p> : null}
@@ -100,7 +127,7 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
                   id={`piece::${piece.libelle}`}
                   name={`piece::${piece.libelle}`}
                   type="file"
-                  accept="application/pdf,image/*"
+                  accept={ACCEPT_PIECES}
                 />
               </div>
             );
@@ -162,9 +189,12 @@ export function DemandeMajForm({ demande }: { demande: PortalDemandeMaj }) {
       ) : null}
 
       <div className="operator-form-actions">
-        <button type="submit" className="operator-amber-btn" disabled={enCours}>
+        <button type="submit" className="operator-amber-btn" disabled={enCours || (exigeFichier && !aUnFichier)}>
           {enCours ? 'Envoi en cours…' : 'Envoyer ma réponse'}
         </button>
+        {exigeFichier && !aUnFichier ? (
+          <p className="operator-field-note">Choisissez le document demandé pour pouvoir envoyer.</p>
+        ) : null}
       </div>
     </form>
   );

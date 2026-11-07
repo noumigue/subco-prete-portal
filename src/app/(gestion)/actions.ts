@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { clearPortalJwt, getPortalSession, loginCandidate, requestPasswordReset } from '@/lib/portal-auth';
 import { uploadPortalFile } from '@/lib/portal-api';
-import { validerDemandeMaj, renvoyerDemandeMaj, rouvrirDemandeMaj, simulerCampagneMaj, lancerCampagneMaj } from '@/lib/gestion-api';
+import { validerDemandeMaj, renvoyerDemandeMaj, rouvrirDemandeMaj, rouvrirLotDemandesMaj, simulerCampagneMaj, lancerCampagneMaj } from '@/lib/gestion-api';
 import type { PayloadCampagne } from '@/lib/gestion-api';
 import {
   annulerRenvoiEvaluation,
@@ -598,6 +598,14 @@ export async function renvoyerDemandeMajAction(documentId: string, motif: string
 }
 export async function rouvrirDemandeMajAction(documentId: string, joursOuvres?: number): Res {
   const r = await rouvrirDemandeMaj(documentId, joursOuvres); revalMaturation(); return r;
+}
+
+// Prolongation de delai. L'echeance arrive en date seule (AAAA-MM-JJ) depuis l'ecran : on
+// la pose a 23h59 heure de Bujumbura, comme toutes les echeances de la plateforme.
+export async function rouvrirLotDemandesMajAction(jour: string) {
+  const r = await rouvrirLotDemandesMaj(`${jour}T21:59:00.000Z`);
+  revalMaturation();
+  return r;
 }
 
 // La simulation ne cree rien : elle dit combien de dossiers seraient servis, lesquels le

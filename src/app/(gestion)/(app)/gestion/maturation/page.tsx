@@ -1,6 +1,7 @@
 import { getGestionChampsReferentiel, getGestionDemandesMaj, getGestionPiecesReferentiel } from '@/lib/gestion-api';
 import { GestionMaturation } from '@/components/gestion-maturation';
 import { GestionMaturationCampagne } from '@/components/gestion-maturation-campagne';
+import { jourOuvre } from '@/lib/jours-ouvres';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,12 @@ export default async function MaturationPage() {
       <GestionMaturationCampagne pieces={refs?.pieces || []} champsCatalogue={cat?.champs || []} />
 
       {data ? (
-        <GestionMaturation demandes={data.demandes} compte={data.compte} tronque={data.tronque} />
+        <GestionMaturation
+          demandes={data.demandes}
+          compte={data.compte}
+          tronque={data.tronque}
+          defautEcheance={jourOuvre(5)}
+        />
       ) : (
         <p className="gx-error">La file n’a pas pu être chargée. Votre session a peut-être expiré.</p>
       )}

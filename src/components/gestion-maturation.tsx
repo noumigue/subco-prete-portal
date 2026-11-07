@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { GestionDemandeMaj } from '@/lib/gestion-api';
 import {
   renvoyerDemandeMajAction,
   rouvrirDemandeMajAction,
+  rouvrirLotDemandesMajAction,
   validerDemandeMajAction,
 } from '@/app/(gestion)/actions';
 
@@ -223,14 +225,69 @@ function LigneFiltre({ label, children }: { label: string; children: React.React
 // On en revele par paquets, ce qui garde l'ecran reactif sans second aller-retour reseau.
 const PAR_PAQUET = 40;
 
+/**
+ * Prolongation de delai sur tout ce qui est echu.
+ *
+ * Le bouton « Rouvrir » de chaque ligne reste la pour un cas isole. Celui-ci sert la
+ * decision inverse : quand la mission repousse l'echeance, elle la repousse pour tout le
+ * monde, et il ne faut pas que le nombre de clics decide de qui en beneficie.
+ */
+function Prolonger({ nb, defautEcheance }: { nb: number; defautEcheance: string }) {
+  const [jour, setJour] = useState(defautEcheance);
+  const [enCours, startTransition] = useTransition();
+  const [fait, setFait] = useState<string | null>(null);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const router = useRouter();
+
+  function prolonger() {
+    setErreur(null); setFait(null);
+    startTransition(async () => {
+      const r = await rouvrirLotDemandesMajAction(jour);
+      if (!r.ok) { setErreur(r.error); return; }
+      const { rouvertes, echecs, dossiers } = r.resultat;
+      setFait(
+        `${rouvertes} demande(s) rouverte(s) sur ${dossiers.length} dossier(s), échéance au `
+        + `${new Date(`${jour}T12:00:00Z`).toLocaleDateString('fr-FR')}.`
+        + (echecs ? ` ${echecs} n’ont pas pu l’être.` : ''),
+      );
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="gx-flash">
+      <strong>{nb} demande(s) ont dépassé leur échéance.</strong>{' '}
+      Les dossiers concernés portent le drapeau « maturation non aboutie » devant le Comité tant
+      qu’ils ne sont pas rouverts. Les rouvrir ne prévient pas les opérateurs : le message leur
+      expliquant le nouveau délai se fait à part.
+      <div className="gx-fz-row" style={{ marginTop: 10 }}>
+        <label htmlFor="prolonger-au">Nouvelle échéance</label>
+        <input
+          id="prolonger-au"
+          type="date"
+          value={jour}
+          onChange={(e) => setJour(e.target.value)}
+        />
+        <button type="button" className="gx-btn gx-btn-gold" disabled={enCours || !jour} onClick={prolonger}>
+          {enCours ? 'Réouverture…' : 'Prolonger tout ce qui est échu'}
+        </button>
+      </div>
+      {erreur ? <p className="gx-mat-erreur">{erreur}</p> : null}
+      {fait ? <p className="gx-meta">{fait}</p> : null}
+    </div>
+  );
+}
+
 export function GestionMaturation({
   demandes,
   compte,
   tronque,
+  defautEcheance,
 }: {
   demandes: GestionDemandeMaj[];
   compte: Record<string, number>;
   tronque?: boolean;
+  defautEcheance: string;
 }) {
   const [recherche, setRecherche] = useState('');
   const [statut, setStatut] = useState('');
@@ -273,6 +330,8 @@ export function GestionMaturation({
           l’équipe projet.
         </div>
       ) : null}
+
+      {compte.echue ? <Prolonger nb={compte.echue} defautEcheance={defautEcheance} /> : null}
 
       <div className="gx-fz">
         <div className="gx-fz-search">

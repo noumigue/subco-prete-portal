@@ -495,6 +495,33 @@ export async function rouvrirDemandeMaj(documentId: string, joursOuvres?: number
   return gestionPost(`/api/gestion/maturation/${documentId}/rouvrir`, { joursOuvres });
 }
 
+// Prolongation de delai : toutes les demandes echues repartent sur une meme date. Le CMS
+// les rouvre une par une — statut du dossier, relances, journal — et rend le compte.
+//
+// Ici on lit la reponse, contrairement aux autres actions : prolonger un delai se decide
+// sur un nombre, et « c'est fait » ne dit pas si dix-sept demandes ont bouge ou deux.
+export type RouvertureLot = { rouvertes: number; echecs: number; dossiers: string[] };
+
+export async function rouvrirLotDemandesMaj(
+  echeance: string,
+): Promise<{ ok: true; resultat: RouvertureLot } | { ok: false; error: string }> {
+  const jwt = await getPortalJwt();
+  if (!jwt) return { ok: false, error: 'Session expiree.' };
+  const response = await fetch(`${STRAPI_URL}/api/gestion/maturation/rouvrir-lot`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: { echeance } }),
+    cache: 'no-store',
+  });
+  const payload = (await response.json().catch(() => null)) as
+    | (RouvertureLot & { error?: { message?: string } })
+    | null;
+  if (!response.ok || !payload) {
+    return { ok: false, error: payload?.error?.message || "La reouverture n'a pas abouti." };
+  }
+  return { ok: true, resultat: payload };
+}
+
 export type GestionTypeDemandeMaj = {
   documentId: string;
   code: string;
